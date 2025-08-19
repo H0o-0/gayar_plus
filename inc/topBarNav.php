@@ -95,6 +95,24 @@
         color: var(--accent-color);
         font-weight: bold;
     }
+
+    /* Transparent icon buttons (search, user) */
+    .navbar-custom .icon-btn {
+        background: transparent !important;
+        border: none !important;
+        color: #fff !important;
+        padding: 6px 8px;
+        border-radius: 10px;
+        line-height: 1;
+    }
+    .navbar-custom .icon-btn:hover,
+    .navbar-custom .icon-btn:focus,
+    .navbar-custom .icon-btn:active {
+        background-color: rgba(255,255,255,0.15) !important;
+        color: #fff !important;
+        box-shadow: none !important;
+        outline: none !important;
+    }
 </style>
 
 <!-- Enhanced Navigation -->
@@ -119,24 +137,24 @@
                         <div class="container">
                             <div class="row">
                                 <?php
-                                $cat_qry = $conn->query("SELECT * FROM categories where status = 1 LIMIT 4");
-                                while($crow = $cat_qry->fetch_assoc()):
+                                $brand_qry = $conn->query("SELECT * FROM brands where status = 1 LIMIT 4");
+                                while($brow = $brand_qry->fetch_assoc()):
                                 ?>
                                 <div class="col-md-3 mega-menu-column">
-                                    <h6><?php echo $crow['category'] ?></h6>
+                                    <h6><?php echo $brow['name'] ?></h6>
                                     <?php
-                                    $sub_qry = $conn->query("SELECT * FROM sub_categories where status = 1 and parent_id = '{$crow['id']}' LIMIT 4");
-                                    if($sub_qry->num_rows > 0):
-                                        while($srow = $sub_qry->fetch_assoc()):
+                                    $series_qry = $conn->query("SELECT * FROM series where status = 1 and brand_id = '{$brow['id']}' LIMIT 4");
+                                    if($series_qry->num_rows > 0):
+                                        while($srow = $series_qry->fetch_assoc()):
                                     ?>
-                                        <a class="mega-menu-item" href="./?p=products&c=<?php echo md5($crow['id']) ?>&s=<?php echo md5($srow['id']) ?>"><?php echo $srow['sub_category'] ?></a>
+                                        <a class="mega-menu-item" href="./?p=products&b=<?php echo md5($brow['id']) ?>&s=<?php echo md5($srow['id']) ?>"><?php echo $srow['name'] ?></a>
                                     <?php
                                         endwhile;
                                     else:
                                     ?>
-                                        <a class="mega-menu-item" href="./?p=products&c=<?php echo md5($crow['id']) ?>">جميع المنتجات</a>
+                                        <a class="mega-menu-item" href="./?p=products&b=<?php echo md5($brow['id']) ?>">جميع المنتجات</a>
                                     <?php endif; ?>
-                                    <a class="mega-menu-item" href="./?p=products&c=<?php echo md5($crow['id']) ?>">عرض الكل</a>
+                                    <a class="mega-menu-item" href="./?p=products&b=<?php echo md5($brow['id']) ?>">عرض الكل</a>
                                 </div>
                                 <?php endwhile; ?>
                             </div>
@@ -144,18 +162,13 @@
                     </div>
                 </li>
 
-                <!-- الإكسسوارات Dropdown -->
+                <!-- أدوات صيانة (Placeholder) -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="accessoriesDropdown" role="button" data-toggle="dropdown">
-                        الإكسسوارات
+                    <a class="nav-link dropdown-toggle" href="#" id="toolsDropdown" role="button" data-toggle="dropdown">
+                        أدوات صيانة
                     </a>
                     <ul class="dropdown-menu">
-                        <?php
-                        $acc_categories = $conn->query("SELECT * FROM categories where status = 1");
-                        while($acc_row = $acc_categories->fetch_assoc()):
-                        ?>
-                        <li><a class="dropdown-item" href="./?p=products&c=<?php echo md5($acc_row['id']) ?>"><?php echo $acc_row['category'] ?></a></li>
-                        <?php endwhile; ?>
+                        <li><span class="dropdown-item text-muted">قريباً</span></li>
                     </ul>
                 </li>
 
@@ -163,20 +176,11 @@
                 <li class="nav-item"><a class="nav-link" href="./?p=about">من نحن</a></li>
                 <li class="nav-item"><a class="nav-link" href="./?p=contact">اتصل بنا</a></li>
             </ul>
-            <!-- Cart and User Actions -->
+            <!-- Cart and Search Actions -->
             <div class="d-flex align-items-center">
-                <button class="btn me-3" style="background: none; border: none; color: white;" onclick="toggleSearch()">
+                <button class="btn me-3 icon-btn" onclick="toggleSearch()">
                     <i class="fas fa-search" style="font-size: 1.2rem;"></i>
                 </button>
-                <?php if(!isset($_SESSION['userdata']['id'])): ?>
-                <button class="btn me-3" style="background: none; border: none; color: white;" id="login-btn">
-                    <i class="fas fa-user" style="font-size: 1.2rem;"></i>
-                </button>
-                <?php else: ?>
-                <a href="./?p=my_account" class="btn me-3" style="background: none; border: none; color: white;" title="حسابي">
-                    <i class="fas fa-user" style="font-size: 1.2rem;"></i>
-                </a>
-                <?php endif; ?>
                 <button class="btn cart-icon" type="button" onclick="window.location.href='./?p=cart'">
                     <i class="fas fa-shopping-cart me-1"></i>
                     السلة
@@ -195,14 +199,8 @@
         </div>
     </div>
 </nav>
-                </div>
-            </div>
-        </nav>
 <script>
 $(function(){
-    $('#login-btn').click(function(){
-        uni_modal("","login.php")
-    })
     $('#navbarNav').find('a.nav-link').click(function(){
         $('.navbar-collapse').removeClass('show')
     })
@@ -239,7 +237,10 @@ function toggleSearch() {
         document.body.insertAdjacentHTML('beforeend', searchModal);
     }
 
-    const modal = new bootstrap.Modal(document.getElementById('searchModal'));
-    modal.show();
+    $('#searchModal').modal({
+        show: true,
+        backdrop: 'static',
+        keyboard: true
+    });
 }
 </script>

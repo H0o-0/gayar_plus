@@ -16,28 +16,27 @@ if(isset($_GET['id']) && $_GET['id'] > 0){
 		<form action="" id="product-form" enctype="multipart/form-data">
 			<input type="hidden" name ="id" value="<?php echo isset($id) ? $id : '' ?>">
             <div class="form-group">
-				<label for="category_id" class="control-label">Category</label>
-                <select name="category_id" id="category_id" class="custom-select select2" required>
+				<label for="brand_id" class="control-label">Brand</label>
+                <select name="brand_id" id="brand_id" class="custom-select select2" required>
                 <option value=""></option>
                 <?php
-                    $qry = $conn->query("SELECT * FROM `categories` order by category asc");
+                    $qry = $conn->query("SELECT * FROM `brands` order by name asc");
                     while($row= $qry->fetch_assoc()):
                 ?>
-                <option value="<?php echo $row['id'] ?>" <?php echo isset($category_id) && $category_id == $row['id'] ? 'selected' : '' ?>><?php echo $row['category'] ?></option>
+                <option value="<?php echo $row['id'] ?>" <?php echo isset($brand_id) && $brand_id == $row['id'] ? 'selected' : '' ?>><?php echo $row['name'] ?></option>
                 <?php endwhile; ?>
                 </select>
 			</div>
             <div class="form-group">
-				<label for="sub_category_id" class="control-label">Sub Category</label>
-                <select name="sub_category_id" id="sub_category_id" class="custom-select" required>
-                <option value="" selected="" disabled="">Select Category First</option>
-                <?php
-                    $qry = $conn->query("SELECT * FROM `sub_categories` order by sub_category asc");
-                    $sub_categories = array();
-                    while($row= $qry->fetch_assoc()):
-                    $sub_categories[$row['parent_id']][] = $row;
-                    endwhile; 
-                ?>
+				<label for="series_id" class="control-label">Series</label>
+                <select name="series_id" id="series_id" class="custom-select" required>
+                <option value="" selected="" disabled="">Select Brand First</option>
+                </select>
+			</div>
+            <div class="form-group">
+				<label for="model_id" class="control-label">Model</label>
+                <select name="model_id" id="model_id" class="custom-select" required>
+                <option value="" selected="" disabled="">Select Series First</option>
                 </select>
 			</div>
 			<div class="form-group">
@@ -45,8 +44,8 @@ if(isset($_GET['id']) && $_GET['id'] > 0){
                 <textarea name="product_name" id="" cols="30" rows="2" class="form-control form no-resize"><?php echo isset($product_name) ? $product_name : ''; ?></textarea>
 			</div>
             <div class="form-group">
-				<label for="description" class="control-label">Description</label>
-                <textarea name="description" id="" cols="30" rows="2" class="form-control form no-resize summernote"><?php echo isset($description) ? $description : ''; ?></textarea>
+                <label for="description" class="control-label">Description</label>
+                <textarea name="description" id="" cols="30" rows="2" class="form-control form no-resize summernote"><?php echo isset($description) ? html_entity_decode($description) : ''; ?></textarea>
 			</div>
             <div class="form-group">
 				<label for="status" class="control-label">Status</label>
@@ -214,38 +213,54 @@ if(isset($_GET['id']) && $_GET['id'] > 0){
             }
         })
     }
-    var sub_categories = $.parseJSON('<?php echo json_encode($sub_categories) ?>');
-	$(document).ready(function(){
-        $('.rem_img').click(function(){
-            _conf("Are sure to delete this image permanently?",'delete_img',["'"+$(this).attr('data-path')+"'"])
-        })
-       
-        $('#category_id').change(function(){
-            var cid = $(this).val()
+            $('#brand_id').change(function(){
+            var bid = $(this).val()
             var opt = "<option></option>";
-            Object.keys(sub_categories).map(k=>{
-                if(k == cid){
-                    Object.keys(sub_categories[k]).map(i=>{
-                        if('<?php echo isset($sub_category_id) ? $sub_category_id : 0 ?>' == sub_categories[k][i].id){
-                            opt += "<option value='"+sub_categories[k][i].id+"' selected>"+sub_categories[k][i].sub_category+"</option>";
-                        }else{
-                            opt += "<option value='"+sub_categories[k][i].id+"'>"+sub_categories[k][i].sub_category+"</option>";
-                        }
-                    })
+            $.ajax({
+                url:_base_url_+"admin/product/ajax_get_series.php",
+                method:"POST",
+                data:{brand_id: bid},
+                dataType:"json",
+                error:err=>{
+                    console.log(err)
+                    alert_toast("An error occured.",'error');
+                    end_loader();
+                },
+                success:function(resp){
+                    if(resp.status == 'success'){
+                        Object.keys(resp.data).map(k=>{
+                            opt += "<option value='"+resp.data[k].id+"'>"+resp.data[k].name+"</option>";
+                        })
+                        $('#series_id').html(opt)
+                        $('#series_id').select2({placeholder:"Please Select here",width:"relative"})
+                    }
                 }
             })
-            $('#sub_category_id').html(opt)
-            $('#sub_category_id').select2({placeholder:"Please Select here",width:"relative"})
         })
-        $('.select2').select2({placeholder:"Please Select here",width:"relative"})
-        if(parseInt("<?php echo isset($category_id) ? $category_id : 0 ?>") > 0){
-            console.log('test')
-            start_loader()
-            setTimeout(() => {
-                $('#category_id').trigger("change");
-                end_loader()
-            }, 750);
-        }
+        $('#series_id').change(function(){
+            var sid = $(this).val()
+            var opt = "<option></option>";
+            $.ajax({
+                url:_base_url_+"admin/product/ajax_get_models.php",
+                method:"POST",
+                data:{series_id: sid},
+                dataType:"json",
+                error:err=>{
+                    console.log(err)
+                    alert_toast("An error occured.",'error');
+                    end_loader();
+                },
+                success:function(resp){
+                    if(resp.status == 'success'){
+                        Object.keys(resp.data).map(k=>{
+                            opt += "<option value='"+resp.data[k].id+"'>"+resp.data[k].category+"</option>";
+                        })
+                        $('#model_id').html(opt)
+                        $('#model_id').select2({placeholder:"Please Select here",width:"relative"})
+                    }
+                }
+            })
+        })
 		$('#product-form').submit(function(e){
 			e.preventDefault();
             var _this = $(this)
@@ -285,18 +300,29 @@ if(isset($_GET['id']) && $_GET['id'] > 0){
 		})
 
         $('.summernote').summernote({
-		        height: 200,
-		        toolbar: [
-		            [ 'style', [ 'style' ] ],
-		            [ 'font', [ 'bold', 'italic', 'underline', 'strikethrough', 'superscript', 'subscript', 'clear'] ],
-		            [ 'fontname', [ 'fontname' ] ],
-		            [ 'fontsize', [ 'fontsize' ] ],
-		            [ 'color', [ 'color' ] ],
-		            [ 'para', [ 'ol', 'ul', 'paragraph', 'height' ] ],
-		            [ 'table', [ 'table' ] ],
-		            [ 'view', [ 'undo', 'redo', 'fullscreen', 'codeview', 'help' ] ]
-		        ]
-		    })
+                height: 220,
+                lang: 'ar-AR',
+                dialogsInBody: true,
+                placeholder: 'اكتب وصف المنتج هنا... يمكن إضافة عناوين وقوائم وروابط',
+                toolbar: [
+                    [ 'style', [ 'style' ] ],
+                    [ 'font', [ 'bold', 'italic', 'underline', 'strikethrough', 'superscript', 'subscript', 'clear'] ],
+                    [ 'fontname', [ 'fontname' ] ],
+                    [ 'fontsize', [ 'fontsize' ] ],
+                    [ 'color', [ 'color' ] ],
+                    [ 'para', [ 'ol', 'ul', 'paragraph', 'height' ] ],
+                    [ 'table', [ 'table' ] ],
+                    [ 'view', [ 'undo', 'redo', 'fullscreen', 'codeview', 'help' ] ]
+                ]
+            });
+        // فرض اتجاه عربي داخل المحرر
+        $('.summernote').on('summernote.init', function() {
+            $(this).next('.note-editor').find('.note-editable')
+                .attr('dir','rtl')
+                .css({ 'text-align':'right', 'line-height':'1.9' });
+        });
+        // في حال كان المحرر مهيأ مسبقاً
+        $('.note-editor .note-editable').attr('dir','rtl').css({ 'text-align':'right', 'line-height':'1.9' });
 
 		// إدارة الألوان
 		$('#has_colors').change(function(){

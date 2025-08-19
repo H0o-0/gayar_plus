@@ -1,416 +1,231 @@
 <?php
 /**
- * قارئ CSV محسن للنصوص العربية والرموز
- * يدعم جميع الأحرف العربية والرموز مثل الأقواس والنقاط والشرطات
+ * قارئ CSV محسن للنصوص العربية
+ * يدعم ترميزات متعددة ويتعامل مع الملفات المصدرة من Excel
  */
 
 /**
- * قراءة ملف CSV مع دعم كامل للعربية والرموز
+ * تشخيص ملف Excel/CSV لاكتشاف الترميز والمحتوى
+ */
+function diagnose_excel_file($file_path) {
+    $info = [
+        'file_size' => filesize($file_path),
+        'file_type' => 'CSV',
+        'detected_encodings' => [],
+        'has_arabic' => false,
+        'sample_texts' => [],
+        'sample_numbers' => []
+    ];
+    
+    // قراءة عينة من الملف
+    $sample = file_get_contents($file_path, false, null, 0, 2048);
+    
+    // اكتشاف الترميز
+    $encodings_to_test = ['UTF-8', 'ISO-8859-6'];
+    foreach ($encodings_to_test as $encoding) {
+        if (mb_check_encoding($sample, $encoding)) {
+            $info['detected_encodings'][] = $encoding;
+        }
+    }
+    
+    // البحث عن النصوص العربية
+    if (preg_match('/[\x{0600}-\x{06FF}]/u', $sample)) {
+        $info['has_arabic'] = true;
+    }
+    
+    // استخراج عينة من النصوص والأرقام
+    if (preg_match_all('/[^\d\s,;"\'\n\r]+/u', $sample, $matches)) {
+        $info['sample_texts'] = array_slice(array_unique($matches[0]), 0, 5);
+    }
+    
+    if (preg_match_all('/\d+(?:\.\d+)?/', $sample, $matches)) {
+        $info['sample_numbers'] = array_slice(array_unique($matches[0]), 0, 5);
+    }
+    
+    return $info;
+}
+
+/**
+ * قراءة ملف CSV مع دعم محسن للعربية
  */
 function read_csv_arabic_enhanced($file_path) {
-    $data = [];
+    if (!file_exists($file_path)) {
+        return false;
+    }
     
-    try {
-        echo "<div class='alert alert-info'>
-                <i class='fas fa-file-csv'></i>
-                جاري قراءة ملف CSV مع دعم العربية والرموز...
-              </div>";
+    $data = [];
+    $encodings = ['UTF-8', 'Windows-1256', 'ISO-8859-6', 'CP1256'];
+    
+    // محاولة قراءة الملف بترميزات مختلفة
+    foreach ($encodings as $encoding) {
+        $content = @file_get_contents($file_path);
+        if ($content === false) continue;
         
-        // قراءة محتوى الملف
-        $content = file_get_contents($file_path);
-        
-        if (empty($content)) {
-            echo "<div class='alert alert-danger'>
-                    <i class='fas fa-times-circle'></i>
-                    الملف فارغ أو لا يمكن قراءته
-                  </div>";
-            return [];
-        }
-        
-        // إزالة BOM إذا وُجد
-        if (substr($content, 0, 3) === "\xEF\xBB\xBF") {
-            $content = substr($content, 3);
-            echo "<div class='alert alert-info'>
-                    <i class='fas fa-info-circle'></i>
-                    تم إزالة UTF-8 BOM من الملف
-                  </div>";
-        }
-        
-        // تحديد أفضل ترميز للملف
-        $originalContent = $content;
-        $encoding = detect_best_encoding($content);
-        
+        // تحويل الترميز إلى UTF-8
         if ($encoding !== 'UTF-8') {
-            echo "<div class='alert alert-info'>
-                    <i class='fas fa-info-circle'></i>
-                    تم اكتشاف الترميز: $encoding - جاري التحويل لـ UTF-8
-                  </div>";
-            
-            $content = convert_to_utf8($content, $encoding);
+            $converted = @iconv($encoding, 'UTF-8//IGNORE', $content);
+            if ($converted !== false) {
+                $content = $converted;
+            }
         }
         
-        // تحديد فاصل الأعمدة
-        $delimiter = detect_csv_delimiter($content);
-        $delimiterName = get_delimiter_name($delimiter);
+        // تنظيف المحتوى
+        $content = str_replace(["\r\n", "\r"], "\n", $content);
+        $content = trim($content);
         
-        echo "<div class='alert alert-info'>
-                <i class='fas fa-info-circle'></i>
-                تم اكتشاف فاصل الأعمدة: $delimiterName
-              </div>";
+        if (empty($content)) continue;
         
-        // تقسيم المحتوى إلى أسطر
-        $lines = preg_split('/\r\n|\r|\n/', $content);
+        // تقسيم إلى أسطر
+        $lines = explode("\n", $content);
+        $temp_data = [];
         
-        $processedRows = 0;
-        $validRows = 0;
-        
-        foreach ($lines as $lineNumber => $line) {
+        foreach ($lines as $line) {
             $line = trim($line);
             if (empty($line)) continue;
             
-            $processedRows++;
-            
-            // تحليل السطر مع الحفاظ على الرموز
-            $row = parse_csv_line_safe($line, $delimiter);
-            
-            // تنظيف البيانات مع الحفاظ على الرموز المفيدة
-            $cleanRow = [];
-            $hasValidData = false;
-            
-            foreach ($row as $cell) {
-                $cell = clean_csv_cell($cell);
-                $cleanRow[] = $cell;
-                
-                // فحص وجود بيانات صحيحة
-                if (!empty(trim($cell)) && strlen(trim($cell)) > 1) {
-                    $hasValidData = true;
-                }
-            }
-            
-            // إضافة الصف إذا كان يحتوي على بيانات صحيحة
-            if ($hasValidData) {
-                $data[] = $cleanRow;
-                $validRows++;
+            // محاولة تحليل CSV بطرق مختلفة
+            $row = parse_csv_line($line);
+            if (!empty($row)) {
+                $temp_data[] = $row;
             }
         }
         
-        echo "<div class='alert alert-success'>
-                <i class='fas fa-check-circle'></i>
-                تم معالجة $processedRows سطر وقراءة $validRows صف صحيح!
-              </div>";
-        
-        // عرض عينة من البيانات
-        if (!empty($data)) {
-            show_data_sample($data);
+        // إذا حصلنا على بيانات صالحة، نستخدمها
+        if (!empty($temp_data)) {
+            $data = $temp_data;
+            break;
         }
-        
-    } catch (Exception $e) {
-        error_log("خطأ في قراءة CSV: " . $e->getMessage());
-        echo "<div class='alert alert-danger'>
-                <i class='fas fa-times-circle'></i>
-                خطأ في قراءة الملف: " . $e->getMessage() . "
-              </div>";
     }
     
     return $data;
 }
 
 /**
- * اكتشاف أفضل ترميز للملف
+ * تحليل سطر CSV واحد مع دعم الفواصل المختلفة
  */
-function detect_best_encoding($content) {
-    // قائمة الترميزات مرتبة حسب الأولوية للعربية
-    $encodings = ['UTF-8', 'Windows-1256', 'ISO-8859-6', 'CP1256'];
-    
-    foreach ($encodings as $encoding) {
-        if ($encoding === 'UTF-8') {
-            if (mb_check_encoding($content, 'UTF-8')) {
-                // فحص وجود أحرف عربية
-                if (strpos($content, 'ا') !== false || strpos($content, 'ب') !== false || strpos($content, 'ت') !== false) {
-                    return 'UTF-8';
-                }
-            }
-        } else {
-            // للترميزات الأخرى، نجرب التحويل ونفحص النتيجة
-            $converted = @iconv($encoding, 'UTF-8//IGNORE', $content);
-            if ($converted && (strpos($converted, 'ا') !== false || strpos($converted, 'ب') !== false)) {
-                return $encoding;
-            }
-        }
-    }
-    
-    return 'UTF-8'; // افتراضي
-}
-
-/**
- * تحويل المحتوى إلى UTF-8
- */
-function convert_to_utf8($content, $encoding) {
-    // محاولة iconv أولاً
-    $converted = @iconv($encoding, 'UTF-8//IGNORE', $content);
-    if ($converted) {
-        return $converted;
-    }
-    
-    // محاولة mb_convert_encoding
-    $converted = @mb_convert_encoding($content, 'UTF-8', $encoding);
-    if ($converted) {
-        return $converted;
-    }
-    
-    return $content; // إرجاع الأصلي إذا فشل التحويل
-}
-
-/**
- * تحديد فاصل CSV بذكاء
- */
-function detect_csv_delimiter($content) {
-    $delimiters = [',', ';', "\t", '|'];
-    $bestDelimiter = ',';
-    $bestScore = 0;
-    
-    // أخذ عينة من أول 10 أسطر
-    $lines = array_slice(preg_split('/\r\n|\r|\n/', $content), 0, 10);
+function parse_csv_line($line) {
+    $delimiters = [',', ';', '\t', '|'];
+    $best_result = [];
+    $max_columns = 0;
     
     foreach ($delimiters as $delimiter) {
-        $counts = [];
-        $validLines = 0;
-        
-        foreach ($lines as $line) {
-            if (!empty(trim($line))) {
-                $count = substr_count($line, $delimiter);
-                if ($count > 0) {
-                    $counts[] = $count;
-                    $validLines++;
-                }
-            }
+        if ($delimiter === '\t') {
+            $delimiter = "\t";
         }
         
-        if ($validLines > 0 && !empty($counts)) {
-            // حساب الاتساق (أن عدد الفواصل ثابت في معظم الأسطر)
-            $avgCount = array_sum($counts) / count($counts);
-            $maxCount = max($counts);
-            $minCount = min($counts);
-            $consistency = $validLines > 1 ? 1 - (($maxCount - $minCount) / max($maxCount, 1)) : 1;
-            
-            $score = $avgCount * $consistency * $validLines;
-            
-            if ($score > $bestScore) {
-                $bestScore = $score;
-                $bestDelimiter = $delimiter;
-            }
+        // استخدام str_getcsv مع الفاصل المحدد
+        $result = str_getcsv($line, $delimiter, '"');
+        
+        // تنظيف البيانات
+        $result = array_map('trim', $result);
+        $result = array_map(function($cell) {
+            // إزالة علامات الاقتباس الزائدة
+            $cell = trim($cell, '"\'');
+            return $cell;
+        }, $result);
+        
+        // اختيار النتيجة التي تحتوي على أكبر عدد من الأعمدة
+        if (count($result) > $max_columns) {
+            $max_columns = count($result);
+            $best_result = $result;
         }
     }
     
-    return $bestDelimiter;
+    return $best_result;
 }
 
 /**
- * تحليل سطر CSV بطريقة آمنة مع الحفاظ على الرموز
+ * تنظيف وتحويل النص العربي
  */
-function parse_csv_line_safe($line, $delimiter) {
-    // استخدام str_getcsv مع معالجة خاصة للرموز
-    $row = str_getcsv($line, $delimiter, '"', '\\');
+function clean_arabic_text($text) {
+    if (empty($text)) return '';
     
-    // إذا فشلت str_getcsv، نستخدم التقسيم اليدوي
-    if (empty($row) || (count($row) == 1 && empty(trim($row[0])))) {
-        $row = explode($delimiter, $line);
+    // إزالة BOM إذا وجد
+    $text = str_replace("\xEF\xBB\xBF", '', $text);
+    
+    // تنظيف المسافات الزائدة
+    $text = preg_replace('/\s+/', ' ', $text);
+    $text = trim($text);
+    
+    // تحويل الأرقام العربية إلى إنجليزية
+    $arabic_numbers = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+    $english_numbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+    $text = str_replace($arabic_numbers, $english_numbers, $text);
+    
+    return $text;
+}
+
+/**
+ * استخراج الأرقام من النص
+ */
+function extract_numbers($text) {
+    // البحث عن الأرقام (مع الفواصل العشرية)
+    preg_match_all('/\d+(?:[.,]\d+)?/', $text, $matches);
+    
+    if (!empty($matches[0])) {
+        // أخذ أول رقم موجود
+        $number = $matches[0][0];
+        // تحويل الفاصلة إلى نقطة
+        $number = str_replace(',', '.', $number);
+        return floatval($number);
     }
     
-    return $row;
+    return 0;
 }
 
 /**
- * تنظيف خلية CSV مع الحفاظ على الرموز المفيدة
+ * اكتشاف نوع العمود (نص أم رقم)
  */
-function clean_csv_cell($cell) {
-    // إزالة المسافات من البداية والنهاية
-    $cell = trim($cell);
+function detect_column_type($values) {
+    $numeric_count = 0;
+    $text_count = 0;
     
-    // إزالة علامات التنصيص الزائدة
-    $cell = trim($cell, '"\'');
-    
-    // إزالة BOM إذا وُجد في الخلية
-    $cell = preg_replace('/^\xEF\xBB\xBF/', '', $cell);
-    
-    // إزالة الرموز الضارة فقط (control characters) مع الحفاظ على الرموز المفيدة
-    $cell = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/', '', $cell);
-    
-    // الحفاظ على الرموز المفيدة: الأقواس، النقاط، الشرطات، إلخ
-    // لا نحذف: ( ) [ ] { } . , - _ + = / \ @ # $ % & * ! ? : ;
-    
-    return $cell;
-}
-
-/**
- * عرض عينة من البيانات
- */
-function show_data_sample($data) {
-    echo "<div class='alert alert-info'>
-            <h5><i class='fas fa-table'></i> عينة من البيانات المقروءة (أول 5 صفوف):</h5>
-            <div style='overflow-x: auto;'>
-                <table style='width: 100%; border-collapse: collapse; margin: 10px 0;'>
-                    <thead>
-                        <tr style='background: #f8f9fa;'>
-                            <th style='border: 1px solid #ddd; padding: 8px; text-align: center;'>#</th>
-                            <th style='border: 1px solid #ddd; padding: 8px;'>العمود 1</th>
-                            <th style='border: 1px solid #ddd; padding: 8px;'>العمود 2</th>
-                            <th style='border: 1px solid #ddd; padding: 8px;'>العمود 3</th>
-                        </tr>
-                    </thead>
-                    <tbody>";
-    
-    foreach (array_slice($data, 0, 5) as $index => $row) {
-        echo "<tr>";
-        echo "<td style='border: 1px solid #ddd; padding: 8px; text-align: center;'>" . ($index + 1) . "</td>";
-        
-        for ($i = 0; $i < 3; $i++) {
-            $cell = isset($row[$i]) ? htmlspecialchars($row[$i]) : '';
-            
-            // تمييز النصوص العربية بلون أخضر
-            if (!empty($cell) && preg_match('/[\x{0600}-\x{06FF}]/u', $cell)) {
-                $cell = '<strong style="color: #28a745;">' . $cell . '</strong>';
-            }
-            // تمييز الأرقام بلون أزرق
-            elseif (!empty($cell) && is_numeric($cell)) {
-                $cell = '<strong style="color: #007bff;">' . $cell . '</strong>';
-            }
-            
-            echo "<td style='border: 1px solid #ddd; padding: 8px;'>$cell</td>";
+    foreach ($values as $value) {
+        if (is_numeric($value) || preg_match('/^\d+([.,]\d+)?$/', $value)) {
+            $numeric_count++;
+        } else {
+            $text_count++;
         }
-        echo "</tr>";
     }
     
-    echo "      </tbody>
-                </table>
-            </div>
-          </div>";
-    
-    // إحصائيات مفيدة
-    $stats = analyze_csv_data($data);
-    show_csv_statistics($stats);
+    return $numeric_count > $text_count ? 'numeric' : 'text';
 }
 
 /**
- * تحليل بيانات CSV
+ * تحليل هيكل ملف CSV
  */
-function analyze_csv_data($data) {
-    $stats = [
+function analyze_csv_structure($data) {
+    if (empty($data)) return [];
+    
+    $analysis = [
         'total_rows' => count($data),
-        'total_cells' => 0,
-        'arabic_cells' => 0,
-        'numeric_cells' => 0,
-        'symbol_cells' => 0,
-        'empty_cells' => 0,
-        'max_columns' => 0
+        'total_columns' => 0,
+        'column_types' => [],
+        'sample_data' => []
     ];
     
+    // تحديد عدد الأعمدة
+    $max_columns = 0;
     foreach ($data as $row) {
-        $stats['max_columns'] = max($stats['max_columns'], count($row));
-        
-        foreach ($row as $cell) {
-            $stats['total_cells']++;
-            $cell = trim($cell);
-            
-            if (empty($cell)) {
-                $stats['empty_cells']++;
-            } elseif (preg_match('/[\x{0600}-\x{06FF}]/u', $cell)) {
-                $stats['arabic_cells']++;
-            } elseif (is_numeric($cell)) {
-                $stats['numeric_cells']++;
-            } elseif (preg_match('/[()[\]{}.,-_+=\/\\@#$%&*!?:;]/', $cell)) {
-                $stats['symbol_cells']++;
+        $max_columns = max($max_columns, count($row));
+    }
+    $analysis['total_columns'] = $max_columns;
+    
+    // تحليل نوع كل عمود
+    for ($col = 0; $col < $max_columns; $col++) {
+        $column_values = [];
+        foreach ($data as $row) {
+            if (isset($row[$col]) && !empty($row[$col])) {
+                $column_values[] = $row[$col];
             }
+        }
+        
+        if (!empty($column_values)) {
+            $analysis['column_types'][$col] = detect_column_type($column_values);
+            $analysis['sample_data'][$col] = array_slice($column_values, 0, 3);
         }
     }
     
-    return $stats;
-}
-
-/**
- * عرض إحصائيات CSV
- */
-function show_csv_statistics($stats) {
-    $totalCells = $stats['total_cells'];
-    
-    echo "<div class='alert alert-secondary'>
-            <h5><i class='fas fa-chart-bar'></i> إحصائيات البيانات:</h5>
-            <div class='row'>
-                <div class='col-md-6'>
-                    <ul style='margin: 0;'>
-                        <li><strong>إجمالي الصفوف:</strong> " . number_format($stats['total_rows']) . "</li>
-                        <li><strong>إجمالي الخلايا:</strong> " . number_format($totalCells) . "</li>
-                        <li><strong>أقصى عدد أعمدة:</strong> " . $stats['max_columns'] . "</li>
-                    </ul>
-                </div>
-                <div class='col-md-6'>
-                    <ul style='margin: 0;'>
-                        <li><strong>خلايا عربية:</strong> " . number_format($stats['arabic_cells']) . " (" . round(($stats['arabic_cells']/$totalCells)*100, 1) . "%)</li>
-                        <li><strong>خلايا رقمية:</strong> " . number_format($stats['numeric_cells']) . " (" . round(($stats['numeric_cells']/$totalCells)*100, 1) . "%)</li>
-                        <li><strong>خلايا بها رموز:</strong> " . number_format($stats['symbol_cells']) . " (" . round(($stats['symbol_cells']/$totalCells)*100, 1) . "%)</li>
-                    </ul>
-                </div>
-            </div>
-          </div>";
-}
-
-/**
- * الحصول على اسم الفاصل
- */
-function get_delimiter_name($delimiter) {
-    switch ($delimiter) {
-        case ',': return 'فاصلة (,)';
-        case ';': return 'فاصلة منقوطة (;)';
-        case "\t": return 'Tab';
-        case '|': return 'خط عمودي (|)';
-        default: return 'مخصص (' . $delimiter . ')';
-    }
-}
-
-/**
- * تشخيص ملف CSV
- */
-function diagnose_excel_file($file_path) {
-    $info = [
-        'file_path' => $file_path,
-        'file_size' => filesize($file_path),
-        'file_extension' => strtolower(pathinfo($file_path, PATHINFO_EXTENSION))
-    ];
-    
-    // قراءة عينة من الملف
-    $sample = file_get_contents($file_path, false, null, 0, 2000);
-    
-    // تحديد نوع الملف
-    if ($info['file_extension'] === 'csv' || strpos($sample, ',') !== false || strpos($sample, ';') !== false) {
-        $info['file_type'] = 'CSV';
-    } else {
-        $info['file_type'] = 'نص عادي';
-    }
-    
-    // اكتشاف الترميز
-    $encoding = detect_best_encoding($sample);
-    $info['detected_encodings'] = [$encoding];
-    $info['has_arabic'] = strpos($sample, 'ا') !== false || strpos($sample, 'ب') !== false || strpos($sample, 'ت') !== false;
-    
-    // استخراج عينة من النصوص
-    $bestContent = $encoding !== 'UTF-8' ? convert_to_utf8($sample, $encoding) : $sample;
-    
-    // البحث عن كلمات عربية
-    $arabicTexts = [];
-    if (preg_match_all('/[\x{0600}-\x{06FF}]+[\x{0600}-\x{06FF}\s\w()[\]{}.,-_+=\/\\@#$%&*!?:;]*[\x{0600}-\x{06FF}]+/u', $bestContent, $matches)) {
-        $arabicTexts = array_slice(array_unique($matches[0]), 0, 3);
-    }
-    
-    $info['sample_texts'] = $arabicTexts;
-    
-    // البحث عن أرقام
-    $numbers = [];
-    if (preg_match_all('/\b\d{1,10}(?:\.\d{1,2})?\b/', $bestContent, $matches)) {
-        $numbers = array_slice(array_unique($matches[0]), 0, 5);
-    }
-    
-    $info['sample_numbers'] = $numbers;
-    
-    return $info;
+    return $analysis;
 }
 ?>

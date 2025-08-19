@@ -28,8 +28,9 @@
         $.ajax({
             url:$url,
             error:err=>{
-                console.log()
+                console.log(err)
                 alert("An error occured")
+                end_loader()
             },
             success:function(resp){
                 if(resp){
@@ -56,8 +57,10 @@
        $('#confirm_modal .modal-body').html($msg)
        $('#confirm_modal').modal('show')
     }
+    // Removed footer login modal trigger: footer icon now links directly to admin login page
   })
 </script>
+
 <!-- Footer -->
 <footer class="py-5" style="background: var(--primary-color, #2c5aa0);">
     <div class="container">
@@ -72,6 +75,19 @@
                     <li><a href="./?p=about" class="text-white-50">من نحن</a></li>
                     <li><a href="./?p=contact" class="text-white-50">اتصل بنا</a></li>
                     <li><a href="./?p=products" class="text-white-50">المنتجات</a></li>
+                    <?php if(!(isset($_settings) && $_settings->userdata('id') > 0)): ?>
+                    <li>
+                        <a href="<?php echo base_url ?>admin/login.php" id="footer-login" class="text-white-50" title="تسجيل الدخول" aria-label="تسجيل الدخول">
+                            <i class="fas fa-user" style="font-size: 1.1rem;"></i>
+                        </a>
+                    </li>
+                    <?php else: ?>
+                    <li>
+                        <a href="<?php echo base_url ?>admin/" class="text-white-50" title="لوحة التحكم" aria-label="لوحة التحكم">
+                            <i class="fas fa-user-circle" style="font-size: 1.1rem;"></i>
+                        </a>
+                    </li>
+                    <?php endif; ?>
                 </ul>
             </div>
             <div class="col-md-4">
@@ -93,8 +109,6 @@
     <script>
       $.widget.bridge('uibutton', $.ui.button)
     </script>
-    <!-- Bootstrap 5 -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Bootstrap 4 (for compatibility) -->
     <script src="<?php echo base_url ?>plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
     <!-- ChartJS -->

@@ -12,6 +12,9 @@ Class Master extends DBConnection {
 	public function __destruct(){
 		parent::__destruct();
 	}
+
+	
+
 	function capture_err(){
 		if(!$this->conn->error)
 			return false;
@@ -76,6 +79,168 @@ Class Master extends DBConnection {
 		return json_encode($resp);
 
 	}
+	function save_brand(){
+		extract($_POST);
+		$data = "";
+		foreach($_POST as $k =>$v){
+			if(!in_array($k,array('id','description'))){
+				if(!empty($data)) $data .=",";
+				$data .= " `{$k}`='{$v}' ";
+			}
+		}
+		if(isset($_POST['description'])){
+			if(!empty($data)) $data .=",";
+				$data .= " `description`='".addslashes(htmlentities($description))."' ";
+		}
+		$check = $this->conn->query("SELECT * FROM `brands` where `name` = '{$name}' ".(!empty($id) ? " and id != {$id} " : "")." ")->num_rows;
+		if($this->capture_err())
+			return $this->capture_err();
+		if($check > 0){
+			$resp['status'] = 'failed';
+			$resp['msg'] = "Brand already exist.";
+			return json_encode($resp);
+			exit;
+		}
+		if(empty($id)){
+			$sql = "INSERT INTO `brands` set {$data} ";
+			$save = $this->conn->query($sql);
+		}else{
+			$sql = "UPDATE `brands` set {$data} where id = '{$id}' ";
+			$save = $this->conn->query($sql);
+		}
+		if($save){
+			$resp['status'] = 'success';
+			if(empty($id))
+				$this->settings->set_flashdata('success',"New Brand successfully saved.");
+			else
+				$this->settings->set_flashdata('success',"Brand successfully updated.");
+		}else{
+			$resp['status'] = 'failed';
+			$resp['err'] = $this->conn->error."[{$sql}]";
+		}
+		return json_encode($resp);
+	}
+	function delete_brand(){
+		extract($_POST);
+		$del = $this->conn->query("DELETE FROM `brands` where id = '{$id}'");
+		if($del){
+			$resp['status'] = 'success';
+			$this->settings->set_flashdata('success',"Brand successfully deleted.");
+		}else{
+			$resp['status'] = 'failed';
+			$resp['error'] = $this->conn->error;
+		}
+		return json_encode($resp);
+
+	}
+	function save_series(){
+		extract($_POST);
+		$data = "";
+		foreach($_POST as $k =>$v){
+			if(!in_array($k,array('id','description'))){
+				if(!empty($data)) $data .=",";
+				$data .= " `{$k}`='{$v}' ";
+			}
+		}
+		if(isset($_POST['description'])){
+			if(!empty($data)) $data .=",";
+				$data .= " `description`='".addslashes(htmlentities($description))."' ";
+		}
+		$check = $this->conn->query("SELECT * FROM `series` where `name` = '{$name}' and `brand_id` = '{$brand_id}' ".(!empty($id) ? " and id != {$id} " : "")." ")->num_rows;
+		if($this->capture_err())
+			return $this->capture_err();
+		if($check > 0){
+			$resp['status'] = 'failed';
+			$resp['msg'] = "Series already exist.";
+			return json_encode($resp);
+			exit;
+		}
+		if(empty($id)){
+			$sql = "INSERT INTO `series` set {$data} ";
+			$save = $this->conn->query($sql);
+		}else{
+			$sql = "UPDATE `series` set {$data} where id = '{$id}' ";
+			$save = $this->conn->query($sql);
+		}
+		if($save){
+			$resp['status'] = 'success';
+			if(empty($id))
+				$this->settings->set_flashdata('success',"New Series successfully saved.");
+			else
+				$this->settings->set_flashdata('success',"Series successfully updated.");
+		}else{
+			$resp['status'] = 'failed';
+			$resp['err'] = $this->conn->error."[{$sql}]";
+		}
+		return json_encode($resp);
+	}
+	function delete_series(){
+		extract($_POST);
+		$del = $this->conn->query("DELETE FROM `series` where id = '{$id}'");
+		if($del){
+			$resp['status'] = 'success';
+			$this->settings->set_flashdata('success',"Series successfully deleted.");
+		}else{
+			$resp['status'] = 'failed';
+			$resp['error'] = $this->conn->error;
+		}
+		return json_encode($resp);
+
+	}
+	function save_model(){
+		extract($_POST);
+		$data = "";
+		foreach($_POST as $k =>$v){
+			if(!in_array($k,array('id','description'))){
+				if(!empty($data)) $data .=",";
+				$data .= " `{$k}`='{$v}' ";
+			}
+		}
+		if(isset($_POST['description'])){
+			if(!empty($data)) $data .=",";
+				$data .= " `description`='".addslashes(htmlentities($description))."' ";
+		}
+		$check = $this->conn->query("SELECT * FROM `models` where `category` = '{$category}' and `series_id` = '{$series_id}' ".(!empty($id) ? " and id != {$id} " : "")." ")->num_rows;
+		if($this->capture_err())
+			return $this->capture_err();
+		if($check > 0){
+			$resp['status'] = 'failed';
+			$resp['msg'] = "Model already exist.";
+			return json_encode($resp);
+			exit;
+		}
+		if(empty($id)){
+			$sql = "INSERT INTO `models` set {$data} ";
+			$save = $this->conn->query($sql);
+		}else{
+			$sql = "UPDATE `models` set {$data} where id = '{$id}' ";
+			$save = $this->conn->query($sql);
+		}
+		if($save){
+			$resp['status'] = 'success';
+			if(empty($id))
+				$this->settings->set_flashdata('success',"New Model successfully saved.");
+			else
+				$this->settings->set_flashdata('success',"Model successfully updated.");
+		}else{
+			$resp['status'] = 'failed';
+			$resp['err'] = $this->conn->error."[{$sql}]";
+		}
+		return json_encode($resp);
+	}
+	function delete_model(){
+		extract($_POST);
+		$del = $this->conn->query("DELETE FROM `models` where id = '{$id}'");
+		if($del){
+			$resp['status'] = 'success';
+			$this->settings->set_flashdata('success',"Model successfully deleted.");
+		}else{
+			$resp['status'] = 'failed';
+			$resp['error'] = $this->conn->error;
+		}
+		return json_encode($resp);
+
+	}
 	function save_sub_category(){
 		extract($_POST);
 		$data = "";
@@ -131,133 +296,35 @@ Class Master extends DBConnection {
 
 	}
 	function save_product(){
-		$resp = array(); // تعريف المتغير
-		try {
-			extract($_POST);
-
-			// التحقق من البيانات المطلوبة
-			if(empty($product_name)) {
-				$resp['status'] = 'failed';
-				$resp['msg'] = "اسم المنتج مطلوب";
-				return json_encode($resp);
+		extract($_POST);
+		$data = "";
+		foreach($_POST as $k =>$v){
+			if(!in_array($k,array('id','description','brand_id','series_id'))){
+				if(!empty($data)) $data .=",";
+				$data .= " `{$k}`='{$v}' ";
 			}
-
-			// فصل بيانات المنتج عن بيانات المخزون والألوان
-			$inventory_data = array();
-			if(isset($price) && !empty($price)) $inventory_data['price'] = floatval($price);
-			if(isset($quantity) && !empty($quantity)) $inventory_data['quantity'] = intval($quantity);
-			if(isset($unit) && !empty($unit)) $inventory_data['unit'] = $this->conn->real_escape_string($unit);
-
-			$colors_data = array();
-			if(isset($colors) && is_array($colors)) {
-				$colors_data = array_filter($colors); // إزالة القيم الفارغة
-			}
-
-			$data = "";
-			foreach($_POST as $k => $v){
-				if(!in_array($k,array('id','description','price','quantity','unit','colors','has_colors'))){
-					if(!empty($data)) $data .= ",";
-					$v = $this->conn->real_escape_string($v);
-					$data .= " `{$k}`='{$v}' ";
-				}
-			}
-
-			// فحص وإضافة خاصية الألوان
-			$check_column = $this->conn->query("SHOW COLUMNS FROM `products` LIKE 'has_colors'");
-			if($check_column && $check_column->num_rows > 0) {
-				if(isset($has_colors) && $has_colors == 1) {
-					if(!empty($data)) $data .= ",";
-					$data .= " `has_colors`='1' ";
-				} else {
-					if(!empty($data)) $data .= ",";
-					$data .= " `has_colors`='0' ";
-				}
-			}
-
+		}
 		if(isset($_POST['description'])){
 			if(!empty($data)) $data .=",";
 				$data .= " `description`='".addslashes(htmlentities($description))."' ";
 		}
-		$check_query = $this->conn->query("SELECT * FROM `products` where `product_name` = '{$product_name}' ".(!empty($id) ? " and id != {$id} " : "")." ");
-		if(!$check_query) {
-			$resp['status'] = 'failed';
-			$resp['msg'] = 'خطأ في قاعدة البيانات: ' . $this->conn->error;
-			return json_encode($resp);
-		}
-		$check = $check_query->num_rows;
+		$check = $this->conn->query("SELECT * FROM `products` where `product_name` = '{$product_name}' ".(!empty($id) ? " and id != {$id} " : "")." ")->num_rows;
+		if($this->capture_err())
+			return $this->capture_err();
 		if($check > 0){
 			$resp['status'] = 'failed';
 			$resp['msg'] = "Product already exist.";
 			return json_encode($resp);
 			exit;
 		}
-
-		$product_id = $id;
 		if(empty($id)){
 			$sql = "INSERT INTO `products` set {$data} ";
 			$save = $this->conn->query($sql);
-			$product_id = $this->conn->insert_id;
 		}else{
 			$sql = "UPDATE `products` set {$data} where id = '{$id}' ";
 			$save = $this->conn->query($sql);
 		}
-
 		if($save){
-			// حفظ بيانات المخزون (إذا تم تحديدها)
-			if(!empty($inventory_data)){
-				$inv_data = "product_id = '{$product_id}', size = 'عادي'";
-				foreach($inventory_data as $k => $v){
-					$inv_data .= ", `{$k}` = '{$v}'";
-				}
-
-				// فحص إذا كان المخزون موجود للمنتج
-				$inv_check = $this->conn->query("SELECT * FROM `inventory` where product_id = '{$product_id}' and size = 'عادي'");
-				if($inv_check && $inv_check->num_rows > 0){
-					// تحديث المخزون الموجود
-					$update_parts = array();
-					foreach($inventory_data as $k => $v){
-						$update_parts[] = "`{$k}` = '{$v}'";
-					}
-					$inv_sql = "UPDATE `inventory` set " . implode(', ', $update_parts) . " where product_id = '{$product_id}' and size = 'عادي'";
-				}else{
-					// إضافة مخزون جديد
-					$inv_sql = "INSERT INTO `inventory` set {$inv_data}";
-				}
-				$inv_result = $this->conn->query($inv_sql);
-				if(!$inv_result) {
-					// لا نوقف العملية، فقط نسجل الخطأ
-					error_log("خطأ في حفظ المخزون: " . $this->conn->error);
-				}
-			}
-
-			// حفظ الألوان الجديدة
-			if(isset($color_names) && is_array($color_names) && isset($color_codes) && is_array($color_codes)){
-				// حذف الألوان القديمة
-				$this->conn->query("DELETE FROM `product_colors` where product_id = '{$product_id}'");
-
-				// إضافة الألوان الجديدة
-				for($i = 0; $i < count($color_names); $i++){
-					if(!empty(trim($color_names[$i])) && !empty(trim($color_codes[$i]))){
-						$color_name = $this->conn->real_escape_string(trim($color_names[$i]));
-						$color_code = $this->conn->real_escape_string(trim($color_codes[$i]));
-						$this->conn->query("INSERT INTO `product_colors` set product_id = '{$product_id}', color_name = '{$color_name}', color_code = '{$color_code}'");
-					}
-				}
-			} else {
-				// حذف جميع الألوان إذا لم يتم تحديد أي لون
-				$this->conn->query("DELETE FROM `product_colors` where product_id = '{$product_id}'");
-			}
-
-			$upload_path = "uploads/product_".$product_id;
-			if(!is_dir(base_app.$upload_path))
-				mkdir(base_app.$upload_path);
-			if(isset($_FILES['img']) && count($_FILES['img']['tmp_name']) > 0){
-				foreach($_FILES['img']['tmp_name'] as $k => $v){
-					if(!empty($_FILES['img']['tmp_name'][$k])){
-						move_uploaded_file($_FILES['img']['tmp_name'][$k],base_app.$upload_path.'/'.$_FILES['img']['name'][$k]);
-					}
-				}
-			}
 			$resp['status'] = 'success';
 			if(empty($id))
 				$this->settings->set_flashdata('success',"New Product successfully saved.");
@@ -268,12 +335,7 @@ Class Master extends DBConnection {
 			$resp['err'] = $this->conn->error."[{$sql}]";
 		}
 		return json_encode($resp);
-	} catch (Exception $e) {
-		$resp['status'] = 'failed';
-		$resp['msg'] = 'حدث خطأ: ' . $e->getMessage();
-		return json_encode($resp);
 	}
-}
 	function delete_product(){
 		extract($_POST);
 		$del = $this->conn->query("DELETE FROM `products` where id = '{$id}'");
@@ -630,8 +692,26 @@ switch ($action) {
 	case 'save_category':
 		echo $Master->save_category();
 	break;
-	case 'delete_category':
+		case 'delete_category':
 		echo $Master->delete_category();
+	break;
+	case 'save_brand':
+		echo $Master->save_brand();
+	break;
+		case 'delete_brand':
+		echo $Master->delete_brand();
+	break;
+	case 'save_series':
+		echo $Master->save_series();
+	break;
+	case 'delete_series':
+		echo $Master->delete_series();
+	break;
+	case 'save_model':
+		echo $Master->save_model();
+	break;
+	case 'delete_model':
+		echo $Master->delete_model();
 	break;
 	case 'save_sub_category':
 		echo $Master->save_sub_category();
@@ -641,6 +721,9 @@ switch ($action) {
 	break;
 	case 'save_product':
 		echo $Master->save_product();
+	break;
+	case 'save_product_new':
+		echo $Master->save_product_new();
 	break;
 	case 'delete_product':
 		echo $Master->delete_product();

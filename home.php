@@ -4,6 +4,7 @@
         --primary-color: #2c5aa0;
         --secondary-color: #f8f9fa;
         --accent-color: #ff6b6b;
+        --currency-color: #28a745;
     }
 
     /* Hero Section */
@@ -147,12 +148,19 @@
     .product-price {
         font-size: 1.4rem;
         font-weight: 800;
-        background: linear-gradient(135deg, var(--primary-color) 0%, #1e3d72 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
+        color: var(--currency-color);
         margin-bottom: 1.5rem;
-        text-shadow: 0 2px 4px rgba(44,90,160,0.1);
+        text-shadow: 0 2px 4px rgba(40,167,69,0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+    }
+
+    .currency-symbol {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--currency-color);
     }
 
     /* أزرار التفاعل المخفية */
@@ -241,7 +249,7 @@
         display: flex;
         align-items: center;
         gap: 6px;
-        justify-content: flex-start;
+        justify-content: center;
     }
 
     .color-dot {
@@ -305,6 +313,9 @@
         </div>
         <div class="row g-4">
             <?php
+                // تضمين كلاس تنظيف النص
+                require_once 'classes/TextCleaner.php';
+                
                 $products = $conn->query("SELECT * FROM `products` where status = 1 order by rand() limit 8 ");
                 while($row = $products->fetch_assoc()):
                     $upload_path = base_app.'/uploads/product_'.$row['id'];
@@ -342,15 +353,16 @@
                             <?php echo !empty($colors) ? 'ألوان متعددة' : 'عرض خاص' ?>
                         </div>
                         <?php endif; ?>
-                        <img src="<?php echo validate_image($img) ?>" alt="<?php echo $row['product_name'] ?>" loading="lazy" />
+                        <img src="<?php echo validate_image($img) ?>" alt="<?php echo htmlspecialchars($row['product_name']) ?>" loading="lazy" />
                     </div>
 
                     <div class="product-info">
-                        <h5 class="product-title"><?php echo $row['product_name'] ?></h5>
+                        <h5 class="product-title"><?php echo htmlspecialchars($row['product_name']) ?></h5>
                         <p class="product-description">
                             <?php
-                            $desc = strip_tags($row['description']);
-                            echo strlen($desc) > 60 ? substr($desc, 0, 60) . '...' : $desc;
+                            if(!empty($row['description'])) {
+                                echo TextCleaner::cleanAndTruncateUltra($row['description'], 60);
+                            }
                             ?>
                         </p>
 
@@ -359,7 +371,7 @@
                         <div class="product-colors">
                             <div class="colors-list">
                                 <?php foreach(array_slice($colors, 0, 3) as $color): ?>
-                                <span class="color-dot" style="background: <?php echo $color['code'] ?>;" title="<?php echo $color['name'] ?>"></span>
+                                <span class="color-dot" style="background: <?php echo htmlspecialchars($color['code']) ?>;" title="<?php echo htmlspecialchars($color['name']) ?>"></span>
                                 <?php endforeach; ?>
                                 <?php if(count($colors) > 3): ?>
                                 <span class="more-colors-text">+<?php echo count($colors) - 3 ?> ألوان</span>
@@ -373,7 +385,7 @@
                             if(!empty($inv)) {
                                 $first_inv = reset($inv);
                                 if(isset($first_inv['price']) && $first_inv['price'] > 0) {
-                                    echo number_format($first_inv['price']) . ' د.ع';
+                                    echo '<span class="currency-symbol">د.ع</span>' . number_format($first_inv['price']);
                                 } else {
                                     echo 'السعر عند الطلب';
                                 }

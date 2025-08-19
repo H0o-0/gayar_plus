@@ -1,0 +1,1 @@
+ALTER TABLE `models` CHANGE `category` `name` VARCHAR(250) NOT NULL;

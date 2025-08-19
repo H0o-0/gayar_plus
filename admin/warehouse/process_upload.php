@@ -154,182 +154,60 @@ foreach ($csv_data as $index => $row) {
 //  النهاية: الحل الجديد
 // ==================================================================
 
-// دوال التصنيف الذكي - تعتمد على التصنيفات الأساسية
-function classifyProduct($product_name, $conn) {
-    $name = strtolower($product_name);
-
-    // الحصول على التصنيفات الأساسية من قاعدة البيانات
-    $categories = [];
-    $sub_categories = [];
-
-    $cat_qry = $conn->query("SELECT * FROM categories WHERE status = 1");
-    while($cat = $cat_qry->fetch_assoc()) {
-        $categories[$cat['id']] = $cat['category'];
-    }
-
-    $sub_cat_qry = $conn->query("SELECT * FROM sub_categories WHERE status = 1");
-    while($sub_cat = $sub_cat_qry->fetch_assoc()) {
-        $sub_categories[$sub_cat['id']] = [
-            'name' => $sub_cat['sub_category'],
-            'parent_id' => $sub_cat['parent_id']
-        ];
-    }
-
-    // تصنيف العلامات التجارية (للهواتف وقطع الغيار)
-    $brands = [
-        'iPhone' => ['iphone', 'apple', 'ios', 'ايفون', 'آيفون', 'أيفون', 'ابل'],
-        'Samsung' => ['samsung', 'galaxy', 'note', 'سامسونج', 'جالاكسي'],
-        'Huawei' => ['huawei', 'honor', 'mate', 'p30', 'p40', 'هواوي', 'هونر'],
-        'Xiaomi' => ['xiaomi', 'redmi', 'mi', 'شاومي', 'ريدمي'],
-        'Oppo' => ['oppo', 'find', 'reno', 'أوبو', 'اوبو'],
-        'Vivo' => ['vivo', 'nex', 'فيفو'],
-        'OnePlus' => ['oneplus', 'one plus', 'ون بلس'],
-        'LG' => ['lg'],
-        'Sony' => ['sony', 'xperia', 'سوني'],
-        'Tools' => ['tool', 'screwdriver', 'repair', 'kit', 'set', 'أدوات', 'ادوات', 'مفك']
-    ];
-
-    // تصنيف أنواع المنتجات حسب النظام الأساسي
-    $product_types = [
-        // إذا كان النظام للحيوانات الأليفة
-        'Food' => ['food', 'eat', 'meal', 'nutrition', 'feed'],
-        'Accessories' => ['accessory', 'accessories', 'toy', 'collar', 'leash', 'bed'],
-
-        // إذا كان للهواتف (يمكن إضافة فئات جديدة)
-        'Phone Parts' => ['screen', 'display', 'lcd', 'battery', 'charger', 'case', 'cover', 'glass', 'back'],
-        'Tools' => ['tool', 'screwdriver', 'repair', 'kit', 'opener']
-    ];
-
-    $suggested_brand = null;
-    $suggested_category_id = null;
-    $suggested_sub_category_id = null;
-
-    // البحث عن العلامة التجارية
-    foreach ($brands as $brand => $keywords) {
-        foreach ($keywords as $keyword) {
-            if (strpos($name, $keyword) !== false) {
-                $suggested_brand = $brand;
-                break 2;
-            }
-        }
-    }
-
-    // البحث عن الفئة المناسبة
-    foreach ($product_types as $type => $keywords) {
-        foreach ($keywords as $keyword) {
-            if (strpos($name, $keyword) !== false) {
-                // البحث عن الفئة في قاعدة البيانات
-                foreach ($categories as $cat_id => $cat_name) {
-                    if (stripos($cat_name, $type) !== false ||
-                        ($type == 'Phone Parts' && stripos($cat_name, 'Accessories') !== false)) {
-                        $suggested_category_id = $cat_id;
-
-                        // البحث عن الفئة الفرعية المناسبة
-                        foreach ($sub_categories as $sub_id => $sub_data) {
-                            if ($sub_data['parent_id'] == $cat_id) {
-                                $suggested_sub_category_id = $sub_id;
-                                break;
-                            }
-                        }
-                        break 2;
-                    }
-                }
-                break;
-            }
-        }
-    }
-
-    // إذا لم نجد تصنيف محدد، نستخدم Accessories كافتراضي
-    if (!$suggested_category_id) {
-        foreach ($categories as $cat_id => $cat_name) {
-            if (stripos($cat_name, 'Accessories') !== false) {
-                $suggested_category_id = $cat_id;
-                // أول فئة فرعية متاحة
-                foreach ($sub_categories as $sub_id => $sub_data) {
-                    if ($sub_data['parent_id'] == $cat_id) {
-                        $suggested_sub_category_id = $sub_id;
-                        break;
-                    }
-                }
-                break;
-            }
-        }
-    }
-
-    return [
-        'brand' => $suggested_brand,
-        'category_id' => $suggested_category_id,
-        'sub_category_id' => $suggested_sub_category_id,
-        'category_name' => $suggested_category_id ? $categories[$suggested_category_id] : null,
-        'sub_category_name' => $suggested_sub_category_id ? $sub_categories[$suggested_sub_category_id]['name'] : null
-    ];
-}
-
 // معالجة البيانات وحفظها
+$Master = new Master();
 $processed_count = 0;
 $classified_count = 0;
 $errors = [];
 $classification_stats = [];
 
+// جلب كل الفئات والماركات مرة واحدة لتحسين الأداء
+$categories_list = [];
+$cat_qry = $conn->query("SELECT id, category FROM categories WHERE status = 1");
+while($cat = $cat_qry->fetch_assoc()) {
+    $categories_list[$cat['id']] = $cat['category'];
+}
+
 foreach ($data as $index => $row) {
-    // تنظيف البيانات من المسافات والرموز الغريبة مع الحفاظ على العربية
-    $row = array_map('trim', $row);
-    $row = array_map(function($item) {
-        // إزالة الرموز الغريبة لكن نحافظ على العربية والإنجليزية والأرقام
-        $item = preg_replace('/[^\w\s\-\.\u0600-\u06FF\u0660-\u0669]/u', '', $item);
-        // إزالة المسافات الإضافية
-        $item = preg_replace('/\s+/', ' ', $item);
-        return trim($item);
-    }, $row);
-
-    // مرونة في عدد الأعمدة - نستخدم ما هو متاح
-    $available_columns = count($row);
-    $actual_name_column = min($name_column, $available_columns - 1);
-    $actual_price_column = min($price_column, $available_columns - 1);
-
-    // إذا كان لدينا عمود واحد فقط، نعتبره اسم المنتج والسعر = 0
-    if ($available_columns == 1) {
-        $product_name = trim($row[0] ?? '');
-        $price = 0;
-    }
-    // إذا كان لدينا عمودين، الأول اسم والثاني سعر
-    else if ($available_columns == 2) {
-        $product_name = trim($row[0] ?? '');
-        $price = floatval(str_replace(',', '', $row[1] ?? 0));
-    }
-    // إذا كان لدينا أكثر من عمودين، نستخدم الأعمدة المحددة
-    else {
-        $product_name = trim($row[$actual_name_column] ?? '');
-        $price = floatval(str_replace(',', '', $row[$actual_price_column] ?? 0));
-    }
-
-    // التحقق من صحة اسم المنتج
-    if (empty($product_name) || strlen($product_name) < 2 || is_numeric($product_name)) {
-        $errors[] = "السطر " . ($index + $start_row) . ": اسم المنتج غير صحيح ('$product_name')";
+    // التحقق من وجود البيانات المطلوبة
+    if (count($row) <= max($name_column, $price_column)) {
+        $errors[] = "السطر " . ($index + $start_row) . ": بيانات غير كافية";
         continue;
     }
 
-    // السماح بسعر = 0 (يمكن تعديله لاحقاً)
-    if ($price < 0) {
-        $errors[] = "السطر " . ($index + $start_row) . ": السعر سالب ('$price')";
+    // استخراج اسم المنتج والسعر
+    $product_name = isset($row[$name_column]) ? trim($row[$name_column]) : '';
+    $price = isset($row[$price_column]) ? trim($row[$price_column]) : '';
+
+    // تنظيف اسم المنتج
+    if (empty($product_name)) {
+        $errors[] = "السطر " . ($index + $start_row) . ": اسم المنتج فارغ";
         continue;
     }
-    
-    // التصنيف التلقائي
-    $classification = classifyProduct($product_name, $conn);
+
+    // تنظيف السعر وتحويله لرقم
+    $price = preg_replace('/[^\d.,]/', '', $price);
+    $price = str_replace(',', '.', $price);
+    $price = floatval($price);
+
+    if ($price <= 0) {
+        $errors[] = "السطر " . ($index + $start_row) . ": السعر غير صحيح ($price)";
+        continue;
+    }
+
+    // التصنيف التلقائي باستخدام الدالة المركزية
+    $classification = $Master->get_classification_from_name($product_name);
 
     // حفظ في قاعدة البيانات
     $product_name_escaped = $conn->real_escape_string($product_name);
-    $suggested_brand = $classification['brand'] ? $conn->real_escape_string($classification['brand']) : 'NULL';
     $category_id = $classification['category_id'] ? $classification['category_id'] : 'NULL';
     $sub_category_id = $classification['sub_category_id'] ? $classification['sub_category_id'] : 'NULL';
     $import_batch_escaped = $conn->real_escape_string($import_batch);
 
     $sql = "INSERT INTO temp_warehouse
-            (product_name, original_price, suggested_brand, category_id, sub_category_id, status, import_batch, raw_data)
+            (product_name, original_price, category_id, sub_category_id, status, import_batch, raw_data)
             VALUES
             ('$product_name_escaped', $price, " .
-            ($suggested_brand !== 'NULL' ? "'$suggested_brand'" : 'NULL') . ", " .
             ($category_id !== 'NULL' ? $category_id : 'NULL') . ", " .
             ($sub_category_id !== 'NULL' ? $sub_category_id : 'NULL') . ", " .
             "'unclassified', '$import_batch_escaped', '" . $conn->real_escape_string(json_encode($row)) . "')";
@@ -337,36 +215,32 @@ foreach ($data as $index => $row) {
     if ($conn->query($sql)) {
         $processed_count++;
 
-        if ($classification['brand'] || $classification['category_id']) {
+        if ($classification['category_id']) {
             $classified_count++;
         }
 
         // إحصائيات التصنيف
-        $brand_key = $classification['brand'] ?: 'Unclassified';
-        $category_key = $classification['category_name'] ?: 'Unclassified';
+        $brand_key = $classification['category_id'] ? $categories_list[$classification['category_id']] : 'Unclassified';
 
         if (!isset($classification_stats[$brand_key])) {
-            $classification_stats[$brand_key] = [];
+            $classification_stats[$brand_key] = 0;
         }
-        if (!isset($classification_stats[$brand_key][$category_key])) {
-            $classification_stats[$brand_key][$category_key] = 0;
-        }
-        $classification_stats[$brand_key][$category_key]++;
+        $classification_stats[$brand_key]++;
 
     } else {
         $errors[] = "السطر " . ($index + $start_row) . ": خطأ في قاعدة البيانات - " . $conn->error;
     }
 }
 
-// تحديث إحصائيات المخزن
-foreach ($classification_stats as $brand => $categories) {
-    foreach ($categories as $category => $count) {
-        if ($brand !== 'Unclassified' && $category !== 'Unclassified') {
+// تحديث إحصائيات المخزن (إذا كان الجدول موجود)
+$check_table = $conn->query("SHOW TABLES LIKE 'warehouse_stats'");
+if ($check_table && $check_table->num_rows > 0) {
+    foreach ($classification_stats as $brand => $count) {
+        if ($brand !== 'Unclassified') {
             $brand_escaped = $conn->real_escape_string($brand);
-            $category_escaped = $conn->real_escape_string($category);
 
             $update_stats = "INSERT INTO warehouse_stats (brand, product_type, count)
-                           VALUES ('$brand_escaped', '$category_escaped', $count)
+                           VALUES ('$brand_escaped', 'devices', $count)
                            ON DUPLICATE KEY UPDATE count = count + $count";
             $conn->query($update_stats);
         }
@@ -412,14 +286,10 @@ foreach ($classification_stats as $brand => $categories) {
     </div>
     <div class="card-body">
         <div class="classification-preview">
-            <?php foreach ($classification_stats as $brand => $types): ?>
-                <div class="classification-item">
-                    <strong><?php echo $brand ?></strong>
-                    <div class="ml-3">
-                        <?php foreach ($types as $type => $count): ?>
-                            <span class="badge badge-secondary mr-1"><?php echo $type ?>: <?php echo $count ?></span>
-                        <?php endforeach; ?>
-                    </div>
+            <?php foreach ($classification_stats as $brand => $count): ?>
+                <div class="classification-item mb-2">
+                    <strong><?php echo htmlspecialchars($brand) ?></strong>
+                    <span class="badge badge-secondary mr-1"><?php echo $count ?> منتج</span>
                 </div>
             <?php endforeach; ?>
         </div>

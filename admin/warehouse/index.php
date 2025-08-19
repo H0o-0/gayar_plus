@@ -17,6 +17,15 @@
 		<!-- إحصائيات سريعة -->
 		<div class="row mb-4">
 			<?php 
+			// إصلاح تلقائي لحقل الحالة: أي عنصر لديه علامة تجارية أو فئة/فرعية يُعتبر مصنف
+			$conn->query("UPDATE temp_warehouse 
+				SET status = 'classified'
+				WHERE status = 'unclassified' 
+				AND (
+					(suggested_brand IS NOT NULL AND suggested_brand <> '')
+					OR (category_id IS NOT NULL AND sub_category_id IS NOT NULL)
+				)");
+
 			$total_products = $conn->query("SELECT COUNT(*) as count FROM temp_warehouse")->fetch_assoc()['count'];
 			$unclassified = $conn->query("SELECT COUNT(*) as count FROM temp_warehouse WHERE status = 'unclassified'")->fetch_assoc()['count'];
 			$classified = $conn->query("SELECT COUNT(*) as count FROM temp_warehouse WHERE status = 'classified'")->fetch_assoc()['count'];
@@ -26,7 +35,7 @@
 			<div class="col-lg-3 col-6">
 				<div class="small-box bg-info">
 					<div class="inner">
-						<h3><?php echo $total_products ?></h3>
+						<h3><?php echo number_format($total_products) ?></h3>
 						<p>إجمالي المنتجات</p>
 					</div>
 					<div class="icon">
@@ -38,7 +47,7 @@
 			<div class="col-lg-3 col-6">
 				<div class="small-box bg-warning">
 					<div class="inner">
-						<h3><?php echo $unclassified ?></h3>
+						<h3><?php echo number_format($unclassified) ?></h3>
 						<p>غير مصنف</p>
 					</div>
 					<div class="icon">
@@ -50,7 +59,7 @@
 			<div class="col-lg-3 col-6">
 				<div class="small-box bg-primary">
 					<div class="inner">
-						<h3><?php echo $classified ?></h3>
+						<h3><?php echo number_format($classified) ?></h3>
 						<p>مصنف</p>
 					</div>
 					<div class="icon">
@@ -62,7 +71,7 @@
 			<div class="col-lg-3 col-6">
 				<div class="small-box bg-success">
 					<div class="inner">
-						<h3><?php echo $published ?></h3>
+						<h3><?php echo number_format($published) ?></h3>
 						<p>منشور</p>
 					</div>
 					<div class="icon">
@@ -70,6 +79,53 @@
 					</div>
 				</div>
 			</div>
+		</div>
+
+		<!-- إحصائيات العلامات التجارية مع اللوغو -->
+		<div class="row mb-4">
+			<div class="col-12">
+				<h5><i class="fas fa-chart-bar"></i> إحصائيات العلامات التجارية</h5>
+			</div>
+			<?php 
+			$brand_stats = $conn->query("
+				SELECT suggested_brand, COUNT(*) as count 
+				FROM temp_warehouse 
+				WHERE suggested_brand IS NOT NULL 
+				GROUP BY suggested_brand 
+				ORDER BY count DESC
+			");
+			
+			$brand_logos = [
+				'Apple' => 'apple.png',
+				'Samsung' => 'samsung.png', 
+				'Huawei' => 'huawei.png',
+				'Xiaomi' => 'xiaomi.png',
+				'Oppo' => 'oppo.png',
+				'Vivo' => 'vivo.png',
+				'LG' => 'lg.png',
+				'Sony' => 'sony.png',
+				'OnePlus' => 'oneplus.png'
+			];
+			
+			while($brand = $brand_stats->fetch_assoc()):
+				$logo_file = $brand_logos[$brand['suggested_brand']] ?? 'default.png';
+				$logo_path = 'warehouse/images/' . $logo_file;
+			?>
+			<div class="col-lg-2 col-md-3 col-sm-4 col-6 mb-3">
+				<div class="card text-center h-100">
+					<div class="card-body p-3">
+						<?php if(file_exists($logo_path)): ?>
+							<img src="<?php echo $logo_path ?>" alt="<?php echo $brand['suggested_brand'] ?>" 
+								 style="width: 50px; height: 50px; object-fit: contain;" class="mb-2">
+						<?php else: ?>
+							<i class="fas fa-mobile-alt fa-3x mb-2 text-primary"></i>
+						<?php endif; ?>
+						<h6 class="card-title mb-2"><?php echo $brand['suggested_brand'] ?></h6>
+						<span class="badge badge-primary badge-pill"><?php echo number_format($brand['count']) ?> منتج</span>
+					</div>
+				</div>
+			</div>
+			<?php endwhile; ?>
 		</div>
 
 		<!-- فلاتر البحث -->
@@ -136,29 +192,36 @@
 					");
 					while($row = $products->fetch_assoc()):
 					?>
-					<tr data-id="<?php echo $row['id'] ?>">
+					<tr data-id="<?php echo $row['id'] ?>" 
+					    data-status="<?php echo htmlspecialchars($row['status']) ?>" 
+					    data-brand="<?php echo strtolower($row['suggested_brand'] ?? '') ?>" 
+					    data-type="<?php echo strtolower($row['suggested_type'] ?? '') ?>">
 						<td>
 							<input type="checkbox" class="product-checkbox" value="<?php echo $row['id'] ?>">
 						</td>
 						<td>
-							<strong><?php echo $row['product_name'] ?></strong>
+							<strong><?php echo htmlspecialchars($row['product_name']) ?></strong>
 							<br><small class="text-muted">تاريخ الإضافة: <?php echo date('Y/m/d H:i', strtotime($row['created_at'])) ?></small>
 						</td>
 						<td>
-							<span class="badge badge-info"><?php echo number_format($row['original_price']) ?> د.ع</span>
+							<?php if($row['original_price'] > 0): ?>
+								<span class="badge badge-info"><?php echo number_format($row['original_price']) ?> د.ع</span>
+							<?php else: ?>
+								<span class="text-muted">غير محدد</span>
+							<?php endif; ?>
 						</td>
 						<td>
 							<?php if($row['suggested_brand']): ?>
-								<span class="badge badge-primary"><?php echo $row['suggested_brand'] ?></span>
+								<span class="badge badge-primary"><?php echo htmlspecialchars($row['suggested_brand']) ?></span>
 							<?php else: ?>
 								<span class="text-muted">غير محدد</span>
 							<?php endif; ?>
 						</td>
 						<td>
 							<?php if($row['category']): ?>
-								<span class="badge badge-secondary"><?php echo $row['category'] ?></span>
+								<span class="badge badge-secondary"><?php echo htmlspecialchars($row['category']) ?></span>
 								<?php if($row['sub_category']): ?>
-									<br><small class="text-muted"><?php echo $row['sub_category'] ?></small>
+									<br><small class="text-muted"><?php echo htmlspecialchars($row['sub_category']) ?></small>
 								<?php endif; ?>
 							<?php else: ?>
 								<span class="text-muted">غير محدد</span>
@@ -233,6 +296,9 @@
 					<button class="btn btn-warning" id="delete-all-unclassified">
 						<i class="fas fa-trash-alt"></i> حذف كل غير المصنف
 					</button>
+					<button class="btn btn-primary" id="auto-classify">
+						<i class="fas fa-magic"></i> تصنيف تلقائي
+					</button>
 				</div>
 			</div>
 		</div>
@@ -241,13 +307,57 @@
 
 <script>
 $(document).ready(function(){
+	console.log('🚀 تم تحميل صفحة المخزن - الإصدار المحسن');
+	
+	// دالة AJAX مع مسار صحيح
+	function callAjax(action, data, successCallback, errorCallback) {
+		console.log('📤 إرسال طلب:', action, data);
+		
+		$.ajax({
+			url: 'warehouse_ajax.php',
+			type: 'POST',
+			data: $.extend({action: action}, data),
+			dataType: 'json',
+			timeout: 15000,
+			success: function(response) {
+				console.log('✅ رد الخادم:', response);
+				if(response && response.status === 'success') {
+					if(successCallback) successCallback(response);
+				} else {
+					alert('خطأ: ' + (response ? response.message : 'رد غير صحيح'));
+					if(errorCallback) errorCallback(response);
+				}
+			},
+			error: function(xhr, status, error) {
+				console.error('❌ خطأ AJAX:', {
+					status: status,
+					error: error,
+					responseText: xhr.responseText,
+					statusCode: xhr.status
+				});
+				
+				var msg = 'خطأ في الاتصال:\n';
+				msg += 'Status: ' + status + '\n';
+				msg += 'Error: ' + error + '\n';
+				
+				if(xhr.responseText && xhr.responseText.includes('<!DOCTYPE')) {
+					msg += '\nالخادم أرجع صفحة HTML بدلاً من JSON.\nهذا يعني وجود خطأ في المسار أو PHP.';
+				} else if(xhr.responseText) {
+					msg += '\nرد الخادم: ' + xhr.responseText.substring(0, 200);
+				}
+				
+				alert(msg);
+				if(errorCallback) errorCallback();
+			}
+		});
+	}
+	
 	// تفعيل/إلغاء تفعيل أزرار العمليات المجمعة
 	function toggleBulkButtons() {
 		var checkedCount = $('.product-checkbox:checked').length;
 		$('#bulk-edit, #bulk-quick-publish, #bulk-delete').prop('disabled', checkedCount === 0);
 	}
 	
-	// تفعيل الأزرار عند تحميل الصفحة
 	toggleBulkButtons();
 
 	// تحديد/إلغاء تحديد الكل
@@ -256,100 +366,85 @@ $(document).ready(function(){
 		toggleBulkButtons();
 	});
 
-	// تحديد منتج واحد
 	$(document).on('change', '.product-checkbox', function(){
 		toggleBulkButtons();
-		
-		// تحديث حالة "تحديد الكل"
 		var totalCheckboxes = $('.product-checkbox').length;
 		var checkedCheckboxes = $('.product-checkbox:checked').length;
 		$('#select-all').prop('checked', totalCheckboxes === checkedCheckboxes);
 	});
 
-	// فلترة حسب العلامة التجارية
+	// فلترة محسنة
 	$('#brand-filter, #type-filter, #status-filter').change(function(){
 		filterTable();
 	});
 
-	// البحث في النص
 	$('#search-input').on('keyup', function(){
 		filterTable();
 	});
 
 	function filterTable() {
-		var brandFilter = $('#brand-filter').val().toLowerCase();
-		var typeFilter = $('#type-filter').val().toLowerCase();
-		var statusFilter = $('#status-filter').val().toLowerCase();
-		var searchText = $('#search-input').val().toLowerCase();
+		var brandFilter = $('#brand-filter').val();
+		var typeFilter = $('#type-filter').val();
+		var statusFilter = $('#status-filter').val();
+		var searchText = $('#search-input').val();
 
-		$('#warehouse-table tbody tr').each(function(){
-			var row = $(this);
-			var productName = row.find('td:eq(1)').text().toLowerCase();
-			var brand = row.find('td:eq(3) .badge').text().toLowerCase();
-			var type = row.find('td:eq(4) .badge').text().toLowerCase();
-			var status = row.find('td:eq(5) .badge').text().toLowerCase();
+		// Show a loading indicator
+		$('#warehouse-table tbody').html('<tr><td colspan="7" class="text-center"><i class="fas fa-spinner fa-spin"></i> جاري تحميل البيانات...</td></tr>');
 
-			var showRow = true;
-
-			if(brandFilter && brand.indexOf(brandFilter) === -1) showRow = false;
-			if(typeFilter && type.indexOf(typeFilter) === -1) showRow = false;
-			if(statusFilter && status.indexOf(statusFilter) === -1) showRow = false;
-			if(searchText && productName.indexOf(searchText) === -1) showRow = false;
-
-			row.toggle(showRow);
+		$.ajax({
+			url: 'warehouse_ajax.php',
+			type: 'POST',
+			data: {
+				action: 'filter_products',
+				brand: brandFilter,
+				type: typeFilter,
+				status: statusFilter,
+				search: searchText
+			},
+			dataType: 'json',
+			success: function(response) {
+				if (response && response.status === 'success') {
+					$('#warehouse-table tbody').html(response.html);
+				} else {
+					$('#warehouse-table tbody').html('<tr><td colspan="7" class="text-center">حدث خطأ أثناء تحميل البيانات.</td></tr>');
+					alert('خطأ: ' + (response ? response.message : 'رد غير صحيح من الخادم'));
+				}
+			},
+			error: function() {
+				$('#warehouse-table tbody').html('<tr><td colspan="7" class="text-center">فشل الاتصال بالخادم.</td></tr>');
+			}
 		});
 	}
 
-	// معالجة أزرار الحذف والنشر
+	// حذف منتج واحد
 	$(document).on('click', '.delete-product', function(){
+		console.log('🗑️ حذف منتج');
 		var id = $(this).data('id');
 		var row = $(this).closest('tr');
 
 		if(confirm('هل أنت متأكد من حذف هذا المنتج؟')) {
-			$.post('ajax_actions.php', {
-				action: 'delete_product',
-				id: id
-			}, function(response) {
-				if(response.status == 'success') {
-					row.fadeOut(function() {
-						$(this).remove();
-					});
-					alert(response.message);
-				} else {
-					alert('خطأ: ' + response.message);
-				}
-			}, 'json').fail(function(xhr, status, error) {
-				console.error('AJAX Error:', status, error);
-				console.error('Response Text:', xhr.responseText);
-				alert('خطأ في الاتصال: ' + error);
+			callAjax('delete_product', {id: id}, function(response) {
+				row.fadeOut(function() { $(this).remove(); });
+				alert_toast(response.message, 'success');
 			});
 		}
 	});
 
+	// نشر سريع
 	$(document).on('click', '.quick-publish', function(){
+		console.log('⚡ نشر سريع');
 		var id = $(this).data('id');
-		var row = $(this).closest('tr');
 
-		// استخدام النشر السريع المعدل الذي يأخذ المستخدم إلى صفحة التحرير
-		$.post('ajax_actions.php', {
-			action: 'quick_publish',
-			id: id
-		}, function(response) {
-			if(response.status == 'success') {
-				// التحويل إلى صفحة التحرير
+		callAjax('quick_publish', {id: id}, function(response) {
+			if(response.redirect) {
 				window.location.href = response.redirect;
-			} else {
-				alert('خطأ: ' + response.message);
 			}
-		}, 'json').fail(function(xhr, status, error) {
-			console.error('AJAX Error:', status, error);
-			console.error('Response Text:', xhr.responseText);
-			alert('خطأ في الاتصال: ' + error);
 		});
 	});
 
-	// العمليات المجمعة
+	// حذف مجمع
 	$('#bulk-delete').click(function(){
+		console.log('🗑️ حذف مجمع');
 		var selectedIds = [];
 		$('.product-checkbox:checked').each(function(){
 			selectedIds.push($(this).val());
@@ -361,66 +456,53 @@ $(document).ready(function(){
 		}
 
 		if(confirm('هل أنت متأكد من حذف ' + selectedIds.length + ' منتج؟')) {
-			// إظهار مؤشر التحميل
-			$(this).prop('disabled', true).text('جاري الحذف...');
+			var $btn = $(this);
+			$btn.prop('disabled', true).text('جاري الحذف...');
 
-			$.post('ajax_actions.php', {
-				action: 'bulk_delete',
-				ids: selectedIds
-			}, function(response) {
-				if(response.status == 'success') {
-					alert(response.message);
-					location.reload();
-				} else {
-					alert('خطأ: ' + response.message);
-					$('#bulk-delete').prop('disabled', false).text('حذف المحدد');
-				}
-			}, 'json').fail(function(xhr, status, error) {
-				console.error('AJAX Error:', status, error);
-				console.error('Response Text:', xhr.responseText);
-				alert('خطأ في الاتصال: ' + error);
-				$('#bulk-delete').prop('disabled', false).text('حذف المحدد');
+			callAjax('bulk_delete', {ids: selectedIds}, function(response) {
+				alert_toast(response.message, 'success');
+				location.reload();
+			}, function() {
+				$btn.prop('disabled', false).text('حذف المحدد');
 			});
 		}
 	});
 
-	// تحرير مجمع
-	$('#bulk-edit').click(function(){
-		var selectedIds = [];
-		$('.product-checkbox:checked').each(function(){
-			selectedIds.push($(this).val());
-		});
-
-		if(selectedIds.length == 0) {
-			alert('يرجى تحديد منتجات للتحرير');
-			return;
+	// حذف كل غير المصنف
+	$('#delete-all-unclassified').click(function(){
+		console.log('🗑️ حذف كل غير المصنف');
+		if(confirm('هل تريد حذف جميع المنتجات غير المصنفة؟')) {
+			var $btn = $(this);
+			$btn.prop('disabled', true).text('جاري الحذف...');
+			
+			callAjax('delete_unclassified', {}, function(response) {
+				alert_toast(response.message, 'success');
+				location.reload();
+			}, function() {
+				$btn.prop('disabled', false).text('حذف كل غير المصنف');
+			});
 		}
-
-		// الذهاب لصفحة التحرير المجمع
-		var idsParam = selectedIds.join(',');
-		window.location.href = 'index.php?page=warehouse/bulk_edit&ids=' + idsParam;
 	});
 
-	$('#bulk-quick-publish').click(function(){
-		var selectedIds = [];
-		$('.product-checkbox:checked').each(function(){
-			selectedIds.push($(this).val());
-		});
-
-		if(selectedIds.length == 0) {
-			alert('يرجى تحديد منتجات للنشر');
-			return;
+	// تصنيف تلقائي
+	$('#auto-classify').click(function(){
+		console.log('🤖 تصنيف تلقائي');
+		if(confirm('هل تريد تشغيل التصنيف التلقائي؟')) {
+			var $btn = $(this);
+			$btn.prop('disabled', true).text('جاري التصنيف...');
+			
+			callAjax('auto_classify', {}, function(response) {
+				if(response.fixed_count > 0) {
+					alert_toast(response.message, 'success');
+					location.reload();
+				} else {
+					alert_toast('لا توجد منتجات تحتاج للتصنيف', 'info');
+					$btn.prop('disabled', false).text('تصنيف تلقائي');
+				}
+			}, function() {
+				$btn.prop('disabled', false).text('تصنيف تلقائي');
+			});
 		}
-
-		// إذا تم تحديد منتج واحد فقط، نذهب مباشرة إلى صفحة التحرير
-		if(selectedIds.length == 1) {
-			window.location.href = 'index.php?page=warehouse/edit_product&id=' + selectedIds[0];
-			return;
-		}
-
-		// إذا تم تحديد أكثر من منتج، نذهب إلى صفحة التحرير المجمع
-		var idsParam = selectedIds.join(',');
-		window.location.href = 'index.php?page=warehouse/bulk_edit&ids=' + idsParam;
 	});
 
 	// تحديد الكل المرئي
@@ -436,24 +518,40 @@ $(document).ready(function(){
 		toggleBulkButtons();
 	});
 
-	// حذف كل غير المصنف
-	$('#delete-all-unclassified').click(function(){
-		if(confirm('هل تريد حذف جميع المنتجات غير المصنفة؟ هذا الإجراء لا يمكن التراجع عنه!')) {
-			$.post('ajax_actions.php', {
-				action: 'delete_unclassified'
-			}, function(response) {
-				if(response.status == 'success') {
-					alert(response.message);
-					location.reload();
-				} else {
-					alert('خطأ: ' + response.message);
-				}
-			}, 'json').fail(function(xhr, status, error) {
-				console.error('AJAX Error:', status, error);
-				console.error('Response Text:', xhr.responseText);
-				alert('خطأ في الاتصال: ' + error);
-			});
+	// تحرير مجمع
+	$('#bulk-edit').click(function(){
+		var selectedIds = [];
+		$('.product-checkbox:checked').each(function(){
+			selectedIds.push($(this).val());
+		});
+
+		if(selectedIds.length == 0) {
+			alert('يرجى تحديد منتجات للتحرير');
+			return;
 		}
+
+		var idsParam = selectedIds.join(',');
+		window.location.href = 'index.php?page=warehouse/bulk_edit&ids=' + idsParam;
+	});
+
+	$('#bulk-quick-publish').click(function(){
+		var selectedIds = [];
+		$('.product-checkbox:checked').each(function(){
+			selectedIds.push($(this).val());
+		});
+
+		if(selectedIds.length == 0) {
+			alert('يرجى تحديد منتجات للنشر');
+			return;
+		}
+
+		if(selectedIds.length == 1) {
+			window.location.href = 'index.php?page=warehouse/edit_product&id=' + selectedIds[0];
+			return;
+		}
+
+		var idsParam = selectedIds.join(',');
+		window.location.href = 'index.php?page=warehouse/bulk_edit&ids=' + idsParam;
 	});
 });
 </script>

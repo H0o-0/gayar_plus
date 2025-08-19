@@ -1,4 +1,7 @@
 <?php 
+// تضمين كلاس تنظيف النص
+require_once 'classes/TextCleaner.php';
+
  $products = $conn->query("SELECT * FROM `products`  where md5(id) = '{$_GET['id']}' ");
  if($products->num_rows > 0){
      foreach($products->fetch_assoc() as $k => $v){
@@ -62,14 +65,14 @@
         box-shadow: 0 5px 20px rgba(0,0,0,0.1);
         width: 100%;
         height: 400px;
-        object-fit: cover;
+        object-fit: contain;
         transition: opacity 0.3s ease;
     }
 
-    /* إصلاح مشكلة تحرك المحتوى */
+    /* إبقاء الصور ثابتة وعدم تحركها مع النص */
     .product-images-container {
-        position: sticky;
-        top: 20px;
+        position: static;
+        top: auto;
     }
 
     .main-image-container {
@@ -119,38 +122,7 @@
     .view-image img {
         width: 100%;
         height: 100%;
-        object-fit: cover;
-    }
-
-    /* تصميم كاردات المنتجات المتشابهة */
-    .product-card {
-        background: white;
-        border-radius: 20px;
-        overflow: hidden;
-        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        border: none;
-        position: relative;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .product-card:hover {
-        transform: translateY(-10px);
-        box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-    }
-
-    .product-image {
-        position: relative;
-        overflow: hidden;
-        height: 250px;
-    }
-
-    .product-image img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
+        object-fit: contain;
         transition: transform 0.4s ease;
     }
 
@@ -344,7 +316,7 @@
 
 <section class="py-5">
     <div class="container px-4 px-lg-5 my-5">
-        <div class="row gx-4 gx-lg-5 align-items-center">
+        <div class="row gx-4 gx-lg-5 align-items-start">
             <div class="col-md-6">
                 <div class="product-images-container">
                     <div class="main-image-container">
@@ -365,9 +337,7 @@
             </div>
             <div class="col-md-6">
                 <h1 class="display-5 fw-bolder" style="color: var(--primary-color, #2c5aa0);"><?php echo $product_name ?></h1>
-                <div class="mb-3">
-                    <p class="text-muted"><?php echo $description ?></p>
-                </div>
+                <!-- الوصف المختصر تمت إزالته لتجنب طباعة HTML خام. سيتم عرض الوصف المنظف أدناه. -->
                 <?php if(!empty($inv)): ?>
                 <div class="fs-5 mb-5">
                     <span id="price"><?php echo number_format($inv[0]['price']) ?> د.ع</span>
@@ -417,7 +387,15 @@
                     <span class="text-danger">المنتج غير متوفر حالياً</span>
                 </div>
                 <?php endif; ?>
-                <p class="lead"><?php echo stripslashes(html_entity_decode($description)) ?></p>
+                                <?php
+                if(!empty($description)) {
+                    $decoded = html_entity_decode($description);
+                    $safe_html = TextCleaner::sanitizeForDescription($decoded);
+                    if(!empty($safe_html)) {
+                        echo '<div class="lead" dir="rtl">' . $safe_html . '</div>';
+                    }
+                }
+                ?>
                 
             </div>
         </div>
@@ -469,8 +447,9 @@
                         <h5 class="product-title"><?php echo $row['product_name'] ?></h5>
                         <p class="product-description">
                             <?php
-                            $desc = strip_tags($row['description']);
-                            echo strlen($desc) > 60 ? substr($desc, 0, 60) . '...' : $desc;
+                            if(!empty($row['description'])) {
+                                echo TextCleaner::cleanAndTruncateUltra($row['description'], 60);
+                            }
                             ?>
                         </p>
 

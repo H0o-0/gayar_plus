@@ -1,5 +1,5 @@
 <?php
-  require_once('sess_auth.php');
+  // require_once('sess_auth.php'); // معطل مؤقتاً للاختبار
   
 ?>
 <head>

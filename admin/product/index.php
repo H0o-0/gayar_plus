@@ -34,10 +34,17 @@
 				</thead>
 				<tbody>
 					<?php 
+					// تضمين كلاس تنظيف النص
+					require_once '../classes/TextCleaner.php';
+					
 					$i = 1;
 						$qry = $conn->query("SELECT * from `products` order by unix_timestamp(date_created) desc ");
 						while($row = $qry->fetch_assoc()):
-                            $row['description'] = strip_tags(stripslashes(html_entity_decode($row['description'])));
+                            if(!empty($row['description'])) {
+                                $row['description'] = TextCleaner::ultraClean($row['description']);
+                            } else {
+                                $row['description'] = '';
+                            }
 					?>
 						<tr>
 							<td class="text-center"><?php echo $i++; ?></td>

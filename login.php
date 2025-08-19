@@ -55,8 +55,8 @@
                     if(typeof resp == 'object' && resp.status == 'success'){
                         alert_toast("Login Successfully",'success')
                         setTimeout(function(){
-                            location.reload()
-                        },2000)
+                            window.location.href = _base_url_+"admin/";
+                        }, 800)
                     }else if(resp.status == 'incorrect'){
                         var _err_el = $('<div>')
                             _err_el.addClass("alert alert-danger err-msg").text("Incorrect Credentials.")

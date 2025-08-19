@@ -46,8 +46,13 @@ $sub_categories = $conn->query("SELECT * FROM sub_categories WHERE status = 1");
                 <div class="col-md-4">
                     <div class="form-group">
                         <label for="price">السعر (د.ع):</label>
-                        <input type="number" class="form-control" id="price" name="price" 
-                               value="<?php echo $product['original_price'] ?>" min="0" step="0.01" required>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="price" name="price" 
+                                   value="<?php echo $product['original_price'] ?>" min="0" step="0.01" required>
+                            <div class="input-group-append">
+                                <span class="input-group-text">د.ع</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -62,7 +67,7 @@ $sub_categories = $conn->query("SELECT * FROM sub_categories WHERE status = 1");
                             <?php while($cat = $categories->fetch_assoc()): ?>
                             <option value="<?php echo $cat['id'] ?>" 
                                     <?php echo ($product['category_id'] == $cat['id']) ? 'selected' : '' ?>>
-                                <?php echo $cat['category'] ?>
+                                <?php echo htmlspecialchars($cat['category']) ?>
                             </option>
                             <?php endwhile; ?>
                         </select>
@@ -80,7 +85,7 @@ $sub_categories = $conn->query("SELECT * FROM sub_categories WHERE status = 1");
                             <option value="<?php echo $sub_cat['id'] ?>" 
                                     data-parent="<?php echo $sub_cat['parent_id'] ?>"
                                     <?php echo ($product['sub_category_id'] == $sub_cat['id']) ? 'selected' : '' ?>>
-                                <?php echo $sub_cat['sub_category'] ?>
+                                <?php echo htmlspecialchars($sub_cat['sub_category']) ?>
                             </option>
                             <?php endwhile; ?>
                         </select>
@@ -125,25 +130,44 @@ $sub_categories = $conn->query("SELECT * FROM sub_categories WHERE status = 1");
                 <small class="text-muted">الصيغ المدعومة: JPG, PNG, GIF. الحد الأقصى: 5MB</small>
             </div>
 
-            <!-- الألوان -->
-            <div class="form-group">
-                <div class="custom-control custom-switch">
-                    <input type="checkbox" class="custom-control-input" id="has_colors" name="has_colors" value="1">
-                    <label class="custom-control-label" for="has_colors">هذا المنتج متوفر بألوان مختلفة</label>
+            <!-- نظام الألوان المحسن -->
+            <div class="card card-secondary">
+                <div class="card-header">
+                    <h3 class="card-title">إدارة الألوان</h3>
                 </div>
-            </div>
-            
-            <div id="colors_container" style="display: none;">
-                <div class="form-group">
-                    <label>الألوان المتوفرة:</label>
-                    <div class="input-group mb-2">
-                        <input type="text" class="form-control" id="color_name" placeholder="اسم اللون (مثل: أحمر، أزرق)">
-                        <div class="input-group-append">
-                            <button type="button" class="btn btn-primary" id="add_color">إضافة</button>
+                <div class="card-body">
+                    <div class="form-group">
+                        <div class="custom-control custom-switch">
+                            <input type="checkbox" class="custom-control-input" id="has_colors" name="has_colors" value="1">
+                            <label class="custom-control-label" for="has_colors">هذا المنتج متوفر بألوان مختلفة</label>
                         </div>
                     </div>
-                    <div id="colors_list" class="mt-2">
-                        <!-- هنا ستظهر الألوان المضافة -->
+                    
+                    <div id="colors_container" style="display: none;">
+                        <div class="form-group">
+                            <label>إضافة لون جديد:</label>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <input type="text" class="form-control" id="color_name" placeholder="اسم اللون (مثل: أحمر، أزرق)">
+                                </div>
+                                <div class="col-md-4">
+                                    <input type="color" class="form-control" id="color_code" value="#000000" title="اختر لون">
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="button" class="btn btn-primary btn-block" id="add_color">
+                                        <i class="fas fa-plus"></i> إضافة
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>الألوان المضافة:</label>
+                            <div id="colors_list" class="mt-2">
+                                <!-- هنا ستظهر الألوان المضافة -->
+                            </div>
+                            <small class="text-muted">يمكنك إضافة عدة ألوان وسيتم عرضها في بطاقة المنتج</small>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -159,10 +183,10 @@ $sub_categories = $conn->query("SELECT * FROM sub_categories WHERE status = 1");
                             <div class="form-group">
                                 <label for="size">الحجم:</label>
                                 <select class="form-control" id="size" name="size">
-                                    <option value="None">غير محدد</option>
-                                    <option value="Small">صغير</option>
-                                    <option value="Medium">متوسط</option>
-                                    <option value="Large">كبير</option>
+                                    <option value="عادي">عادي</option>
+                                    <option value="صغير">صغير</option>
+                                    <option value="متوسط">متوسط</option>
+                                    <option value="كبير">كبير</option>
                                 </select>
                             </div>
                         </div>
@@ -170,10 +194,10 @@ $sub_categories = $conn->query("SELECT * FROM sub_categories WHERE status = 1");
                             <div class="form-group">
                                 <label for="unit">الوحدة:</label>
                                 <select class="form-control" id="unit" name="unit">
-                                    <option value="pcs">قطعة</option>
-                                    <option value="set">مجموعة</option>
-                                    <option value="box">صندوق</option>
-                                    <option value="pack">حزمة</option>
+                                    <option value="قطعة">قطعة</option>
+                                    <option value="مجموعة">مجموعة</option>
+                                    <option value="صندوق">صندوق</option>
+                                    <option value="حزمة">حزمة</option>
                                 </select>
                             </div>
                         </div>
@@ -231,22 +255,43 @@ $(document).ready(function(){
             $('#colors_container').slideDown();
         } else {
             $('#colors_container').slideUp();
+            $('#colors_list').empty(); // مسح الألوان عند إلغاء التفعيل
         }
     });
     
     // إضافة لون جديد
     $('#add_color').click(function(){
         var color_name = $('#color_name').val().trim();
+        var color_code = $('#color_code').val();
+        
         if(color_name) {
-            var color_html = '<div class="badge badge-primary p-2 mr-2 mb-2">' +
-                             color_name +
-                             '<input type="hidden" name="colors[]" value="' + color_name + '">' +
-                             '<button type="button" class="close ml-1 text-white remove-color" aria-label="Close">' +
+            // التحقق من عدم تكرار اللون
+            var exists = false;
+            $('#colors_list input[name="color_names[]"]').each(function(){
+                if($(this).val() === color_name) {
+                    exists = true;
+                    return false;
+                }
+            });
+            
+            if(exists) {
+                alert('هذا اللون موجود بالفعل');
+                return;
+            }
+            
+            var color_html = '<div class="color-item badge p-3 mr-2 mb-2" style="background-color: ' + color_code + '; color: ' + getContrastColor(color_code) + ';">' +
+                             '<span>' + color_name + '</span>' +
+                             '<input type="hidden" name="color_names[]" value="' + color_name + '">' +
+                             '<input type="hidden" name="color_codes[]" value="' + color_code + '">' +
+                             '<button type="button" class="close ml-2 text-white remove-color" aria-label="Close" style="color: inherit !important;">' +
                              '<span aria-hidden="true">&times;</span>' +
                              '</button>' +
                              '</div>';
             $('#colors_list').append(color_html);
             $('#color_name').val('').focus();
+            $('#color_code').val('#000000');
+        } else {
+            alert('يرجى إدخال اسم اللون');
         }
     });
     
@@ -262,6 +307,19 @@ $(document).ready(function(){
             $('#add_color').click();
         }
     });
+    
+    // دالة لحساب لون النص المناسب للخلفية
+    function getContrastColor(hexcolor) {
+        // تحويل hex إلى RGB
+        var r = parseInt(hexcolor.substr(1,2),16);
+        var g = parseInt(hexcolor.substr(3,2),16);
+        var b = parseInt(hexcolor.substr(5,2),16);
+        
+        // حساب السطوع
+        var brightness = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+        
+        return brightness > 128 ? '#000000' : '#FFFFFF';
+    }
     
     // عرض اسم الصورة المختارة
     window.displayImgName = function(input) {

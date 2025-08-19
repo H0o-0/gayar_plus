@@ -78,6 +78,4 @@
         filter: drop-shadow(0px 7px 6px black);
         z-index:-1;
     }
-
- </style>
-  </head>
+    </style>

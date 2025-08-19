@@ -7,7 +7,9 @@
     start_loader()
   </script>
 <div class="login-box">
-  <!-- /.login-logo -->
+  <div class="text-center mb-3">
+    <img src="images/administrator.png" alt="Administrator" style="max-width: 120px; width: 100%; height: auto;">
+  </div>
   <div class="card card-outline card-primary">
     <div class="card-header text-center">
       <a href="./" class="h1"><b>Login</b></a>

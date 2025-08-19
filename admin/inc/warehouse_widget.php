@@ -1,37 +1,63 @@
 <?php
-// كارد المخزن المؤقت للداش بورد
+// كارد المخزن المؤقت للداش بورد - محسن مع شعارات الشركات
 
-// الحصول على إحصائيات المخزن
-$warehouse_stats = $conn->query("
+// التحقق من وجود جدول المخزن المؤقت
+$table_exists = $conn->query("SHOW TABLES LIKE 'temp_warehouse'");
+if($table_exists->num_rows == 0) {
+    // إنشاء الجدول إذا لم يكن موجوداً
+    $create_table = "CREATE TABLE IF NOT EXISTS `temp_warehouse` (
+        `id` int(11) NOT NULL AUTO_INCREMENT,
+        `product_name` text NOT NULL,
+        `original_price` decimal(10,2) DEFAULT NULL,
+        `suggested_brand` varchar(100) DEFAULT NULL,
+        `confirmed_brand` varchar(100) DEFAULT NULL,
+        `suggested_type` varchar(100) DEFAULT NULL,
+        `confirmed_type` varchar(100) DEFAULT NULL,
+        `category_id` int(11) DEFAULT NULL,
+        `sub_category_id` int(11) DEFAULT NULL,
+        `status` enum('unclassified','classified','published') DEFAULT 'unclassified',
+        `import_batch` varchar(50) DEFAULT NULL,
+        `raw_data` text DEFAULT NULL,
+        `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+        `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+        PRIMARY KEY (`id`),
+        KEY `idx_brand` (`suggested_brand`),
+        KEY `idx_status` (`status`),
+        KEY `idx_category` (`category_id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
+    $conn->query($create_table);
+}
+
+// إجماليات دقيقة من الجدول كاملاً
+$total_products = (int)$conn->query("SELECT COUNT(*) as c FROM temp_warehouse")->fetch_assoc()['c'];
+$unclassified_count = (int)$conn->query("SELECT COUNT(*) as c FROM temp_warehouse WHERE status = 'unclassified'")->fetch_assoc()['c'];
+$classified_count   = (int)$conn->query("SELECT COUNT(*) as c FROM temp_warehouse WHERE status = 'classified'")->fetch_assoc()['c'];
+$published_count    = (int)$conn->query("SELECT COUNT(*) as c FROM temp_warehouse WHERE status = 'published'")->fetch_assoc()['c'];
+
+// توزيع العلامات التجارية بحسب الحالة (يتجاهل القيم الفارغة)
+$brand_rows = $conn->query("
     SELECT 
         suggested_brand as brand,
-        COUNT(*) as count,
-        status
+        status,
+        COUNT(*) as count
     FROM temp_warehouse 
-    WHERE suggested_brand IS NOT NULL 
+    WHERE suggested_brand IS NOT NULL AND suggested_brand <> ''
     GROUP BY suggested_brand, status
     ORDER BY count DESC
 ");
 
 $stats_data = [];
-$total_products = 0;
-$unclassified_count = 0;
-
-while($row = $warehouse_stats->fetch_assoc()) {
-    $brand = $row['brand'];
-    $count = $row['count'];
-    $status = $row['status'];
-    
-    if(!isset($stats_data[$brand])) {
-        $stats_data[$brand] = ['total' => 0, 'unclassified' => 0, 'classified' => 0, 'published' => 0];
-    }
-    
-    $stats_data[$brand]['total'] += $count;
-    $stats_data[$brand][$status] = $count;
-    $total_products += $count;
-    
-    if($status == 'unclassified') {
-        $unclassified_count += $count;
+if($brand_rows) {
+    while($row = $brand_rows->fetch_assoc()) {
+        $brand = $row['brand'];
+        $count = (int)$row['count'];
+        $status = $row['status'];
+        
+        if(!isset($stats_data[$brand])) {
+            $stats_data[$brand] = ['total' => 0, 'unclassified' => 0, 'classified' => 0, 'published' => 0];
+        }
+        $stats_data[$brand]['total'] += $count;
+        $stats_data[$brand][$status] = $count;
     }
 }
 
@@ -45,7 +71,22 @@ $last_import = $conn->query("
     LIMIT 1
 ");
 
-$last_import_data = $last_import->fetch_assoc();
+$last_import_data = $last_import ? $last_import->fetch_assoc() : null;
+
+// دالة للحصول على شعار الشركة
+function getBrandLogo($brand) {
+    $logos = [
+        'Apple' => 'Apple-Logo.webp',
+        'Samsung' => 'sansung logo.jpg',
+        'Huawei' => '-logo-huawei-.jpg',
+        'Xiaomi' => 'Xiaomi_logo.png',
+        'Oppo' => 'oppo-logo.png',
+        'Vivo' => 'vivo-logo.png',
+        'LG' => 'lg-logo-.png'
+    ];
+    
+    return isset($logos[$brand]) ? $logos[$brand] : null;
+}
 ?>
 
 <div class="col-lg-6 col-md-12 mb-4">
@@ -67,39 +108,91 @@ $last_import_data = $last_import->fetch_assoc();
             
             <!-- إحصائيات سريعة -->
             <div class="row mb-3">
-                <div class="col-6">
+                <div class="col-4">
                     <div class="text-center">
                         <h4 class="mb-1" style="color: #ffd700;"><?php echo $total_products ?></h4>
-                        <small style="color: rgba(255,255,255,0.8);">إجمالي المنتجات</small>
+                        <small style="color: rgba(255,255,255,0.8);">إجمالي</small>
                     </div>
                 </div>
-                <div class="col-6">
+                <div class="col-4">
                     <div class="text-center">
                         <h4 class="mb-1" style="color: #ff6b6b;"><?php echo $unclassified_count ?></h4>
                         <small style="color: rgba(255,255,255,0.8);">غير مصنف</small>
                     </div>
                 </div>
-            </div>
-            
-            <!-- شارت بسيط -->
-            <div class="warehouse-chart mb-3">
-                <h6 style="color: rgba(255,255,255,0.9); margin-bottom: 1rem;">توزيع المنتجات:</h6>
-                <?php 
-                $max_count = max(array_column($stats_data, 'total'));
-                foreach($stats_data as $brand => $data): 
-                    $percentage = ($data['total'] / $max_count) * 100;
-                ?>
-                <div class="chart-item mb-2">
-                    <div class="d-flex justify-content-between align-items-center mb-1">
-                        <span style="color: white; font-size: 0.9rem;"><?php echo $brand ?></span>
-                        <span style="color: rgba(255,255,255,0.8); font-size: 0.8rem;"><?php echo $data['total'] ?></span>
-                    </div>
-                    <div class="progress" style="height: 6px; background: rgba(255,255,255,0.2);">
-                        <div class="progress-bar" style="width: <?php echo $percentage ?>%; background: linear-gradient(90deg, #ffd700 0%, #ff6b6b 100%);"></div>
+                <div class="col-4">
+                    <div class="text-center">
+                        <h4 class="mb-1" style="color: #4ecdc4;"><?php echo $published_count ?></h4>
+                        <small style="color: rgba(255,255,255,0.8);">منشور</small>
                     </div>
                 </div>
-                <?php endforeach; ?>
             </div>
+            
+            <!-- شارت دائري لتوزيع العلامات التجارية -->
+            <div class="warehouse-chart mb-3">
+                <h6 style="color: rgba(255,255,255,0.9); margin-bottom: 1rem;">توزيع العلامات التجارية:</h6>
+                <canvas id="brand-chart" style="height: 250px; max-height: 250px;"></canvas>
+            </div>
+            
+            <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                if (typeof Chart !== 'undefined' && document.getElementById('brand-chart')) {
+                    var ctx = document.getElementById('brand-chart').getContext('2d');
+                    
+                    var chartData = {
+                        labels: [<?php
+                            $labels = [];
+                            foreach($stats_data as $brand => $data) {
+                                $labels[] = "'" . addslashes($brand) . "'";
+                            }
+                            echo implode(',', $labels);
+                        ?>],
+                        datasets: [{
+                            label: 'توزيع المنتجات',
+                            data: [<?php
+                                $counts = [];
+                                foreach($stats_data as $brand => $data) {
+                                    $counts[] = $data['total'];
+                                }
+                                echo implode(',', $counts);
+                            ?>],
+                            backgroundColor: [
+                                '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40',
+                                '#E7E9ED', '#8DDF3C', '#FBCF55', '#A478F0', '#FF6B6B', '#4ECDC4'
+                            ],
+                            borderWidth: 0
+                        }]
+                    };
+
+                    new Chart(ctx, {
+                        type: 'doughnut',
+                        data: chartData,
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            legend: {
+                                display: false
+                            },
+                            plugins: {
+                                legend: {
+                                    position: 'right',
+                                    labels: {
+                                        fontColor: 'white',
+                                        boxWidth: 12,
+                                        padding: 15
+                                    }
+                                },
+                                title: {
+                                    display: false
+                                }
+                            }
+                        }
+                    });
+                } else {
+                    console.error('Chart.js is not loaded or canvas element not found.');
+                }
+            });
+            </script>
             
             <!-- معلومات آخر استيراد -->
             <?php if($last_import_data): ?>
@@ -118,7 +211,7 @@ $last_import_data = $last_import->fetch_assoc();
             <div class="text-center py-3">
                 <i class="fas fa-inbox fa-3x mb-3" style="color: rgba(255,255,255,0.5);"></i>
                 <h6 style="color: rgba(255,255,255,0.8);">المخزن فارغ</h6>
-                <p style="color: rgba(255,255,255,0.6); font-size: 0.9rem;">ابدأ برفع ملف Excel لإضافة المنتجات</p>
+                <p style="color: rgba(255,255,255,0.6); font-size: 0.9rem;">ابدأ برفع ملف CSV لإضافة المنتجات</p>
             </div>
             
             <?php endif; ?>
@@ -127,9 +220,9 @@ $last_import_data = $last_import->fetch_assoc();
             <div class="d-flex gap-2 mt-3">
                 <a href="index.php?page=warehouse/upload" class="btn btn-sm flex-fill" style="background: rgba(255,255,255,0.2); color: white; border: none; border-radius: 20px; font-weight: 500;">
                     <i class="fas fa-upload me-1"></i>
-                    رفع Excel
+                    رفع CSV
                 </a>
-                <a href="index.php?page=warehouse/manage" class="btn btn-sm flex-fill" style="background: rgba(255,255,255,0.2); color: white; border: none; border-radius: 20px; font-weight: 500;">
+                <a href="index.php?page=warehouse" class="btn btn-sm flex-fill" style="background: rgba(255,255,255,0.2); color: white; border: none; border-radius: 20px; font-weight: 500;">
                     <i class="fas fa-cogs me-1"></i>
                     إدارة المخزن
                 </a>

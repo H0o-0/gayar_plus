@@ -45,5 +45,16 @@ function isMobileDevice(){
     //Otherwise return false..  
     return false;
 }
+function clear_specific_tables($conn){
+    // حذف جميع البيانات من جدول السلاسل (series)
+    $conn->query("DELETE FROM `series`");
+
+    // حذف جميع البيانات من جدول الموديلات (models)
+    $conn->query("DELETE FROM `models`");
+
+    // التحقق من أن جدول العلامات التجارية (brands) لم يتغير
+    echo "تم حذف البيانات من جداول series و models بنجاح. بيانات brands بقاءت كما هي.";
+}
+
 ob_end_flush();
 ?>

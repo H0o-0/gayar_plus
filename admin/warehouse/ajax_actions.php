@@ -3,12 +3,13 @@ require_once('../config.php');
 
 header('Content-Type: application/json');
 
-if (!isset($_POST['action'])) {
+// دعم GET و POST requests
+$action = $_POST['action'] ?? $_GET['action'] ?? null;
+
+if (!$action) {
     echo json_encode(['status' => 'error', 'message' => 'لم يتم تحديد العملية']);
     exit;
 }
-
-$action = $_POST['action'];
 
 switch ($action) {
     case 'delete_product':
@@ -29,6 +30,12 @@ switch ($action) {
     case 'bulk_publish':
         bulkPublish();
         break;
+    case 'bulk_save_draft':
+        bulkSaveDraft();
+        break;
+    case 'bulk_publish':
+        bulkPublishProducts();
+        break;
     case 'delete_unclassified':
         deleteUnclassified();
         break;
@@ -36,7 +43,7 @@ switch ($action) {
         getSubcategories();
         break;
     default:
-        echo json_encode(['status' => 'error', 'message' => 'عملية غير مدعومة']);
+        echo json_encode(['status' => 'error', 'message' => 'عملية غير مدعو��ة']);
 }
 
 function deleteProduct() {
@@ -324,6 +331,149 @@ function bulkPublish() {
     
     if ($success_count > 0) {
         echo json_encode(['status' => 'success', 'message' => "تم نشر $success_count منتج بنجاح" . ($error_count > 0 ? " و فشل $error_count منتج" : "")]);
+    } else {
+        echo json_encode(['status' => 'error', 'message' => "فشل في نشر جميع المنتجات"]);
+    }
+}
+
+function bulkSaveDraft() {
+    global $conn;
+    
+    $ids = $_POST['ids'] ?? [];
+    if (empty($ids) || !is_array($ids)) {
+        echo json_encode(['status' => 'error', 'message' => 'لم يتم تحديد منتجات للحفظ']);
+        return;
+    }
+    
+    $ids = array_map('intval', $ids);
+    $success_count = 0;
+    $error_count = 0;
+    
+    // الحصول على البيانات المشتركة
+    $category_id = intval($_POST['category_id'] ?? 0);
+    $sub_category_id = intval($_POST['sub_category_id'] ?? 0);
+    $brand = $conn->real_escape_string($_POST['brand'] ?? '');
+    
+    // الحصول على البيانات الفردية
+    $prices = $_POST['prices'] ?? [];
+    $names = $_POST['names'] ?? [];
+    
+    foreach ($ids as $id) {
+        try {
+            // تحديث اسم المنتج والسعر إذا تم توفيرهما
+            $update_fields = [];
+            if (isset($names[$id])) {
+                $update_fields[] = "product_name = '" . $conn->real_escape_string($names[$id]) . "'";
+            }
+            if (isset($prices[$id])) {
+                $update_fields[] = "original_price = " . floatval($prices[$id]);
+            }
+            if ($category_id > 0) {
+                $update_fields[] = "category_id = $category_id";
+            }
+            if ($sub_category_id > 0) {
+                $update_fields[] = "sub_category_id = $sub_category_id";
+            }
+            if (!empty($brand)) {
+                $update_fields[] = "confirmed_brand = '$brand'";
+            }
+            $update_fields[] = "status = 'classified'";
+            
+            if (!empty($update_fields)) {
+                $update_sql = "UPDATE temp_warehouse SET " . implode(', ', $update_fields) . " WHERE id = $id";
+                if ($conn->query($update_sql)) {
+                    $success_count++;
+                } else {
+                    $error_count++;
+                    error_log("Failed to update product ID $id: " . $conn->error);
+                }
+            } else {
+                $success_count++; // لا توجد تحديثات مطلوبة
+            }
+        } catch (Exception $e) {
+            $error_count++;
+            error_log("Exception updating product ID $id: " . $e->getMessage());
+        }
+    }
+    
+    if ($success_count > 0) {
+        echo json_encode(['status' => 'success', 'message' => "تم حفظ $success_count منتج كمسودة" . ($error_count > 0 ? " وفشل $error_count منتج" : "")]);
+    } else {
+        echo json_encode(['status' => 'error', 'message' => "فشل في حفظ جميع المنتجات"]);
+    }
+}
+
+function bulkPublishProducts() {
+    global $conn;
+    
+    $ids = $_POST['ids'] ?? [];
+    if (empty($ids) || !is_array($ids)) {
+        echo json_encode(['status' => 'error', 'message' => 'لم يتم تحديد منتجات للنشر']);
+        return;
+    }
+    
+    $ids = array_map('intval', $ids);
+    $success_count = 0;
+    $error_count = 0;
+    
+    // الحصول على البيانات المشتركة
+    $category_id = intval($_POST['category_id'] ?? 0);
+    $sub_category_id = intval($_POST['sub_category_id'] ?? 0);
+    $brand = $conn->real_escape_string($_POST['brand'] ?? '');
+    
+    // الحصول على البيانات الفردية
+    $prices = $_POST['prices'] ?? [];
+    $names = $_POST['names'] ?? [];
+    
+    foreach ($ids as $id) {
+        try {
+            // تحديث اسم المنتج والسعر إذا تم توفيرهما
+            if (isset($names[$id]) || isset($prices[$id]) || $category_id > 0 || $sub_category_id > 0 || !empty($brand)) {
+                $update_fields = [];
+                if (isset($names[$id])) {
+                    $update_fields[] = "product_name = '" . $conn->real_escape_string($names[$id]) . "'";
+                }
+                if (isset($prices[$id])) {
+                    $update_fields[] = "original_price = " . floatval($prices[$id]);
+                }
+                if ($category_id > 0) {
+                    $update_fields[] = "category_id = $category_id";
+                }
+                if ($sub_category_id > 0) {
+                    $update_fields[] = "sub_category_id = $sub_category_id";
+                }
+                if (!empty($brand)) {
+                    $update_fields[] = "confirmed_brand = '$brand'";
+                }
+                $update_fields[] = "status = 'classified'";
+                
+                if (!empty($update_fields)) {
+                    $update_sql = "UPDATE temp_warehouse SET " . implode(', ', $update_fields) . " WHERE id = $id";
+                    $conn->query($update_sql);
+                }
+            }
+            
+            // نشر المنتج
+            $_POST['id'] = $id;
+            ob_start();
+            publishProduct();
+            $result = ob_get_clean();
+            $response = json_decode($result, true);
+            
+            if ($response && $response['status'] == 'success') {
+                $success_count++;
+            } else {
+                $error_count++;
+                error_log("Failed to publish product ID $id: " . ($result ?: 'No response'));
+            }
+        } catch (Exception $e) {
+            $error_count++;
+            error_log("Exception publishing product ID $id: " . $e->getMessage());
+        }
+    }
+    
+    if ($success_count > 0) {
+        echo json_encode(['status' => 'success', 'message' => "تم نشر $success_count منتج بنجاح" . ($error_count > 0 ? " وفشل $error_count منتج" : "")]);
     } else {
         echo json_encode(['status' => 'error', 'message' => "فشل في نشر جميع المنتجات"]);
     }

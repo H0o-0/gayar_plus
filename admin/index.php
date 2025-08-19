@@ -19,10 +19,7 @@
                   include '404.html';
               }else{
                 if(is_dir($page)) {
-                  if($page == 'warehouse')
-                    include $page.'/index_updated.php';
-                  else
-                    include $page.'/index.php';
+                  include $page.'/index.php';
                 } else
                   include $page.'.php';
 

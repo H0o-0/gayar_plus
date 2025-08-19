@@ -63,19 +63,28 @@
                       </a>
                     </li>
                     <li class="nav-header">Maintenance</li>
+                    <li class="nav-header">Maintenance</li>
                     <li class="nav-item dropdown">
-                      <a href="<?php echo base_url ?>admin/?page=maintenance/category" class="nav-link nav-maintenance/category">
+                      <a href="<?php echo base_url ?>admin/?page=brands" class="nav-link nav-brands">
                         <i class="nav-icon fas fa-th-list"></i>
                         <p>
-                          Category List
+                          Brand List
                         </p>
                       </a>
                     </li>
                     <li class="nav-item dropdown">
-                      <a href="<?php echo base_url ?>admin/?page=maintenance/sub_category" class="nav-link nav-maintenance/sub_category">
+                      <a href="<?php echo base_url ?>admin/?page=series" class="nav-link nav-series">
                         <i class="nav-icon fas fa-th-list"></i>
                         <p>
-                          Sub Category List
+                          Series List
+                        </p>
+                      </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                      <a href="<?php echo base_url ?>admin/?page=models" class="nav-link nav-models">
+                        <i class="nav-icon fas fa-th-list"></i>
+                        <p>
+                          Model List
                         </p>
                       </a>
                     </li>

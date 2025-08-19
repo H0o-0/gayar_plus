@@ -33,22 +33,35 @@ $(document).ready(function(){
 			data:$(this).serialize(),
 			error:err=>{
 				console.log(err)
-
+				alert_toast("حدث خطأ في الشبكة، حاول مرة أخرى",'error')
+				end_loader()
 			},
 			success:function(resp){
-				if(resp){
-					resp = JSON.parse(resp)
-					if(resp.status == 'success'){
-						location.replace(_base_url_+'admin');
-					}else if(resp.status == 'incorrect'){
-						var _frm = $('#login-frm')
-						var _msg = "<div class='alert alert-danger text-white err_msg'><i class='fa fa-exclamation-triangle'></i> Incorrect username or password</div>"
-						_frm.prepend(_msg)
-						_frm.find('input').addClass('is-invalid')
-						$('[name="username"]').focus()
+				try {
+					if(resp){
+						resp = JSON.parse(resp)
+						if(resp.status == 'success'){
+							alert_toast("تم تسجيل الدخول بنجاح",'success')
+							setTimeout(function(){
+								location.replace(_base_url_+'admin');
+							}, 1000)
+						}else if(resp.status == 'incorrect'){
+							var _frm = $('#login-frm')
+							var _msg = "<div class='alert alert-danger text-white err_msg'><i class='fa fa-exclamation-triangle'></i> اسم المستخدم أو كلمة المرور غير صحيحة</div>"
+							_frm.prepend(_msg)
+							_frm.find('input').addClass('is-invalid')
+							$('[name="username"]').focus()
+						} else {
+							alert_toast("حدث خطأ غير متوقع",'error')
+						}
+					} else {
+						alert_toast("لم يتم الحصول على استجابة من الخادم",'error')
 					}
-						end_loader()
+				} catch(e) {
+					console.log("JSON Parse Error:", e)
+					alert_toast("خطأ في معالجة البيانات",'error')
 				}
+				end_loader()
 			}
 		})
 	})

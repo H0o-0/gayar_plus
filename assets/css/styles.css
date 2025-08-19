@@ -10733,3 +10733,40 @@ input.cart-qty[type=number] {
         display: block !important;
     }
 }
+
+/* ===== Uniform product card thumbnails ===== */
+.card.product-card {
+  position: relative;
+  border: none;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+  background: #ffffff;
+}
+
+.card.product-card .product-image {
+  position: relative;
+  width: 100%;
+  height: 220px; /* fixed height for all cards */
+  background: #ffffff; /* white canvas for small images */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.card.product-card .product-image img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  background: #ffffff;
+}
+
+/* Ensure generic product image containers are consistent if used elsewhere */
+.products-grid .card .product-image,
+.products-list .card .product-image {
+  height: 220px;
+  background: #fff;
+}

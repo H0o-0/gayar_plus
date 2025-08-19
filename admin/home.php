@@ -170,7 +170,7 @@ $current_time = date('h:i A');
     <div class="row align-items-center">
         <div class="col-md-8">
             <h1 class="mb-2">مرحباً بك في <?php echo $_settings->info('name') ?></h1>
-            <p class="mb-0 opacity-75">لوحة التحكم الرئيسية - إدارة متجر الحيوانات الأليفة</p>
+            <p class="mb-0 opacity-75">لوحة التحكم الرئيسية - إدارة متجر قطع غيار الهواتف</p>
         </div>
         <div class="col-md-4">
             <div class="date-time">
