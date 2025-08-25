@@ -1,4 +1,7 @@
-<?php require_once('../config.php'); ?>
+<?php 
+require_once('../initialize.php'); 
+require_once('inc/sess_auth.php'); 
+?>
  <!DOCTYPE html>
 <html lang="en" class="" style="height: auto;">
 <?php require_once('inc/header.php') ?>
@@ -28,6 +31,9 @@
           </div>
         </section>
         <!-- /.content -->
+        <div class="animated-bg">
+    <div class="pattern"></div>
+</div>
   <div class="modal fade" id="confirm_modal" role='dialog'>
     <div class="modal-dialog modal-md modal-dialog-centered" role="document">
       <div class="modal-content">

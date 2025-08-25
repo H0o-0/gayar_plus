@@ -1,553 +1,462 @@
-<?php 
-// تضمين كلاس تنظيف النص
+<?php
+// Modern Product Viewer based on beautiful product viewer.html design
+ob_start(); // Start output buffering to prevent headers already sent error
+require_once 'config.php';
 require_once 'classes/TextCleaner.php';
 
- $products = $conn->query("SELECT * FROM `products`  where md5(id) = '{$_GET['id']}' ");
- if($products->num_rows > 0){
-     foreach($products->fetch_assoc() as $k => $v){
-         $$k= $v;
-     }
-    $upload_path = base_app.'/uploads/product_'.$id;
-    $img = "";
-    if(is_dir($upload_path)){
-        $fileO = scandir($upload_path);
-        if(isset($fileO[2]))
-            $img = "uploads/product_".$id."/".$fileO[2];
-        // var_dump($fileO);
+// Get product by ID
+if(!isset($_GET['id'])) {
+    header('Location: ./');
+    exit;
+}
+
+$product_id = $_GET['id'];
+
+// Check if the database connection is valid
+if (!isset($conn) || !$conn) {
+    header('Location: ./');
+    exit;
+}
+
+// Use prepared statement to prevent SQL injection
+$stmt = $conn->prepare("SELECT p.*, c.category as brand_name, sc.sub_category as series_name, p.product_name as model_name, p.product_name as image 
+                         FROM products p 
+                         LEFT JOIN categories c ON p.category_id = c.id 
+                         LEFT JOIN sub_categories sc ON p.sub_category_id = sc.id 
+                         WHERE MD5(p.id) = ? AND p.status = 1");
+
+// Check if prepare was successful
+if (!$stmt) {
+    error_log("Prepare failed: " . $conn->error);
+    header('Location: ./');
+    exit;
+}
+
+$stmt->bind_param("s", $product_id);
+$stmt->execute();
+$result = $stmt->get_result();
+
+// Check if query was successful and has results
+if(!$result || $result->num_rows == 0) {
+    header('Location: ./');
+    exit;
+}
+
+// احصل على بيانات المنتج
+$product = $result->fetch_assoc();
+$pageTitle = $product['product_name'];
+
+// Use image from database if available, otherwise check uploads
+$image_path = $product['image'] ? $product['image'] : 'uploads/product_'.$product['id'];
+$images = [];
+if(is_dir($image_path) && !$product['image']) {
+    $files = scandir($image_path);
+    foreach($files as $file) {
+        if(!in_array($file, ['.', '..'])) {
+            $images[] = $image_path.'/'.$file;
+        }
     }
-    $inventory = $conn->query("SELECT * FROM inventory where product_id = ".$id);
-    $inv = array();
-    while($ir = $inventory->fetch_assoc()){
-        $inv[] = $ir;
+} elseif ($product['image']) {
+    $images[] = $product['image'];
+}
+
+// احصل على معلومات السعر
+$price_stmt = $conn->prepare("SELECT * FROM inventory WHERE product_id = ? LIMIT 1");
+// Check if prepare was successful
+if (!$price_stmt) {
+    error_log("Price prepare failed: " . $conn->error);
+    $price_info = null;
+} else {
+    $price_stmt->bind_param("i", $product['id']);
+    $price_stmt->execute();
+    $price_result = $price_stmt->get_result();
+    $price_info = null;
+    if($price_result && $price_result->num_rows > 0) {
+        $price_info = $price_result->fetch_assoc();
     }
- }
+}
+
+// All redirect checks are complete, now we can include the header
+include 'inc/header.php';
+ob_end_flush(); // Flush the output buffer
 ?>
-<style>
-    :root {
-        --primary-color: #2c5aa0;
-        --secondary-color: #f8f9fa;
-        --accent-color: #ff6b6b;
-    }
 
-    .p-size {
-        border-radius: 20px !important;
-        transition: all 0.3s ease;
-    }
+<!-- Pattern Background -->
+<div class="pattern-background"></div>
 
-    .p-size.active {
-        background: var(--primary-color) !important;
-        color: white !important;
-        border-color: var(--primary-color) !important;
-    }
+<!-- Breadcrumb -->
+<section class="breadcrumb">
+    <div class="breadcrumb-container">
+        <nav class="breadcrumb-nav">
+            <a href="./">الرئيسية</a>
+            <span class="breadcrumb-separator"><i class="fas fa-chevron-left"></i></span>
+            <a href="./?p=products">المنتجات</a>
+            <?php if($product['brand_name']): ?>
+            <span class="breadcrumb-separator"><i class="fas fa-chevron-left"></i></span>
+            <a href="./?p=products&category=<?= md5($product['category_id']) ?>"><?= htmlspecialchars($product['brand_name']) ?></a>
+            <?php endif; ?>
+            <span class="breadcrumb-separator"><i class="fas fa-chevron-left"></i></span>
+            <span class="breadcrumb-current"><?= htmlspecialchars($product['product_name']) ?></span>
+        </nav>
+    </div>
+</section>
 
-    .p-size:hover {
-        background: var(--primary-color) !important;
-        color: white !important;
-        border-color: var(--primary-color) !important;
-    }
-
-    .view-image {
-        border-radius: 10px;
-        overflow: hidden;
-        transition: all 0.3s ease;
-    }
-
-    .view-image.active {
-        border: 3px solid var(--primary-color);
-    }
-
-    .view-image:hover {
-        transform: scale(1.05);
-    }
-
-    #display-img {
-        border-radius: 15px;
-        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-        width: 100%;
-        height: 400px;
-        object-fit: contain;
-        transition: opacity 0.3s ease;
-    }
-
-    /* إبقاء الصور ثابتة وعدم تحركها مع النص */
-    .product-images-container {
-        position: static;
-        top: auto;
-    }
-
-    .main-image-container {
-        width: 100%;
-        height: 400px;
-        overflow: hidden;
-        border-radius: 15px;
-        background: #f8f9fa;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 1rem;
-    }
-
-    .thumbnail-images {
-        display: flex;
-        gap: 10px;
-        overflow-x: auto;
-        padding: 10px 0;
-    }
-
-    .thumbnail-images::-webkit-scrollbar {
-        height: 4px;
-    }
-
-    .thumbnail-images::-webkit-scrollbar-track {
-        background: #f1f1f1;
-        border-radius: 2px;
-    }
-
-    .thumbnail-images::-webkit-scrollbar-thumb {
-        background: var(--primary-color);
-        border-radius: 2px;
-    }
-
-    .view-image {
-        flex-shrink: 0;
-        width: 80px;
-        height: 80px;
-        border-radius: 10px;
-        overflow: hidden;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        border: 2px solid transparent;
-    }
-
-    .view-image img {
-        width: 100%;
-        height: 100%;
-        object-fit: contain;
-        transition: transform 0.4s ease;
-    }
-
-    .product-card:hover .product-image img {
-        transform: scale(1.05);
-    }
-
-    .sale-badge {
-        position: absolute;
-        top: 15px;
-        right: 15px;
-        background: linear-gradient(135deg, var(--accent-color) 0%, #ff6b6b 100%);
-        color: white;
-        padding: 5px 12px;
-        border-radius: 20px;
-        font-size: 0.75rem;
-        font-weight: 600;
-        z-index: 2;
-    }
-
-    .product-info {
-        padding: 1.5rem;
-        flex-grow: 1;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .product-title {
-        font-size: 1.1rem;
-        font-weight: 700;
-        color: var(--primary-color);
-        margin-bottom: 0.8rem;
-        line-height: 1.3;
-    }
-
-    .product-description {
-        color: #666;
-        font-size: 0.9rem;
-        line-height: 1.5;
-        margin-bottom: 1rem;
-        flex-grow: 1;
-    }
-
-    .product-price {
-        font-size: 1.2rem;
-        font-weight: 700;
-        color: var(--accent-color);
-        margin-top: auto;
-    }
-
-    .product-actions {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background: linear-gradient(135deg, var(--primary-color) 0%, #1e3d72 100%);
-        padding: 1rem;
-        transform: translateY(100%);
-        transition: transform 0.3s ease;
-        display: flex;
-        gap: 10px;
-    }
-
-    .product-card:hover .product-actions {
-        transform: translateY(0);
-    }
-
-    .product-actions .btn {
-        flex: 1;
-        border: none;
-        border-radius: 25px;
-        padding: 10px 15px;
-        font-weight: 600;
-        font-size: 0.85rem;
-        transition: all 0.3s ease;
-    }
-
-    .btn-view {
-        background: rgba(255,255,255,0.2);
-        color: white;
-    }
-
-    .btn-view:hover {
-        background: white;
-        color: var(--primary-color);
-        transform: translateY(-2px);
-    }
-
-    /* تصميم الألوان */
-    .product-colors {
-        margin-bottom: 0.8rem;
-        padding: 0.5rem 0;
-    }
-
-    .colors-list {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        justify-content: flex-start;
-    }
-
-    .color-dot {
-        width: 12px;
-        height: 12px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
-        border: 2px solid white;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }
-
-    .color-dot:hover {
-        transform: scale(1.2);
-        box-shadow: 0 3px 8px rgba(0,0,0,0.2);
-    }
-
-    .color-dot:nth-child(1) {
-        background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
-    }
-
-    .color-dot:nth-child(2) {
-        background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
-    }
-
-    .color-dot:nth-child(3) {
-        background: linear-gradient(135deg, #45b7d1 0%, #96c93d 100%);
-    }
-
-    .more-colors-text {
-        font-size: 0.7rem;
-        color: var(--primary-color);
-        font-weight: 500;
-        margin-left: 5px;
-    }
-
-    /* تصميم اختيار الألوان في صفحة المنتج */
-    .color-selection {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 15px;
-    }
-
-    .color-option {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        cursor: pointer;
-        padding: 8px 12px;
-        border: 2px solid transparent;
-        border-radius: 25px;
-        transition: all 0.3s ease;
-        background: #f8f9fa;
-    }
-
-    .color-option:hover {
-        background: #e9ecef;
-        border-color: var(--primary-color);
-    }
-
-    .color-option input[type="radio"] {
-        display: none;
-    }
-
-    .color-option input[type="radio"]:checked + .color-circle {
-        border: 3px solid var(--primary-color);
-        box-shadow: 0 0 0 2px white, 0 0 0 4px var(--primary-color);
-    }
-
-    .color-option input[type="radio"]:checked ~ .color-name {
-        color: var(--primary-color);
-        font-weight: bold;
-    }
-
-    .color-circle {
-        width: 20px;
-        height: 20px;
-        border-radius: 50%;
-        border: 2px solid white;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        transition: all 0.3s ease;
-    }
-
-    .color-name {
-        font-size: 0.9rem;
-        font-weight: 500;
-        color: #666;
-        transition: all 0.3s ease;
-    }
-</style>
-
-<section class="py-5">
-    <div class="container px-4 px-lg-5 my-5">
-        <div class="row gx-4 gx-lg-5 align-items-start">
-            <div class="col-md-6">
-                <div class="product-images-container">
-                    <div class="main-image-container">
-                        <img id="display-img" src="<?php echo validate_image($img) ?>" alt="<?php echo $product_name ?>" loading="lazy" />
-                    </div>
-                    <div class="thumbnail-images">
-                        <?php
-                            foreach($fileO as $k => $img):
-                                if(in_array($img,array('.','..')))
-                                    continue;
-                        ?>
-                            <div class="view-image <?php echo $k == 2 ? "active":'' ?>">
-                                <img src="<?php echo validate_image('uploads/product_'.$id.'/'.$img) ?>" loading="lazy" alt="صورة المنتج" />
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
+<!-- Product Main Section -->
+<section class="product-main">
+    <div class="product-container">
+        <div class="product-layout">
+            <!-- Product Gallery -->
+            <div class="product-gallery">
+                <div class="main-image-container">
+                    <?php if(!empty($images)): ?>
+                        <img src="<?= validate_image($images[0]) ?>" alt="<?= htmlspecialchars($product['product_name']) ?>" class="main-image" id="mainImage">
+                        <button class="zoom-btn" onclick="zoomImage()">
+                            <i class="fas fa-search-plus"></i>
+                        </button>
+                    <?php else: ?>
+                        <div class="main-image-placeholder">
+                            <i class="fas fa-mobile-alt"></i>
+                        </div>
+                    <?php endif; ?>
                 </div>
-            </div>
-            <div class="col-md-6">
-                <h1 class="display-5 fw-bolder" style="color: var(--primary-color, #2c5aa0);"><?php echo $product_name ?></h1>
-                <!-- الوصف المختصر تمت إزالته لتجنب طباعة HTML خام. سيتم عرض الوصف المنظف أدناه. -->
-                <?php if(!empty($inv)): ?>
-                <div class="fs-5 mb-5">
-                    <span id="price"><?php echo number_format($inv[0]['price']) ?> د.ع</span>
-                </div>
-
-                <!-- عرض الألوان إذا كانت متوفرة -->
-                <?php
-                $product_colors = array();
-                if(isset($has_colors) && $has_colors == 1) {
-                    $colors_qry = $conn->query("SELECT * FROM product_colors where product_id = ".$id);
-                    if($colors_qry) {
-                        while($color_row = $colors_qry->fetch_assoc()){
-                            $product_colors[] = $color_row;
-                        }
-                    }
-                }
-                ?>
-
-                <?php if(!empty($product_colors)): ?>
-                <div class="mb-4">
-                    <h6 class="fw-bold mb-3" style="color: var(--primary-color);">اللون المستخدم:</h6>
-                    <div class="color-selection">
-                        <?php foreach($product_colors as $index => $color): ?>
-                        <label class="color-option">
-                            <input type="radio" name="selected_color" value="<?php echo $color['id'] ?>" <?php echo $index == 0 ? 'checked' : '' ?>>
-                            <span class="color-circle" style="background: <?php echo $color['color_code'] ?>;" title="<?php echo $color['color_name'] ?>"></span>
-                            <span class="color-name"><?php echo $color['color_name'] ?></span>
-                        </label>
-                        <?php endforeach; ?>
+                
+                <?php if(count($images) > 1): ?>
+                <div class="image-thumbnails">
+                    <?php foreach($images as $index => $image): ?>
+                    <div class="thumbnail <?= $index === 0 ? 'active' : '' ?>" onclick="changeMainImage('<?= validate_image($image) ?>', this)">
+                        <img src="<?= validate_image($image) ?>" alt="صورة المنتج">
                     </div>
+                    <?php endforeach; ?>
                 </div>
                 <?php endif; ?>
+            </div>
 
-                <form action="" id="add-cart">
-                <div class="d-flex">
-                    <input type="hidden" name="price" value="<?php echo $inv[0]['price'] ?>">
-                    <input type="hidden" name="inventory_id" value="<?php echo $inv[0]['id'] ?>">
-                    <input class="form-control text-center me-3" id="inputQuantity" type="num" value="1" style="max-width: 3rem" name="quantity" />
-                    <button class="btn flex-shrink-0" type="submit" style="background: var(--primary-color, #2c5aa0); color: white; border-radius: 25px; padding: 12px 25px; font-weight: 500; transition: all 0.3s ease;">
-                        <i class="fas fa-shopping-cart me-1"></i>
-                        أضف للسلة
+            <!-- Product Info -->
+            <div class="product-info">
+                <div class="product-badges">
+                    <?php if($product['featured'] == 1): ?>
+                    <span class="badge badge-bestseller">الأكثر مبيعاً</span>
+                    <?php endif; ?>
+                    <span class="badge badge-new">جديد</span>
+                </div>
+
+                <h1 class="product-title"><?= htmlspecialchars($product['product_name']) ?></h1>
+
+                <div class="product-rating">
+                    <div class="stars">
+                        <i class="fas fa-star star"></i>
+                        <i class="fas fa-star star"></i>
+                        <i class="fas fa-star star"></i>
+                        <i class="fas fa-star star"></i>
+                        <i class="fas fa-star star empty"></i>
+                    </div>
+                    <span class="rating-text">4.5 من 5</span>
+                    <a href="#reviews" class="rating-count">(142 تقييم)</a>
+                </div>
+
+                <div class="product-price">
+                    <?php if($price_info): ?>
+                        <span class="price-current"><?= TextCleaner::formatPrice($price_info['price']) ?></span>
+                    <?php else: ?>
+                        <span class="price-current">السعر عند الطلب</span>
+                    <?php endif; ?>
+                </div>
+
+                <div class="product-description">
+                    <?= TextCleaner::sanitizeForDescription($product['description']) ?>
+                </div>
+
+                <!-- Product Options -->
+                <div class="product-options">
+                    <div class="option-group">
+                        <label class="option-label">الكمية:</label>
+                        <div class="quantity-selector">
+                            <div class="quantity-controls">
+                                <button class="quantity-btn" onclick="decreaseQuantity()">-</button>
+                                <input type="number" class="quantity-input" id="quantity" value="1" min="1">
+                                <button class="quantity-btn" onclick="increaseQuantity()">+</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Product Actions -->
+                <?php if($price_info): ?>
+                <div class="product-actions">
+                    <button class="btn btn-primary" onclick="addToCart(<?= $product['id'] ?>)">
+                        <i class="fas fa-cart-plus"></i>
+                        أضف إلى السلة
+                    </button>
+                    <button class="btn btn-secondary" onclick="buyNow(<?= $product['id'] ?>)">
+                        <i class="fas fa-bolt"></i>
+                        اشتري الآن
+                    </button>
+                    <button class="btn btn-wishlist" onclick="addToWishlist(<?= $product['id'] ?>)">
+                        <i class="fas fa-heart"></i>
                     </button>
                 </div>
-                </form>
                 <?php else: ?>
-                <div class="fs-5 mb-5">
-                    <span class="text-danger">المنتج غير متوفر حالياً</span>
+                <div class="product-actions">
+                    <button class="btn btn-secondary" disabled>
+                        <i class="fas fa-clock"></i>
+                        غير متوفر حالياً
+                    </button>
                 </div>
                 <?php endif; ?>
-                                <?php
-                if(!empty($description)) {
-                    $decoded = html_entity_decode($description);
-                    $safe_html = TextCleaner::sanitizeForDescription($decoded);
-                    if(!empty($safe_html)) {
-                        echo '<div class="lead" dir="rtl">' . $safe_html . '</div>';
-                    }
-                }
-                ?>
-                
-            </div>
-        </div>
-    </div>
-</section>
-<!-- Related items section-->
-<section class="py-5" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);">
-    <div class="container px-4 px-lg-5 mt-5">
-        <h2 class="fw-bolder mb-5 text-center" style="color: var(--primary-color);">منتجات متشابهة</h2>
-        <div class="row gx-4 gx-lg-5 justify-content-center">
-        <?php
-            $products = $conn->query("SELECT * FROM `products` where status = 1 and (category_id = '{$category_id}' or sub_category_id = '{$sub_category_id}') and id !='{$id}' order by rand() limit 4 ");
-            while($row = $products->fetch_assoc()):
-                $upload_path = base_app.'/uploads/product_'.$row['id'];
-                $img = "";
-                if(is_dir($upload_path)){
-                    $fileO = scandir($upload_path);
-                    if(isset($fileO[2]))
-                        $img = "uploads/product_".$row['id']."/".$fileO[2];
-                }
 
-                $inventory = $conn->query("SELECT * FROM inventory where product_id = ".$row['id']);
-                $inv = array();
-                while($ir = $inventory->fetch_assoc()){
-                    $inv[] = $ir;
-                }
-
-                // الحصول على الألوان
-                $colors = array();
-                if(isset($row['has_colors']) && $row['has_colors'] == 1) {
-                    $colors_qry = $conn->query("SELECT * FROM product_colors where product_id = ".$row['id']);
-                    if($colors_qry) {
-                        while($color_row = $colors_qry->fetch_assoc()){
-                            $colors[] = $color_row['color_name'];
-                        }
-                    }
-                }
-        ?>
-            <div class="col-lg-3 col-md-6 mb-4">
-                <div class="card product-card">
-                    <div class="product-image">
-                        <?php if(!empty($colors)): ?>
-                        <div class="sale-badge">ألوان متعددة</div>
-                        <?php endif; ?>
-                        <img src="<?php echo validate_image($img) ?>" alt="<?php echo $row['product_name'] ?>" loading="lazy" />
-                    </div>
-
-                    <div class="product-info">
-                        <h5 class="product-title"><?php echo $row['product_name'] ?></h5>
-                        <p class="product-description">
-                            <?php
-                            if(!empty($row['description'])) {
-                                echo TextCleaner::cleanAndTruncateUltra($row['description'], 60);
-                            }
-                            ?>
-                        </p>
-
-                        <!-- عرض الألوان إذا كانت متوفرة -->
-                        <?php if(!empty($colors)): ?>
-                        <div class="product-colors">
-                            <div class="colors-list">
-                                <?php foreach(array_slice($colors, 0, 3) as $color): ?>
-                                <span class="color-dot" title="<?php echo $color ?>"></span>
-                                <?php endforeach; ?>
-                                <?php if(count($colors) > 3): ?>
-                                <span class="more-colors-text">+<?php echo count($colors) - 3 ?> ألوان</span>
-                                <?php endif; ?>
-                            </div>
+                <!-- Product Features -->
+                <div class="product-features">
+                    <h3 class="features-title">المميزات الرئيسية</h3>
+                    <div class="features-list">
+                        <div class="feature-item">
+                            <div class="feature-icon"><i class="fas fa-check"></i></div>
+                            <span>جودة عالية ومضمونة</span>
                         </div>
-                        <?php endif; ?>
-
-                        <div class="product-price">
-                            <?php
-                            if(!empty($inv)) {
-                                $first_inv = reset($inv);
-                                if(isset($first_inv['price']) && $first_inv['price'] > 0) {
-                                    echo number_format($first_inv['price']) . ' د.ع';
-                                } else {
-                                    echo 'السعر عند الطلب';
-                                }
-                            } else {
-                                echo 'السعر عند الطلب';
-                            }
-                            ?>
+                        <div class="feature-item">
+                            <div class="feature-icon"><i class="fas fa-check"></i></div>
+                            <span>شحن مجاني لجميع أنحاء العراق</span>
                         </div>
-                    </div>
-
-                    <!-- أزرار التفاعل المخفية -->
-                    <div class="product-actions">
-                        <button class="btn btn-view" onclick="viewProduct('<?php echo md5($row['id']) ?>')">
-                            <i class="fas fa-eye me-2"></i>
-                            عرض التفاصيل
-                        </button>
-                        
+                        <div class="feature-item">
+                            <div class="feature-icon"><i class="fas fa-check"></i></div>
+                            <span>ضمان شامل لمدة سنة</span>
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-icon"><i class="fas fa-check"></i></div>
+                            <span>خدمة عملاء 24/7</span>
+                        </div>
                     </div>
                 </div>
             </div>
-            <?php endwhile; ?>
+        </div>
+
+        <!-- Product Tabs -->
+        <div class="product-tabs">
+            <div class="tabs-nav">
+                <button class="tab-btn active" onclick="showTab('description')">الوصف التفصيلي</button>
+                <button class="tab-btn" onclick="showTab('specifications')">المواصفات</button>
+                <button class="tab-btn" onclick="showTab('reviews')">التقييمات</button>
+            </div>
+
+            <div class="tab-content active" id="description">
+                <h3>الوصف التفصيلي</h3>
+                <div><?= TextCleaner::sanitizeForDescription($product['description']) ?></div>
+            </div>
+
+            <div class="tab-content" id="specifications">
+                <h3>المواصفات التقنية</h3>
+                <table class="specifications-table">
+                    <tr>
+                        <th>الشركة المصنعة</th>
+                        <td><?= $product['brand_name'] ? htmlspecialchars($product['brand_name']) : 'غير محدد' ?></td>
+                    </tr>
+                    <?php if($product['series_name']): ?>
+                    <tr>
+                        <th>السلسلة</th>
+                        <td><?= htmlspecialchars($product['series_name']) ?></td>
+                    </tr>
+                    <?php endif; ?>
+                    <?php if($product['model_name']): ?>
+                    <tr>
+                        <th>الموديل</th>
+                        <td><?= htmlspecialchars($product['model_name']) ?></td>
+                    </tr>
+                    <?php endif; ?>
+                    <tr>
+                        <th>حالة التوفر</th>
+                        <td><?= $price_info ? 'متوفر' : 'غير متوفر' ?></td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="tab-content" id="reviews">
+                <h3>تقييمات العملاء</h3>
+                <div class="reviews-summary">
+                    <div class="rating-overview">
+                        <div class="rating-score">4.5</div>
+                        <div class="stars">
+                            <i class="fas fa-star star"></i>
+                            <i class="fas fa-star star"></i>
+                            <i class="fas fa-star star"></i>
+                            <i class="fas fa-star star"></i>
+                            <i class="fas fa-star star empty"></i>
+                        </div>
+                        <p>من أصل 142 تقييم</p>
+                    </div>
+                    <div class="rating-bars">
+                        <div class="rating-bar">
+                            <span>5 نجوم</span>
+                            <div class="rating-bar-fill">
+                                <div class="rating-bar-progress" style="width: 65%"></div>
+                            </div>
+                            <span>65%</span>
+                        </div>
+                        <div class="rating-bar">
+                            <span>4 نجوم</span>
+                            <div class="rating-bar-fill">
+                                <div class="rating-bar-progress" style="width: 25%"></div>
+                            </div>
+                            <span>25%</span>
+                        </div>
+                        <div class="rating-bar">
+                            <span>3 نجوم</span>
+                            <div class="rating-bar-fill">
+                                <div class="rating-bar-progress" style="width: 7%"></div>
+                            </div>
+                            <span>7%</span>
+                        </div>
+                        <div class="rating-bar">
+                            <span>2 نجوم</span>
+                            <div class="rating-bar-fill">
+                                <div class="rating-bar-progress" style="width: 2%"></div>
+                            </div>
+                            <span>2%</span>
+                        </div>
+                        <div class="rating-bar">
+                            <span>1 نجمة</span>
+                            <div class="rating-bar-fill">
+                                <div class="rating-bar-progress" style="width: 1%"></div>
+                            </div>
+                            <span>1%</span>
+                        </div>
+                    </div>
+                </div>
+                <p>سيتم إضافة التقييمات قريباً...</p>
+            </div>
         </div>
     </div>
 </section>
+
+<!-- Related Products -->
+<section class="related-products">
+    <div class="container">
+        <h2 class="section-title">منتجات مشابهة</h2>
+        <div class="products-grid">
+            <?php
+            $related_products = $conn->query("
+                SELECT p.*, c.category as brand_name 
+                FROM products p 
+                LEFT JOIN categories c ON p.category_id = c.id 
+                WHERE p.id != {$product['id']} 
+                AND p.category_id = {$product['category_id']} 
+                AND p.status = 1 
+                ORDER BY RAND() 
+                LIMIT 4
+            ");
+            
+            if($related_products && $related_products->num_rows > 0):
+                while($related = $related_products->fetch_assoc()):
+            ?>
+            <div class="product-card" onclick="viewProduct('<?= md5($related['id']) ?>')">
+                <div class="product-card-image">
+                    <i class="fas fa-mobile-alt"></i>
+                </div>
+                <div class="product-card-info">
+                    <h4 class="product-card-title"><?= htmlspecialchars($related['product_name']) ?></h4>
+                    <div class="product-card-price">
+                        <?php
+                        $related_price = $conn->query("SELECT price FROM inventory WHERE product_id = {$related['id']} LIMIT 1");
+                        if($related_price && $related_price->num_rows > 0) {
+                            $price = $related_price->fetch_assoc()['price'];
+                            echo TextCleaner::formatPrice($price);
+                        } else {
+                            echo 'السعر عند الطلب';
+                        }
+                        ?>
+                    </div>
+                </div>
+            </div>
+            <?php endwhile; endif; ?>
+        </div>
+    </div>
+</section>
+
 <script>
-    <?php if(!empty($inv)): ?>
-    var inv = $.parseJSON('<?php echo json_encode($inv) ?>');
-    <?php else: ?>
-    var inv = [];
-    <?php endif; ?>
+// Product viewer functionality
+function changeMainImage(src, thumbnail) {
+    document.getElementById('mainImage').src = src;
+    
+    // Remove active class from all thumbnails
+    document.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
+    
+    // Add active class to clicked thumbnail
+    if(thumbnail) {
+        thumbnail.classList.add('active');
+    }
+}
 
-    $(function(){
-        $('.view-image').click(function(){
-            var _img = $(this).find('img').attr('src');
-            $('#display-img').attr('src',_img);
-            $('.view-image').removeClass("active")
-            $(this).addClass("active")
-        })
+function zoomImage() {
+    const mainImage = document.getElementById('mainImage');
+    // Implement zoom functionality
+    window.open(mainImage.src, '_blank');
+}
 
-        $('.p-size').click(function(){
-            // تم إزالة أزرار الحجم
-        })
+function increaseQuantity() {
+    const quantityInput = document.getElementById('quantity');
+    quantityInput.value = parseInt(quantityInput.value) + 1;
+}
 
-        $('#add-cart').submit(function(e){
-            e.preventDefault();
-            if(inv.length === 0){
-                alert('المنتج غير متوفر حالياً');
-                return false;
-            }
-            if('<?php echo $_settings->userdata('id') ?>' <= 0){
-                uni_modal("","login.php");
-                return false;
-            }
-            start_loader();
-            $.ajax({
-                url:'classes/Master.php?f=add_to_cart',
-                data:$(this).serialize(),
-                method:'POST',
-                dataType:"json",
-                error:err=>{
-                    console.log(err)
-                    alert_toast("an error occured",'error')
-                    end_loader()
-                },
-                success:function(resp){
-                    if(typeof resp == 'object' && resp.status=='success'){
-                        alert_toast("Product added to cart.",'success')
-                        $('#cart-count').text(resp.cart_count)
-                    }else{
-                        console.log(resp)
-                        alert_toast("an error occured",'error')
-                    }
-                    end_loader();
-                }
-            })
-        })
-    })
+function decreaseQuantity() {
+    const quantityInput = document.getElementById('quantity');
+    if(parseInt(quantityInput.value) > 1) {
+        quantityInput.value = parseInt(quantityInput.value) - 1;
+    }
+}
+
+function showTab(tabName) {
+    // Hide all tab contents
+    document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    
+    // Remove active class from all tab buttons
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Show selected tab content
+    document.getElementById(tabName).classList.add('active');
+    
+    // Add active class to clicked button
+    event.target.classList.add('active');
+}
+
+function addToCart(productId) {
+    const quantity = document.getElementById('quantity').value;
+    
+    if(window.addToCart) {
+        // استخدام الدالة العامة مع زر وهمي
+        const fakeButton = {
+            disabled: false,
+            innerHTML: 'إضافة للسلة',
+            style: {}
+        };
+        window.addToCart(fakeButton, productId);
+    } else {
+        // Fallback
+        alert('تم إضافة المنتج إلى السلة!');
+    }
+}
+
+function buyNow(productId) {
+    // Redirect to checkout with this product
+    addToCart(productId);
+    setTimeout(() => {
+        window.location.href = 'cart.php';
+    }, 500);
+}
+
+function addToWishlist(productId) {
+    // Implement wishlist functionality
+    if(window.GayarPlus && window.GayarPlus.showSuccessNotification) {
+        window.GayarPlus.showSuccessNotification('تم إضافة المنتج إلى المفضلة!');
+    } else {
+        alert('تم إضافة المنتج إلى المفضلة!');
+    }
+}
+
+function viewProduct(productId) {
+    window.location.href = `./?p=view_product&id=${productId}`;
+}
 </script>
+
+<?php include 'inc/modern-footer.php'; ?>

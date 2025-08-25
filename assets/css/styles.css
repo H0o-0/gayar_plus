@@ -1,18 +1,10 @@
-@charset "UTF-8";
-
-/*!
-* Start Bootstrap - Shop Homepage v5.0.1 (https://startbootstrap.com/template/shop-homepage)
-* Copyright 2013-2021 Start Bootstrap
-* Licensed under MIT (https://github.com/StartBootstrap/startbootstrap-shop-homepage/blob/master/LICENSE)
-*/
-
-
-/*!
- * Bootstrap v5.0.1 (https://getbootstrap.com/)
- * Copyright 2011-2021 The Bootstrap Authors
- * Copyright 2011-2021 Twitter, Inc.
- * Licensed under MIT (https://github.com/twbs/bootstrap/blob/main/LICENSE)
+/* OLD BOOTSTRAP CSS - DISABLED TO PREVENT CONFLICTS
+ * Renamed from styles.css to styles.css.old
+ * This file was causing RTL and layout conflicts
+ * Use modern-homepage.css instead
  */
+
+/* DISABLED CSS FILE */
 
 :root {
     --bs-blue: #0d6efd;

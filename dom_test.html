@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DOM Test</title>
+    <link rel="stylesheet" href="assets/css/site-wide.css">
+</head>
+<body>
+    <!-- Pattern Background -->
+    <div class="pattern-background"></div>
+
+    <!-- Modern Navigation Bar -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <!-- Logo with site name -->
+            <a href="./" class="logo-container">
+                <img src="./admin/images/cropped_circle_image.png" alt="Gayar Plus Logo" class="site-logo">
+                <span class="site-name">Gayar Plus</span>
+            </a>
+            
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="#" class="nav-link">الأجهزة</a>
+                    <div class="mega-menu">
+                        <div class="menu-grid">
+                            <div class="menu-section">
+                                <h4 class="menu-title">الشركات</h4>
+                                <div class="menu-item brand-item" data-brand="12">
+                                    <div class="brand-icon">
+                                        <i class="fab fa-apple"></i>
+                                    </div>
+                                    <span>Apple</span>
+                                </div>
+                                <div class="menu-item brand-item" data-brand="49">
+                                    <div class="brand-icon">
+                                        <i class="fab fa-android"></i>
+                                    </div>
+                                    <span>Samsung</span>
+                                </div>
+                            </div>
+                            
+                            <div class="menu-section">
+                                <h4 class="menu-title">الفئات</h4>
+                                <div id="categories-section">
+                                    <div class="menu-item">اختر شركة لعرض الفئات</div>
+                                </div>
+                            </div>
+                            
+                            <div class="menu-section">
+                                <h4 class="menu-title">الهواتف</h4>
+                                <div id="phones-section">
+                                    <div class="menu-item">اختر فئة لعرض الهواتف</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">أدوات الصيانة</a>
+                    <div class="mega-menu">
+                        <div class="menu-grid">
+                            <div class="menu-section">
+                                <div class="menu-item">قريباً</div>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="./?p=about" class="nav-link">من نحن</a>
+                </li>
+                <li class="nav-item">
+                    <a href="./?p=contact" class="nav-link">اتصل بنا</a>
+                </li>
+            </ul>
+
+            <div class="nav-actions">
+                <button class="search-btn interactive-hover" onclick="openSearch()">
+                    <i class="fas fa-search"></i>
+                </button>
+                <a href="./?p=cart" class="cart-btn interactive-hover">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="cart-badge" id="cart-count">0</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <h1>DOM Test Page</h1>
+        <p>This page is for testing DOM element detection and event handling.</p>
+        
+        <div class="mt-4">
+            <h3>Test Results:</h3>
+            <div id="test-results"></div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const resultsDiv = document.getElementById('test-results');
+            let results = [];
+            
+            // Test 1: Check if devices menu item exists
+            const devicesMenuItem = document.querySelector('.nav-item:first-child');
+            results.push('Devices menu item found: ' + (devicesMenuItem ? 'Yes' : 'No'));
+            
+            // Test 2: Check if brand items exist
+            const brandItems = document.querySelectorAll('.brand-item');
+            results.push('Brand items found: ' + brandItems.length);
+            
+            // Test 3: Check if sections exist
+            const categoriesSection = document.getElementById('categories-section');
+            const phonesSection = document.getElementById('phones-section');
+            results.push('Categories section found: ' + (categoriesSection ? 'Yes' : 'No'));
+            results.push('Phones section found: ' + (phonesSection ? 'Yes' : 'No'));
+            
+            // Test 4: Add event listeners to brand items
+            if (brandItems.length > 0) {
+                brandItems.forEach(function(item, index) {
+                    item.addEventListener('mouseenter', function() {
+                        results.push('Mouse enter on brand item ' + index + ': ' + this.dataset.brand);
+                        updateResults(results);
+                    });
+                    
+                    item.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        results.push('Click on brand item ' + index + ': ' + this.dataset.brand);
+                        updateResults(results);
+                    });
+                });
+                results.push('Event listeners attached to brand items');
+            }
+            
+            // Update results display
+            updateResults(results);
+            
+            function updateResults(results) {
+                resultsDiv.innerHTML = '<ul><li>' + results.join('</li><li>') + '</li></ul>';
+            }
+        });
+    </script>
+</body>
+</html>

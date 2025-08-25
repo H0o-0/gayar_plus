@@ -41,7 +41,7 @@
 						$qry = $conn->query("SELECT * from `products` order by unix_timestamp(date_created) desc ");
 						while($row = $qry->fetch_assoc()):
                             if(!empty($row['description'])) {
-                                $row['description'] = TextCleaner::ultraClean($row['description']);
+                                $row['description'] = TextCleaner::cleanAndTruncateUltra($row['description']);
                             } else {
                                 $row['description'] = '';
                             }

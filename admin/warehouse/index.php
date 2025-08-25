@@ -1,3 +1,5 @@
+<?php if(!defined('DB_SERVER')){ include("../../initialize.php"); } ?>
+<div class="container-fluid">
 <?php if($_settings->chk_flashdata('success')): ?>
 <script>
 	alert_toast("<?php echo $_settings->flashdata('success') ?>",'success')
@@ -8,23 +10,39 @@
 	<div class="card-header">
 		<h3 class="card-title">إدارة المخزن المؤقت</h3>
 		<div class="card-tools">
-			<a class="btn btn-block btn-sm btn-default btn-flat border-primary" href="./index.php?page=warehouse/upload">
-				<i class="fa fa-plus"></i> رفع ملف CSV
-			</a>
+			<div class="btn-group">
+				<a class="btn btn-sm btn-default btn-flat border-primary" href="./?page=warehouse/upload">
+					<i class="fa fa-plus"></i> رفع ملف CSV
+				</a>
+				<a class="btn btn-sm btn-warning btn-flat" href="./?page=warehouse/split_existing_data">
+					<i class="fa fa-cut"></i> تقسيم البيانات الموجودة
+				</a>
+			</div>
 		</div>
 	</div>
 	<div class="card-body">
 		<!-- إحصائيات سريعة -->
 		<div class="row mb-4">
 			<?php 
-			// إصلاح تلقائي لحقل الحالة: أي عنصر لديه علامة تجارية أو فئة/فرعية يُعتبر مصنف
-			$conn->query("UPDATE temp_warehouse 
-				SET status = 'classified'
-				WHERE status = 'unclassified' 
+			// إصلاح تلقائي أدق لحقل الحالة:
+			// اعتبر "مصنف" فقط إذا كان هناك category_id أو كانت suggested_brand تطابق فئة موجودة
+			$conn->query("UPDATE temp_warehouse tw 
+				LEFT JOIN categories c ON LOWER(tw.suggested_brand) = LOWER(c.category)
+				SET tw.status = 'classified'
+				WHERE tw.status = 'unclassified' 
 				AND (
-					(suggested_brand IS NOT NULL AND suggested_brand <> '')
-					OR (category_id IS NOT NULL AND sub_category_id IS NOT NULL)
+					tw.category_id IS NOT NULL
+					OR c.id IS NOT NULL
 				)");
+
+			// تنظيف الحالات الخاطئة القديمة: أي عنصر ليس لديه category_id ولا تطابق علامة مع فئة يبقى غير مصنف (باستثناء المنشور)
+			$conn->query("UPDATE temp_warehouse tw 
+				LEFT JOIN categories c ON LOWER(tw.suggested_brand) = LOWER(c.category)
+				SET tw.status = 'unclassified'
+				WHERE tw.status = 'classified' 
+				AND tw.category_id IS NULL 
+				AND c.id IS NULL 
+				AND tw.status <> 'published'");
 
 			$total_products = $conn->query("SELECT COUNT(*) as count FROM temp_warehouse")->fetch_assoc()['count'];
 			$unclassified = $conn->query("SELECT COUNT(*) as count FROM temp_warehouse WHERE status = 'unclassified'")->fetch_assoc()['count'];
@@ -218,11 +236,8 @@
 							<?php endif; ?>
 						</td>
 						<td>
-							<?php if($row['category']): ?>
-								<span class="badge badge-secondary"><?php echo htmlspecialchars($row['category']) ?></span>
-								<?php if($row['sub_category']): ?>
-									<br><small class="text-muted"><?php echo htmlspecialchars($row['sub_category']) ?></small>
-								<?php endif; ?>
+							<?php if($row['sub_category']): ?>
+								<span class="badge badge-secondary"><?php echo htmlspecialchars($row['sub_category']) ?></span>
 							<?php else: ?>
 								<span class="text-muted">غير محدد</span>
 							<?php endif; ?>
@@ -258,6 +273,17 @@
 								<button class="btn btn-success btn-sm quick-publish" data-id="<?php echo $row['id'] ?>" title="نشر سريع">
 									<i class="fas fa-bolt"></i>
 								</button>
+								<?php 
+								// التحقق مما إذا كان المنتج يحتوي على أجهزة متعددة
+								$has_multiple_devices = (strpos($row['product_name'], '/') !== false || 
+												   strpos($row['product_name'], '\\') !== false || 
+												   strpos($row['product_name'], '|') !== false);
+								if($has_multiple_devices): 
+								?>
+								<button class="btn btn-info btn-sm split-product" data-id="<?php echo $row['id'] ?>" title="تقسيم المنتج">
+									<i class="fas fa-cut"></i>
+								</button>
+								<?php endif; ?>
 								<?php endif; ?>
 								<button class="btn btn-danger btn-sm delete-product" data-id="<?php echo $row['id'] ?>" title="حذف">
 									<i class="fas fa-trash"></i>
@@ -289,6 +315,9 @@
 					</button>
 					<button class="btn btn-info" id="bulk-quick-publish" disabled>
 						<i class="fas fa-bolt"></i> نشر سريع للمحدد
+					</button>
+					<button class="btn btn-info" id="bulk-split" disabled>
+						<i class="fas fa-cut"></i> تقسيم المحدد
 					</button>
 					<button class="btn btn-danger" id="bulk-delete" disabled>
 						<i class="fas fa-trash"></i> حذف المحدد
@@ -355,7 +384,7 @@ $(document).ready(function(){
 	// تفعيل/إلغاء تفعيل أزرار العمليات المجمعة
 	function toggleBulkButtons() {
 		var checkedCount = $('.product-checkbox:checked').length;
-		$('#bulk-edit, #bulk-quick-publish, #bulk-delete').prop('disabled', checkedCount === 0);
+		$('#bulk-edit, #bulk-quick-publish, #bulk-split, #bulk-delete').prop('disabled', checkedCount === 0);
 	}
 	
 	toggleBulkButtons();
@@ -552,6 +581,72 @@ $(document).ready(function(){
 
 		var idsParam = selectedIds.join(',');
 		window.location.href = 'index.php?page=warehouse/bulk_edit&ids=' + idsParam;
+	});
+	
+	// تقسيم منتج واحد
+	$(document).on('click', '.split-product', function(){
+		console.log('✂️ تقسيم منتج');
+		var id = $(this).data('id');
+		var row = $(this).closest('tr');
+		var productName = row.find('td:nth-child(2) strong').text();
+		
+		if(confirm('هل تريد تقسيم المنتج: ' + productName + '؟\n\nسيتم إنشاء منتجات منفصلة لكل جهاز.')) {
+			var $btn = $(this);
+			$btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
+			
+			callAjax('split_product', {product_id: id}, function(response) {
+				if(response.count > 0) {
+					var msg = 'تم تقسيم المنتج بنجاح إلى ' + response.count + ' منتج:';
+					response.new_products.forEach(function(product) {
+						msg += '\n- ' + product.name;
+					});
+					alert(msg);
+					location.reload();
+				} else {
+					alert('لم يتم تقسيم المنتج. ' + response.message);
+					$btn.prop('disabled', false).html('<i class="fas fa-cut"></i>');
+				}
+			}, function() {
+				$btn.prop('disabled', false).html('<i class="fas fa-cut"></i>');
+			});
+		}
+	});
+	
+	// تقسيم مجموعة منتجات
+	$('#bulk-split').click(function(){
+		console.log('✂️ تقسيم مجموعة منتجات');
+		var selectedIds = [];
+		$('.product-checkbox:checked').each(function(){
+			selectedIds.push($(this).val());
+		});
+
+		if(selectedIds.length == 0) {
+			alert('يرجى تحديد منتجات للتقسيم');
+			return;
+		}
+
+		if(confirm('هل تريد تقسيم ' + selectedIds.length + ' منتج؟\n\nسيتم إنشاء منتجات منفصلة لكل جهاز في كل منتج محدد.')) {
+			var $btn = $(this);
+			$btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> جاري التقسيم...');
+			
+			callAjax('bulk_split', {product_ids: selectedIds}, function(response) {
+				var msg = 'تمت معالجة ' + response.processed + ' منتج.';
+				msg += '\nتم تقسيم ' + response.split_count + ' منتج.';
+				msg += '\nتم إنشاء ' + response.new_products_count + ' منتج جديد.';
+				
+				if(response.errors && response.errors.length > 0) {
+					msg += '\n\nحدثت بعض الأخطاء:';
+					response.errors.forEach(function(error) {
+						msg += '\n- ' + error;
+					});
+				}
+				
+				alert(msg);
+				location.reload();
+			}, function() {
+				$btn.prop('disabled', false).html('<i class="fas fa-cut"></i> تقسيم المحدد');
+			});
+		}
 	});
 });
 </script>

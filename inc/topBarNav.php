@@ -1,246 +1,408 @@
-<!-- CSS للتصميم الجديد للـ Navbar -->
-<style>
-    :root {
-        --primary-color: #2c5aa0;
-        --secondary-color: #f8f9fa;
-        --accent-color: #ff6b6b;
-    }
+<?php
+// Ensure we have access to the database connection
+if (!isset($conn)) {
+    require_once 'initialize.php';
+}
+?>
 
-    /* Enhanced Navbar */
-    .navbar-custom {
-        background: linear-gradient(135deg, var(--primary-color) 0%, #1e3d72 100%);
-        padding: 0.5rem 0;
-        box-shadow: 0 2px 20px rgba(0,0,0,0.1);
-    }
-
-    .navbar-brand img {
-        height: 50px;
-        width: auto;
-    }
-
-    .navbar-nav .nav-link {
-        color: white !important;
-        font-weight: 500;
-        padding: 0.75rem 1.25rem !important;
-        transition: all 0.3s ease;
-        border-radius: 25px;
-        margin: 0 0.2rem;
-    }
-
-    .navbar-nav .nav-link:hover {
-        background-color: rgba(255,255,255,0.1);
-        transform: translateY(-1px);
-    }
-
-    /* Advanced Dropdown */
-    .dropdown-mega {
-        position: static !important;
-    }
-
-    .mega-menu {
-        width: 100%;
-        left: 0 !important;
-        right: auto !important;
-        border: none;
-        border-radius: 15px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-        background: white;
-        padding: 2rem;
-        margin-top: 0.5rem;
-    }
-
-    .mega-menu-column h6 {
-        color: var(--primary-color);
-        font-weight: bold;
-        margin-bottom: 1rem;
-        padding-bottom: 0.5rem;
-        border-bottom: 2px solid var(--primary-color);
-    }
-
-    .mega-menu-item {
-        display: block;
-        padding: 0.5rem 1rem;
-        transition: all 0.3s ease;
-        border-radius: 8px;
-        cursor: pointer;
-        text-decoration: none;
-        color: #333;
-    }
-
-    .mega-menu-item:hover {
-        background-color: var(--secondary-color);
-        transform: translateX(5px);
-        text-decoration: none;
-        color: var(--primary-color);
-    }
-
-    /* Cart Icon */
-    .cart-icon {
-        background: var(--accent-color);
-        border: none;
-        color: white;
-        border-radius: 25px;
-        padding: 10px 20px;
-        transition: all 0.3s ease;
-    }
-
-    .cart-icon:hover {
-        background: #ff5252;
-        transform: scale(1.05);
-        color: white;
-    }
-
-    .cart-badge {
-        background: white;
-        color: var(--accent-color);
-        font-weight: bold;
-    }
-
-    /* Transparent icon buttons (search, user) */
-    .navbar-custom .icon-btn {
-        background: transparent !important;
-        border: none !important;
-        color: #fff !important;
-        padding: 6px 8px;
-        border-radius: 10px;
-        line-height: 1;
-    }
-    .navbar-custom .icon-btn:hover,
-    .navbar-custom .icon-btn:focus,
-    .navbar-custom .icon-btn:active {
-        background-color: rgba(255,255,255,0.15) !important;
-        color: #fff !important;
-        box-shadow: none !important;
-        outline: none !important;
-    }
-</style>
-
-<!-- Enhanced Navigation -->
-<nav class="navbar navbar-expand-lg navbar-custom">
-    <div class="container">
+<!-- Navigation Bar -->
+<nav class="navbar" id="navbar">
+    <div class="nav-container">
         <!-- Logo -->
-        <a class="navbar-brand" href="./">
-            <img src="<?php echo validate_image($_settings->info('logo')) ?>" alt="شعار المتجر" />
+        <a href="./" class="logo-container">
+            <img src="./admin/images/cropped_circle_image.png" alt="Gayar Plus Logo" class="site-logo" onerror="this.src='./assets/images/no-image.svg'">
+            <span class="site-name">Gayar Plus</span>
         </a>
 
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav me-auto">
-                <!-- الأجهزة Dropdown -->
-                <li class="nav-item dropdown dropdown-mega">
-                    <a class="nav-link dropdown-toggle" href="#" id="devicesDropdown" role="button" data-toggle="dropdown">
-                        الأجهزة
-                    </a>
-                    <div class="dropdown-menu mega-menu">
-                        <div class="container">
-                            <div class="row">
+        <!-- Navigation Menu -->
+        <ul class="nav-menu">
+            <!-- Devices Menu -->
+            <li class="nav-item nav-devices">
+                <a href="#" class="nav-link">الأجهزة</a>
+                <div class="mega-menu">
+                    <div class="menu-grid">
+                        <!-- Brands Section -->
+                        <div class="menu-section">
+                            <h3 class="menu-title">الشركات</h3>
+                            <div id="brands-container">
                                 <?php
-                                $brand_qry = $conn->query("SELECT * FROM brands where status = 1 LIMIT 4");
-                                while($brow = $brand_qry->fetch_assoc()):
+                                // Load brands from database
+                                if (isset($conn)) {
+                                    $brands_query = "SELECT id, name FROM brands WHERE status = 1 ORDER BY name ASC LIMIT 8";
+                                    $brands_result = $conn->query($brands_query);
+                                    
+                                    if ($brands_result && $brands_result->num_rows > 0) {
+                                        while ($brand = $brands_result->fetch_assoc()) {
+                                            echo '<div class="menu-item brand-item" data-brand="' . $brand['id'] . '">';
+                                            echo '<i class="fas fa-mobile brand-icon"></i>';
+                                            echo htmlspecialchars($brand['name']);
+                                            echo '</div>';
+                                        }
+                                    } else {
+                                        echo '<div class="menu-item">لا توجد شركات</div>';
+                                    }
+                                } else {
+                                    echo '<div class="menu-item">خطأ في الاتصال بقاعدة البيانات</div>';
+                                }
                                 ?>
-                                <div class="col-md-3 mega-menu-column">
-                                    <h6><?php echo $brow['name'] ?></h6>
-                                    <?php
-                                    $series_qry = $conn->query("SELECT * FROM series where status = 1 and brand_id = '{$brow['id']}' LIMIT 4");
-                                    if($series_qry->num_rows > 0):
-                                        while($srow = $series_qry->fetch_assoc()):
-                                    ?>
-                                        <a class="mega-menu-item" href="./?p=products&b=<?php echo md5($brow['id']) ?>&s=<?php echo md5($srow['id']) ?>"><?php echo $srow['name'] ?></a>
-                                    <?php
-                                        endwhile;
-                                    else:
-                                    ?>
-                                        <a class="mega-menu-item" href="./?p=products&b=<?php echo md5($brow['id']) ?>">جميع المنتجات</a>
-                                    <?php endif; ?>
-                                    <a class="mega-menu-item" href="./?p=products&b=<?php echo md5($brow['id']) ?>">عرض الكل</a>
-                                </div>
-                                <?php endwhile; ?>
+                            </div>
+                        </div>
+                        
+                        <!-- Categories Section -->
+                        <div class="menu-section">
+                            <h3 class="menu-title">الفئات</h3>
+                            <div id="categories-section">
+                                <div class="menu-item">اختر شركة أولاً</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Models Section -->
+                        <div class="menu-section">
+                            <h3 class="menu-title">الموديلات</h3>
+                            <div id="phones-section">
+                                <div class="menu-item">اختر فئة لعرض الموديلات</div>
                             </div>
                         </div>
                     </div>
-                </li>
+                </div>
+            </li>
+            
+            <!-- Maintenance Tools Menu -->
+            <li class="nav-item">
+                <a href="#" class="nav-link">أدوات الصيانة</a>
+                <div class="mega-menu">
+                    <div class="menu-grid">
+                        <div class="menu-section">
+                            <div class="menu-item" onclick="window.location.href='./?p=maintenance'">
+                                <i class="fas fa-tools"></i>
+                                <span>صيانة الأجهزة</span>
+                            </div>
+                            <div class="menu-item" onclick="window.location.href='./?p=repair'">
+                                <i class="fas fa-wrench"></i>
+                                <span>إصلاح الأعطال</span>
+                            </div>
+                            <div class="menu-item" onclick="window.location.href='./?p=upgrade'">
+                                <i class="fas fa-microchip"></i>
+                                <span>ترقية الأجهزة</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </li>
+            
+            <!-- About Menu -->
+            <li class="nav-item">
+                <a href="./?p=about" class="nav-link">من نحن</a>
+            </li>
+            
+            <!-- Contact Menu -->
+            <li class="nav-item">
+                <a href="./?p=contact" class="nav-link">اتصل بنا</a>
+            </li>
+        </ul>
 
-                <!-- أدوات صيانة (Placeholder) -->
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="toolsDropdown" role="button" data-toggle="dropdown">
-                        أدوات صيانة
-                    </a>
-                    <ul class="dropdown-menu">
-                        <li><span class="dropdown-item text-muted">قريباً</span></li>
-                    </ul>
-                </li>
-
-                <li class="nav-item"><a class="nav-link" href="./?p=products">العروض</a></li>
-                <li class="nav-item"><a class="nav-link" href="./?p=about">من نحن</a></li>
-                <li class="nav-item"><a class="nav-link" href="./?p=contact">اتصل بنا</a></li>
-            </ul>
-            <!-- Cart and Search Actions -->
-            <div class="d-flex align-items-center">
-                <button class="btn me-3 icon-btn" onclick="toggleSearch()">
-                    <i class="fas fa-search" style="font-size: 1.2rem;"></i>
-                </button>
-                <button class="btn cart-icon" type="button" onclick="window.location.href='./?p=cart'">
-                    <i class="fas fa-shopping-cart me-1"></i>
-                    السلة
-                    <span class="badge cart-badge ms-2 rounded-pill" id="cart-count">
-                      <?php
-                      if(isset($_SESSION['userdata']['id'])):
-                        $count = $conn->query("SELECT SUM(quantity) as items from `cart` where client_id =".$_settings->userdata('id'))->fetch_assoc()['items'];
-                        echo ($count > 0 ? $count : 0);
-                      else:
-                        echo "0";
-                      endif;
-                      ?>
-                    </span>
-                </button>
-            </div>
+        <!-- Navigation Actions -->
+        <div class="nav-actions">
+            <button class="search-btn" onclick="openSearch()">
+                <i class="fas fa-search"></i>
+            </button>
+            <a href="./?p=cart" class="cart-btn">
+                <i class="fas fa-shopping-cart"></i>
+                <span class="cart-badge" id="cart-count">0</span>
+            </a>
         </div>
     </div>
 </nav>
-<script>
-$(function(){
-    $('#navbarNav').find('a.nav-link').click(function(){
-        $('.navbar-collapse').removeClass('show')
-    })
-})
 
-// Toggle search function
-function toggleSearch() {
-    // Create search modal or toggle search bar
-    const searchModal = `
-        <div class="modal fade" id="searchModal" tabindex="-1">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">البحث في المنتجات</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        <form action="./" method="GET">
-                            <input type="hidden" name="p" value="products">
-                            <div class="input-group">
-                                <input type="text" class="form-control" name="search" placeholder="ابحث عن المنتجات..." required>
-                                <button class="btn btn-primary" type="submit">
-                                    <i class="fas fa-search"></i> بحث
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
+<!-- Search Modal -->
+<div class="search-modal" id="search-modal" style="display: none;">
+    <div class="search-container">
+        <div class="search-header">
+            <h3>البحث في المتجر</h3>
+            <button class="close-search" onclick="closeSearch()">&times;</button>
+        </div>
+        <div class="search-body">
+            <input type="text" class="search-input" id="search-input" placeholder="ابحث عن منتج، شركة، أو فئة...">
+            <div class="search-results" id="search-results">
+                <!-- Search results will be populated here -->
             </div>
         </div>
-    `;
+    </div>
+</div>
 
-    if (!document.getElementById('searchModal')) {
-        document.body.insertAdjacentHTML('beforeend', searchModal);
+<script>
+// Device Menu Navigation System for Gayar Plus
+// Isolated to prevent conflicts with other scripts
+
+// Create a namespace for our functions
+window.GayarPlusMenu = {
+    // State variables
+    hideTimeout: null,
+    
+    // Initialize the device menu
+    init: function() {
+        console.log('Initializing Gayar Plus Device Menu');
+        const devicesNavItem = document.querySelector('.nav-devices');
+        if (!devicesNavItem) {
+            console.log('Devices nav item not found');
+            return;
+        }
+        
+        const megaMenu = devicesNavItem.querySelector('.mega-menu');
+        if (!megaMenu) {
+            console.log('Mega menu not found');
+            return;
+        }
+        
+        this.setupHoverEvents(devicesNavItem, megaMenu);
+        this.setupBrandEvents();
+        this.setupCategoryEvents();
+        
+        console.log('Gayar Plus Device Menu initialized successfully');
+    },
+    
+    // Setup hover events for showing/hiding the menu
+    setupHoverEvents: function(devicesNavItem, megaMenu) {
+        // Show dropdown on hover
+        devicesNavItem.addEventListener('mouseenter', () => {
+            if (this.hideTimeout) {
+                clearTimeout(this.hideTimeout);
+                this.hideTimeout = null;
+            }
+            devicesNavItem.classList.add('show');
+            console.log('Menu shown');
+        });
+        
+        // Hide dropdown when mouse leaves
+        devicesNavItem.addEventListener('mouseleave', () => {
+            this.hideTimeout = setTimeout(() => {
+                devicesNavItem.classList.remove('show');
+                console.log('Menu hidden');
+            }, 300);
+        });
+        
+        // Keep menu visible when hovering over it
+        megaMenu.addEventListener('mouseenter', () => {
+            if (this.hideTimeout) {
+                clearTimeout(this.hideTimeout);
+                this.hideTimeout = null;
+            }
+            devicesNavItem.classList.add('show');
+            console.log('Menu kept visible');
+        });
+        
+        // Hide menu when leaving it
+        megaMenu.addEventListener('mouseleave', () => {
+            this.hideTimeout = setTimeout(() => {
+                devicesNavItem.classList.remove('show');
+                console.log('Menu hidden from mega menu');
+            }, 300);
+        });
+    },
+    
+    // Setup brand item events
+    setupBrandEvents: function() {
+        // Wait a bit for the DOM to be fully ready
+        setTimeout(() => {
+            const brandItems = document.querySelectorAll('.brand-item');
+            console.log('Found brand items:', brandItems.length);
+            
+            if (brandItems.length > 0) {
+                brandItems.forEach(item => {
+                    // Remove any existing event listeners to prevent duplicates
+                    const clone = item.cloneNode(true);
+                    item.parentNode.replaceChild(clone, item);
+                    
+                    clone.addEventListener('mouseenter', (e) => {
+                        const brandId = clone.dataset.brand;
+                        console.log('Brand item hovered:', brandId);
+                        
+                        // Remove active class from all items
+                        document.querySelectorAll('.brand-item').forEach(i => i.classList.remove('active'));
+                        
+                        // Add active class to hovered item
+                        clone.classList.add('active');
+                        
+                        // Load categories for this brand
+                        this.loadBrandCategories(brandId);
+                    });
+                });
+            } else {
+                console.log('No brand items found, retrying in 500ms');
+                // Retry in case the items are loaded dynamically
+                setTimeout(() => this.setupBrandEvents(), 500);
+            }
+        }, 100);
+    },
+    
+    // Setup category item events
+    setupCategoryEvents: function() {
+        // Wait a bit for the DOM to be fully ready
+        setTimeout(() => {
+            const categoriesSection = document.getElementById('categories-section');
+            console.log('Categories section:', categoriesSection);
+            
+            if (categoriesSection) {
+                // Use event delegation for dynamically added elements
+                categoriesSection.addEventListener('mouseenter', (e) => {
+                    const categoryItem = e.target.closest('.category-item');
+                    if (categoryItem) {
+                        e.stopPropagation();
+                        const categoryId = categoryItem.dataset.categoryId;
+                        console.log('Category item hovered:', categoryId);
+                        this.loadCategoryModels(categoryId);
+                    }
+                }, true);
+            } else {
+                console.log('Categories section not found, retrying in 500ms');
+                // Retry in case the section is loaded dynamically
+                setTimeout(() => this.setupCategoryEvents(), 500);
+            }
+        }, 100);
+    },
+    
+    // Load brand categories
+    loadBrandCategories: function(brandId) {
+        const categoriesSection = document.getElementById('categories-section');
+        if (!categoriesSection) {
+            console.log('Categories section not found');
+            return;
+        }
+        
+        // Show loading
+        categoriesSection.innerHTML = '<div class="menu-item">جاري التحميل...</div>';
+        console.log('Loading categories for brand:', brandId);
+        
+        // Use absolute path based on base URL to ensure it works on all pages
+        const baseUrl = typeof _base_url_ !== 'undefined' ? _base_url_ : '/';
+        const ajaxUrl = baseUrl + 'ajax/get_brand_categories.php?brand_id=' + brandId;
+        console.log('AJAX URL for categories:', ajaxUrl);
+        
+        // Fetch categories
+        fetch(ajaxUrl)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Brand categories response:', data);
+                if (data.success && data.categories.length > 0) {
+                    categoriesSection.innerHTML = '';
+                    data.categories.forEach(category => {
+                        const element = document.createElement('div');
+                        element.className = 'menu-item category-item';
+                        element.textContent = category.name;
+                        element.dataset.categoryId = category.id;
+                        
+                        categoriesSection.appendChild(element);
+                    });
+                } else {
+                    categoriesSection.innerHTML = '<div class="menu-item">لا توجد فئات</div>';
+                }
+            })
+            .catch(error => {
+                console.error('Error loading brand categories:', error);
+                categoriesSection.innerHTML = '<div class="menu-item">حدث خطأ في التحميل</div>';
+            });
+    },
+    
+    // Load category models
+    loadCategoryModels: function(categoryId) {
+        const phonesSection = document.getElementById('phones-section');
+        if (!phonesSection) {
+            console.log('Phones section not found');
+            return;
+        }
+        
+        // Show loading
+        phonesSection.innerHTML = '<div class="menu-item">جاري التحميل...</div>';
+        console.log('Loading models for category:', categoryId);
+        
+        // Use absolute path based on base URL to ensure it works on all pages
+        const baseUrl = typeof _base_url_ !== 'undefined' ? _base_url_ : '/';
+        const ajaxUrl = baseUrl + 'ajax/get_category_models.php?category_id=' + categoryId;
+        console.log('AJAX URL for models:', ajaxUrl);
+        
+        // Fetch models
+        fetch(ajaxUrl)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Category models response:', data);
+                if (data.success && data.models.length > 0) {
+                    phonesSection.innerHTML = '';
+                    data.models.forEach(model => {
+                        const element = document.createElement('div');
+                        element.className = 'menu-item model-item';
+                        element.textContent = model.name;
+                        element.dataset.modelId = model.id;
+                        
+                        // Add click event for navigation
+                        element.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            const selectedBrand = document.querySelector('.brand-item.active');
+                            const brandId = selectedBrand ? selectedBrand.dataset.brand : '';
+                            if (brandId) {
+                                window.location.href = './?p=device_products&brand=' + btoa(brandId) + '&series=' + btoa(categoryId) + '&model=' + btoa(model.id);
+                            } else {
+                                window.location.href = './?p=device_products&model=' + btoa(model.id);
+                            }
+                        });
+                        
+                        phonesSection.appendChild(element);
+                    });
+                } else {
+                    phonesSection.innerHTML = '<div class="menu-item">لا توجد موديلات</div>';
+                }
+            })
+            .catch(error => {
+                console.error('Error loading category models:', error);
+                phonesSection.innerHTML = '<div class="menu-item">حدث خطأ في التحميل</div>';
+            });
     }
+};
 
-    $('#searchModal').modal({
-        show: true,
-        backdrop: 'static',
-        keyboard: true
-    });
+// Initialize when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM content loaded, initializing menu');
+    // Small delay to ensure DOM is fully ready
+    setTimeout(() => {
+        if (typeof window.GayarPlusMenu !== 'undefined') {
+            window.GayarPlusMenu.init();
+        }
+    }, 300); // Increased delay to ensure everything is loaded
+});
+
+// Also initialize on window load for better reliability
+window.addEventListener('load', function() {
+    console.log('Window loaded, initializing menu');
+    setTimeout(() => {
+        if (typeof window.GayarPlusMenu !== 'undefined') {
+            window.GayarPlusMenu.init();
+        }
+    }, 300);
+});
+
+// Function to open search modal
+function openSearch() {
+    const searchModal = document.getElementById('search-modal');
+    if (searchModal) {
+        searchModal.style.display = 'block';
+        document.getElementById('search-input').focus();
+    }
+}
+
+// Function to close search modal
+function closeSearch() {
+    const searchModal = document.getElementById('search-modal');
+    if (searchModal) {
+        searchModal.style.display = 'none';
+    }
 }
 </script>

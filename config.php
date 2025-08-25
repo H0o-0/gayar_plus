@@ -1,31 +1,56 @@
 <?php
+// إعدادات أساسية
 ob_start();
 ini_set('date.timezone','Asia/Baghdad');
 date_default_timezone_set('Asia/Baghdad');
-session_start();
 
-require_once('initialize.php');
-require_once('classes/DBConnection.php');
-require_once('classes/SystemSettings.php');
-$db = new DBConnection;
-$conn = $db->conn;
+// بدء الجلسة
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
+// إعدادات قاعدة البيانات
+define('DB_SERVER', 'localhost');
+define('DB_USERNAME', 'root');
+define('DB_PASSWORD', '');
+define('DB_NAME', 'gayar_plus');
+
+// إعدادات الموقع
+define('base_url', 'http://localhost/gayar_plus/');
+define('BASE_URL', base_url);
+
+// إنشاء الاتصال بقاعدة البيانات
+try {
+    $conn = new mysqli(DB_SERVER, DB_USERNAME, DB_PASSWORD, DB_NAME);
+    
+    if ($conn->connect_error) {
+        throw new Exception("فشل الاتصال بقاعدة البيانات: " . $conn->connect_error);
+    }
+    
+    // تعيين الترميز لدعم أفضل للعربية
+    $conn->set_charset("utf8mb4");
+    
+} catch (Exception $e) {
+    die("خطأ في الاتصال: " . $e->getMessage());
+}
+
+// دوال مساعدة
 function redirect($url=''){
-	if(!empty($url))
-	echo '<script>location.href="'.base_url .$url.'"</script>';
+    if(!empty($url)) {
+        echo '<script>location.href="'.$url.'"</script>';
+    }
 }
+
 function validate_image($file){
-	if(!empty($file)){
-			// exit;
-		if(is_file(base_app.$file)){
-			return base_url.$file;
-		}else{
-			return base_url.'dist/img/no-image-available.png';
-		}
-	}else{
-		return base_url.'dist/img/no-image-available.png';
-	}
+    if(!empty($file)){
+        $full_path = __DIR__ . '/' . $file;
+        if(file_exists($full_path)){
+            return $file;
+        }
+    }
+    return './assets/images/no-image.svg';
 }
+
 function isMobileDevice(){
     $aMobileUA = array(
         '/iphone/i' => 'iPhone', 
@@ -36,25 +61,13 @@ function isMobileDevice(){
         '/webos/i' => 'Mobile'
     );
 
-    //Return true if Mobile User Agent is detected
     foreach($aMobileUA as $sMobileKey => $sMobileOS){
         if(preg_match($sMobileKey, $_SERVER['HTTP_USER_AGENT'])){
             return true;
         }
     }
-    //Otherwise return false..  
     return false;
 }
-function clear_specific_tables($conn){
-    // حذف جميع البيانات من جدول السلاسل (series)
-    $conn->query("DELETE FROM `series`");
 
-    // حذف جميع البيانات من جدول الموديلات (models)
-    $conn->query("DELETE FROM `models`");
-
-    // التحقق من أن جدول العلامات التجارية (brands) لم يتغير
-    echo "تم حذف البيانات من جداول series و models بنجاح. بيانات brands بقاءت كما هي.";
-}
-
-ob_end_flush();
+// Note: Removed ob_end_flush() to prevent conflicts with output buffering in specific pages
 ?>

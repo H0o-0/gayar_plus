@@ -11,10 +11,33 @@ if(!isset($_GET['id'])){
     $_settings->set_flashdata('error','No order ID Provided.');
     redirect('admin/?page=orders');
 }
-$order = $conn->query("SELECT o.*,concat(c.firstname,' ',c.lastname) as client FROM `orders` o inner join clients c on c.id = o.client_id where o.id = '{$_GET['id']}' ");
+// Changed from INNER JOIN to LEFT JOIN to show orders even if client is missing
+$order = $conn->query("SELECT o.*,IFNULL(concat(c.firstname,' ',c.lastname), c.firstname) as client, c.contact as phone FROM `orders` o left join clients c on c.id = o.client_id where o.id = '{$_GET['id']}' ");
 if($order->num_rows > 0){
-    foreach($order->fetch_assoc() as $k => $v){
+    $order_data = $order->fetch_assoc();
+    foreach($order_data as $k => $v){
         $$k = $v;
+    }
+    
+    // Extract client info from delivery_address for guest orders (client_id = 0)
+    if($client_id == 0) {
+        // Parse customer info from delivery_address
+        $delivery_info = $delivery_address;
+        $client_name = 'Guest Customer';
+        $client_phone = 'N/A';
+        
+        // Extract name - updated to properly handle Arabic text
+        if(preg_match('/الاسم:\s*(.+?)(?=\n|$)/u', $delivery_info, $name_matches)) {
+            $client_name = trim($name_matches[1]);
+        }
+        
+        // Extract phone - updated to properly handle Arabic text
+        if(preg_match('/الهاتف:\s*(.+?)(?=\n|$)/u', $delivery_info, $phone_matches)) {
+            $client_phone = trim($phone_matches[1]);
+        }
+        
+        $client = $client_name;
+        $phone = $client_phone;
     }
 }else{
     $_settings->set_flashdata('error','Order ID provided is Unknown');
@@ -25,6 +48,7 @@ if($order->num_rows > 0){
     <div class="card-body">
         <div class="conitaner-fluid">
             <p><b>Client Name: <?php echo $client ?></b></p>
+            <p><b>Phone Number: <?php echo $phone ?></b></p>
             <p><b>Delivery Address: <?php echo $delivery_address ?></b></p>
             <table class="table-striped table table-bordered">
                 <colgroup>

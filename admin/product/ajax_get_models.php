@@ -1,11 +1,22 @@
 <?php
-require_once('../../config.php');
+require_once '../../config.php';
+
 if(isset($_POST['series_id'])){
-    $qry = $conn->query("SELECT * FROM `models` where series_id = '{$_POST['series_id']}' order by category asc");
-    $data = array();
+    $series_id = $_POST['series_id'];
+    
+    $qry = $conn->query("SELECT * FROM models WHERE series_id = '$series_id' AND status = 1 ORDER BY name ASC");
+    $models = [];
+    
     while($row = $qry->fetch_assoc()){
-        $data[] = array("id"=>$row['id'], "category"=>$row['category']);
+        $models[$row['id']] = $row['name'];
     }
-    echo json_encode(array('status'=>'success', 'data'=>$data));
+    
+    $response = [
+        'status' => 'success',
+        'models' => $models
+    ];
+    
+    echo json_encode($response);
+    exit;
 }
 ?>

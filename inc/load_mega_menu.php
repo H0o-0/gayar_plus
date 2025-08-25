@@ -3,8 +3,16 @@ require_once('../config.php');
 header('Content-Type: application/json; charset=utf-8');
 
 try {
+    // Helpers
+    $hasCol = function($table, $col) use ($conn) {
+        $q = $conn->query("SHOW COLUMNS FROM `{$table}` LIKE '".$conn->real_escape_string($col)."'");
+        return $q && $q->num_rows > 0;
+    };
+
     // جلب الشركات والفئات والموديلات
-    $brands_query = "SELECT * FROM brands WHERE status = 1 ORDER BY sort_order ASC, name ASC LIMIT 8";
+    // NOTE: Use a schema-compatible ORDER BY (some schemas may not have sort_order)
+    $brands_where = $hasCol('brands','status') ? 'WHERE status = 1' : '';
+    $brands_query = "SELECT * FROM brands {$brands_where} ORDER BY name ASC LIMIT 8";
     $brands_result = $conn->query($brands_query);
     
     if (!$brands_result || $brands_result->num_rows == 0) {
@@ -51,7 +59,9 @@ function generateNewSystemMenu($conn, $brands_result) {
         $html .= '</div>';
         
         // جلب الفئات/السلاسل للشركة
-        $series_query = "SELECT * FROM series WHERE brand_id = {$brand['id']} AND status = 1 ORDER BY sort_order ASC, name ASC LIMIT 6";
+        // NOTE: Avoid referencing sort_order to support older schemas
+        $series_where_status = $hasCol('series','status') ? 'AND status = 1' : '';
+        $series_query = "SELECT * FROM series WHERE brand_id = {$brand['id']} {$series_where_status} ORDER BY name ASC LIMIT 6";
         $series_result = $conn->query($series_query);
         
         if ($series_result && $series_result->num_rows > 0) {
@@ -64,7 +74,9 @@ function generateNewSystemMenu($conn, $brands_result) {
                 $html .= '</div>';
                 
                 // جلب الموديلات للفئة
-                $models_query = "SELECT * FROM models WHERE series_id = {$series['id']} AND status = 1 ORDER BY sort_order ASC, name ASC LIMIT 5";
+                // NOTE: Avoid referencing sort_order to support older schemas
+                $models_where_status = $hasCol('models','status') ? 'AND status = 1' : '';
+                $models_query = "SELECT * FROM models WHERE series_id = {$series['id']} {$models_where_status} ORDER BY name ASC LIMIT 5";
                 $models_result = $conn->query($models_query);
                 
                 if ($models_result && $models_result->num_rows > 0) {

@@ -22,17 +22,19 @@
 				<colgroup>
 					<col width="5%">
 					<col width="15%">
-					<col width="25%">
 					<col width="20%">
-					<col width="10%">
-					<col width="10%">
 					<col width="15%">
+					<col width="15%">
+					<col width="10%">
+					<col width="10%">
+					<col width="10%">
 				</colgroup>
 				<thead>
 					<tr>
 						<th>#</th>
 						<th>Date Order</th>
 						<th>Client</th>
+						<th>Phone</th>
 						<th>Total Amount</th>
 						<th>Paid</th>
 						<th>Status</th>
@@ -42,13 +44,35 @@
 				<tbody>
 					<?php 
 					$i = 1;
-						$qry = $conn->query("SELECT o.*,concat(c.firstname,' ',c.lastname) as client from `orders` o inner join clients c on c.id = o.client_id order by unix_timestamp(o.date_created) desc ");
+						// Changed from INNER JOIN to LEFT JOIN to show orders even if client is missing
+						$qry = $conn->query("SELECT o.*,IFNULL(concat(c.firstname,' ',c.lastname), IFNULL(c.firstname, 'Guest')) as client, IFNULL(c.contact, 'N/A') as phone from `orders` o left join clients c on c.id = o.client_id order by unix_timestamp(o.date_created) desc ");
 						while($row = $qry->fetch_assoc()):
+							// Extract client info from delivery_address for guest orders (client_id = 0)
+							if($row['client_id'] == 0) {
+								// Parse customer info from delivery_address
+								$delivery_info = $row['delivery_address'];
+								$client_name = 'Guest Customer';
+								$client_phone = 'N/A';
+								
+								// Extract name - updated to properly handle Arabic text
+								if(preg_match('/الاسم:\s*(.+?)(?=\n|$)/u', $delivery_info, $name_matches)) {
+									$client_name = trim($name_matches[1]);
+								}
+								
+								// Extract phone - updated to properly handle Arabic text
+								if(preg_match('/الهاتف:\s*(.+?)(?=\n|$)/u', $delivery_info, $phone_matches)) {
+									$client_phone = trim($phone_matches[1]);
+								}
+								
+								$row['client'] = $client_name;
+								$row['phone'] = $client_phone;
+							}
 					?>
 						<tr>
 							<td class="text-center"><?php echo $i++; ?></td>
 							<td><?php echo date("Y-m-d H:i",strtotime($row['date_created'])) ?></td>
 							<td><?php echo $row['client'] ?></td>
+							<td><?php echo $row['phone'] ?></td>
 							<td class="text-right"><?php echo number_format($row['amount']) ?></td>
 							<td class="text-center">
                                 <?php if($row['paid'] == 0): ?>
@@ -62,11 +86,11 @@
                                     <span class="badge badge-light">Pending</span>
                                 <?php elseif($row['status'] == 1): ?>
                                     <span class="badge badge-primary">Packed</span>
-								<?php elseif($row['status'] == 2): ?>
+							<?php elseif($row['status'] == 2): ?>
                                     <span class="badge badge-warning">Out for Delivery</span>
-								<?php elseif($row['status'] == 3): ?>
+							<?php elseif($row['status'] == 3): ?>
                                     <span class="badge badge-success">Delivered</span>
-                                <?php else: ?>
+							<?php else: ?>
                                     <span class="badge badge-danger">Cancelled</span>
                                 <?php endif; ?>
                             </td>

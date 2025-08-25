@@ -434,9 +434,10 @@ function filterProducts($conn) {
                 WHERE 1=1";
 
         if (!empty($brandFilter)) {
-            $sql .= " AND c.category = ?";
+            $sql .= " AND (LOWER(tw.suggested_brand) = LOWER(?) OR LOWER(c.category) = LOWER(?))";
             $params[] = $brandFilter;
-            $types .= 's';
+            $params[] = $brandFilter;
+            $types .= 'ss';
         }
         if (!empty($statusFilter)) {
             $sql .= " AND tw.status = ?";

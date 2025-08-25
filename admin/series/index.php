@@ -45,7 +45,20 @@
 					?>
 						<tr>
 							<td class="text-center"><?php echo $i++; ?></td>
-							<td><?php echo date("Y-m-d H:i",strtotime($row['date_created'])) ?></td>
+							<td>
+								<?php 
+								// فحص وجود عمود التاريخ بأسماء مختلفة
+								if(isset($row['date_created'])): 
+								    echo date("Y-m-d H:i", strtotime($row['date_created']));
+								elseif(isset($row['created_at'])): 
+								    echo date("Y-m-d H:i", strtotime($row['created_at']));
+								elseif(isset($row['created_date'])): 
+								    echo date("Y-m-d H:i", strtotime($row['created_date']));
+								else: 
+								    echo 'N/A';
+								endif; 
+								?>
+							</td>
 							<td>
 								<strong><?php echo $row['name'] ?></strong><br>
 								<small class="text-muted"><?php echo $row['brand_name'] ? $row['brand_name'] : 'غير محدد' ?></small>

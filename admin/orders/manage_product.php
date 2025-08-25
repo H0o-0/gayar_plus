@@ -93,7 +93,6 @@ if(isset($_GET['id']) && $_GET['id'] > 0){
 </div>
 <script>
     function displayImg(input,_this) {
-        console.log(input.files)
         var fnames = []
         Object.keys(input.files).map(k=>{
             fnames.push(input.files[k].name)
@@ -110,7 +109,6 @@ if(isset($_GET['id']) && $_GET['id'] > 0){
             method:'POST',
             dataType:"json",
             error:err=>{
-                console.log(err)
                 alert_toast("An error occured while deleting an Image","error");
                 end_loader()
             },
@@ -122,7 +120,6 @@ if(isset($_GET['id']) && $_GET['id'] > 0){
                     })
                     alert_toast("Image Successfully Deleted","success");
                 }else{
-                    console.log(resp)
                     alert_toast("An error occured while deleting an Image","error");
                 }
                 end_loader()
@@ -154,7 +151,6 @@ if(isset($_GET['id']) && $_GET['id'] > 0){
         })
         $('.select2').select2({placeholder:"Please Select here",width:"relative"})
         if(parseInt("<?php echo isset($category_id) ? $category_id : 0 ?>") > 0){
-            console.log('test')
             start_loader()
             setTimeout(() => {
                 $('#category_id').trigger("change");
@@ -176,7 +172,6 @@ if(isset($_GET['id']) && $_GET['id'] > 0){
                 type: 'POST',
                 dataType: 'json',
 				error:err=>{
-					console.log(err)
 					alert_toast("An error occured",'error');
 					end_loader();
 				},
@@ -193,7 +188,6 @@ if(isset($_GET['id']) && $_GET['id'] > 0){
                     }else{
 						alert_toast("An error occured",'error');
 						end_loader();
-                        console.log(resp)
 					}
 				}
 			})

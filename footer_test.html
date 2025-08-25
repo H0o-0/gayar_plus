@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Footer Test</title>
+    <link rel="stylesheet" href="assets/css/site-wide.css">
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #ffffff;
+            color: #1e293b;
+            direction: rtl;
+            text-align: right;
+        }
+        
+        .content {
+            min-height: 60vh;
+            padding: 2rem;
+        }
+        
+        /* Ensure footer is visible */
+        .footer {
+            display: block !important;
+            visibility: visible !important;
+            position: relative !important;
+            z-index: 9999 !important;
+            opacity: 1 !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="content">
+        <h1>Footer Visibility Test</h1>
+        <p>This page tests if the footer is visible.</p>
+    </div>
+    
+    <!-- Modern Footer for Gayar Plus -->
+    <footer class="footer">
+        <div class="footer-content">
+            <!-- About Section -->
+            <div class="footer-section">
+                <h3>عن متجرنا</h3>
+                <p>Gayar Plus هو متجر متخصص في بيع ملحقات الهواتف الذكية عالية الجودة بأفضل الأسعار في العراق.</p>
+                <div class="social-links">
+                    <a href="#" class="social-link">
+                        <i class="fab fa-facebook-f"></i>
+                    </a>
+                    <a href="#" class="social-link">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                    <a href="#" class="social-link">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="#" class="social-link">
+                        <i class="fab fa-whatsapp"></i>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Quick Links Section -->
+            <div class="footer-section quick-links-center">
+                <h3>روابط سريعة</h3>
+                <a href="./">الرئيسية</a>
+                <a href="./?p=products">جميع المنتجات</a>
+                <a href="./?p=contact">اتصل بنا</a>
+                <a href="./?p=about">من نحن</a>
+            </div>
+            
+            <!-- Contact Info Section -->
+            <div class="footer-section">
+                <h3>معلومات الاتصال</h3>
+                <p><i class="fas fa-map-marker-alt"></i> بغداد، العراق</p>
+                <p><i class="fas fa-phone"></i> +964 780 123 4567</p>
+                <p><i class="fas fa-envelope"></i> info@gayarplus.com</p>
+            </div>
+        </div>
+        
+        <div class="footer-bottom center-copyright">
+            <p>&copy; 2025 Gayar Plus. جميع الحقوق محفوظة.</p>
+        </div>
+    </footer>
+</body>
+</html>

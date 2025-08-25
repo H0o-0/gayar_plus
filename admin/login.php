@@ -1,4 +1,4 @@
-<?php require_once('../config.php') ?>
+<?php require_once('../initialize.php') ?>
 <!DOCTYPE html>
 <html lang="en" class="" style="height: auto;">
  <?php require_once('inc/header.php') ?>
@@ -68,6 +68,47 @@
 <script>
   $(document).ready(function(){
     end_loader();
+  })
+</script>
+<script>
+  // Add the missing login form handling
+  $(function(){
+    $('#login-frm').submit(function(e){
+      e.preventDefault();
+      var _this = $(this);
+      if($('.err-msg').length > 0)
+        $('.err-msg').remove();
+      start_loader();
+      $.ajax({
+        url: '../classes/Login.php?f=login',
+        method: 'POST',
+        data: $(this).serialize(),
+        dataType: 'json',
+        error: function(err){
+          console.log(err);
+          alert_toast("An error occurred", 'error');
+          end_loader();
+        },
+        success: function(resp){
+          if(typeof resp == 'object' && resp.status == 'success'){
+            alert_toast("Login Successfully", 'success');
+            setTimeout(function(){
+              location.href = './';
+            }, 2000);
+          }else if(resp.status == 'incorrect'){
+            var _err_el = $('<div>');
+            _err_el.addClass("alert alert-danger err-msg").text("Incorrect Credentials.");
+            _this.prepend(_err_el);
+            _err_el.show('slow');
+            end_loader();
+          }else{
+            console.log(resp);
+            alert_toast("An error occurred", 'error');
+            end_loader();
+          }
+        }
+      })
+    })
   })
 </script>
 </body>
