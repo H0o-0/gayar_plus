@@ -180,67 +180,73 @@ include 'inc/header.php'
 
 .products-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 2rem;
+    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+    gap: 2.5rem;
+    margin-top: 2rem;
 }
 
 .product-card {
-    background: var(--pure-white);
-    border-radius: 24px;
-    border: 1px solid var(--medium-gray);
+    background: #ffffff;
+    border-radius: 20px;
+    border: 1px solid #e2e8f0;
     overflow: hidden;
-    transition: var(--transition);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
     position: relative;
     display: flex;
     flex-direction: column;
-    height: 100%;
+    height: auto;
+    min-height: 500px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
 }
 
 .product-card:hover {
-    transform: translateY(-8px);
-    box-shadow: var(--shadow-xl);
-    border-color: var(--primary-blue);
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    border-color: #3b82f6;
 }
 
 .product-image {
-    height: 240px;
-    background: var(--light-gray);
+    height: 280px;
+    background: #f8fafc;
     position: relative;
     overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: 1rem;
 }
 
 .product-image img {
     width: 100%;
     height: 100%;
     object-fit: contain;
-    transition: var(--transition);
+    transition: transform 0.3s ease;
 }
 
 .product-image i {
-    font-size: 4rem;
-    color: var(--primary-blue);
-    transition: var(--transition);
+    font-size: 5rem;
+    color: #3b82f6;
+    opacity: 0.5;
+    transition: all 0.3s ease;
 }
 
 .product-card:hover .product-image img,
 .product-card:hover .product-image i {
-    transform: scale(1.1);
+    transform: scale(1.05);
 }
 
 .product-badge {
     position: absolute;
     top: 1rem;
     right: 1rem;
-    background: var(--accent-emerald);
+    background: linear-gradient(135deg, #10b981, #059669);
     color: white;
     padding: 0.5rem 1rem;
-    border-radius: 20px;
+    border-radius: 25px;
     font-size: 0.75rem;
-    font-weight: 600;
+    font-weight: 700;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
 }
 
 .product-info {
@@ -248,23 +254,30 @@ include 'inc/header.php'
     display: flex;
     flex-direction: column;
     flex: 1;
+    justify-content: space-between;
 }
 
 .product-category {
     font-size: 0.875rem;
-    color: var(--text-light);
-    font-weight: 500;
-    margin-bottom: 0.5rem;
+    color: #64748b;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
+    padding: 0.25rem 0.75rem;
+    background: #f1f5f9;
+    border-radius: 15px;
+    display: inline-block;
+    width: fit-content;
 }
 
 .product-title {
-    font-size: 1.25rem;
+    font-size: 1.375rem;
     font-weight: 700;
-    color: var(--text-primary);
+    color: #1e293b;
     margin-bottom: 1rem;
     line-height: 1.4;
+    min-height: 3.5rem;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
@@ -272,10 +285,11 @@ include 'inc/header.php'
 }
 
 .product-description {
-    color: var(--text-secondary);
-    margin-bottom: 1.5rem;
+    color: #64748b;
+    margin-bottom: 2rem;
     line-height: 1.6;
-    flex: 1;
+    font-size: 1rem;
+    min-height: 4.8rem;
     display: -webkit-box;
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
@@ -287,32 +301,40 @@ include 'inc/header.php'
     align-items: center;
     justify-content: space-between;
     margin-top: auto;
+    padding-top: 1rem;
+    border-top: 1px solid #f1f5f9;
 }
 
 .product-price {
-    font-size: 1.5rem;
+    font-size: 1.75rem;
     font-weight: 800;
-    color: var(--primary-navy);
+    color: #1e40af;
+    background: linear-gradient(135deg, #3b82f6, #1e40af);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
 .add-to-cart {
-    background: var(--primary-blue);
+    background: linear-gradient(135deg, #3b82f6, #1e40af);
     color: white;
     border: none;
-    padding: 0.75rem 1.5rem;
+    padding: 1rem 1.75rem;
     border-radius: 12px;
     font-weight: 600;
     cursor: pointer;
-    transition: var(--transition);
+    transition: all 0.3s ease;
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    font-size: 0.875rem;
+    font-size: 0.9rem;
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
 }
 
 .add-to-cart:hover {
-    background: var(--primary-navy);
+    background: linear-gradient(135deg, #1e40af, #1e3a8a);
     transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
 }
 
 .no-products {

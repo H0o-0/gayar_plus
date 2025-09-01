@@ -29,11 +29,11 @@ if (!isset($conn)) {
     justify-content: space-between !important;
 }
 
-/* Logo section - Far right */
+/* Logo section - Far Left */
 .logo-section {
     display: flex !important;
     align-items: center !important;
-    order: 3 !important;
+    order: 1 !important;
 }
 
 .logo-container {
@@ -113,11 +113,11 @@ if (!isset($conn)) {
     width: 80%;
 }
 
-/* Cart section - Far left */
+/* Cart section - Far Right */
 .cart-section {
     display: flex !important;
     align-items: center !important;
-    order: 1 !important;
+    order: 3 !important;
 }
 
 .nav-actions {
@@ -185,22 +185,17 @@ if (!isset($conn)) {
 <!-- Navigation Bar -->
 <nav class="navbar" id="navbar">
     <div class="nav-container">
-        <!-- Cart Actions - Far Right -->
-        <div class="cart-section">
-            <div class="nav-actions">
-                <a href="./?p=cart" class="cart-btn">
-                    <i class="fas fa-shopping-cart"></i>
-                    <span class="cart-badge" id="cart-count">0</span>
-                </a>
-            </div>
+        <!-- Logo - Far Left -->
+        <div class="logo-section">
+            <a href="./" class="logo-container">
+                <img src="./admin/images/cropped_circle_image.png" alt="Gayar Plus Logo" class="site-logo" onerror="this.src='./assets/images/no-image.svg'">
+                <span class="site-name">Gayar Plus</span>
+            </a>
         </div>
 
         <!-- Navigation Menu - Center -->
         <div class="menu-section">
             <ul class="nav-menu">
-                <li class="nav-item">
-                    <a href="./?p=products" class="nav-link">المنتجات</a>
-                </li>
                 <li class="nav-item">
                     <a href="./?p=about" class="nav-link">من نحن</a>
                 </li>
@@ -210,12 +205,14 @@ if (!isset($conn)) {
             </ul>
         </div>
 
-        <!-- Logo - Far Right -->
-        <div class="logo-section">
-            <a href="./" class="logo-container">
-                <img src="./admin/images/cropped_circle_image.png" alt="Gayar Plus Logo" class="site-logo" onerror="this.src='./assets/images/no-image.svg'">
-                <span class="site-name">Gayar Plus</span>
-            </a>
+        <!-- Cart Actions - Far Right -->
+        <div class="cart-section">
+            <div class="nav-actions">
+                <a href="./?p=cart" class="cart-btn">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="cart-badge" id="cart-count">0</span>
+                </a>
+            </div>
         </div>
     </div>
 </nav>
