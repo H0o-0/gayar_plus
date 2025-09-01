@@ -1,198 +1,36 @@
 <?php
-<<<<<<< HEAD
-// Products Page - Shows products with filtering options
-=======
-// Modern Products Page with beautiful theme design
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
+// Modern Products Page
 require_once 'config.php';
 require_once 'classes/TextCleaner.php';
 
-// Initialize page variables
-<<<<<<< HEAD
-$pageTitle = "المنتجات - Gayar Plus";
-$title = "جميع المنتجات";
-$sub_title = "اكتشف مجموعتنا الكاملة من ملحقات الهواتف والأجهزة الذكية";
-
-// Handle brand filtering
-$brand_id = null;
-$brand_data = null;
-
-if(isset($_GET['brand'])){
-    $brand_param = $_GET['brand'];
-=======
 $pageTitle = "منتجاتنا - Gayar Plus";
 $title = "الملحقات الأكثر طلباً";
 $sub_title = "اكتشف مجموعة متميزة من ملحقات الهواتف عالية الجودة";
 
-// Function to get ID from either MD5 hash or direct ID
-function get_id_from_param($param) {
-    if (empty($param)) {
-        return null;
-    }
-    
-    // If it's a number, it's a direct ID
-    if (is_numeric($param)) {
-        return intval($param);
-    }
-    
-    // If it's an MD5 hash, decode it
-    if (strlen($param) == 24 && ctype_alnum($param)) { // MD5 hash is 32 chars, but base64 encoded it's 24
-        // Try to decode as base64 first
-        $decoded = base64_decode($param, true);
-        if ($decoded !== false && is_numeric($decoded)) {
-            return intval($decoded);
-        }
-    }
-    
-    // Try to decode as MD5 hash
-    if (strlen($param) == 32 && ctype_xdigit($param)) {
-        // We can't reverse MD5, so we need to query the database
-        return $param; // Return the hash to be used in query
-    }
-    
-    return null;
-}
-
-// Handle brand filtering (support both MD5 and direct ID)
+// Handle brand filtering
 $brand_id = null;
 $brand_data = null;
 if(isset($_GET['b'])){
     $brand_param = $_GET['b'];
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
     
-    // Check if it's a direct ID
     if (is_numeric($brand_param)) {
         $brand_id = intval($brand_param);
-<<<<<<< HEAD
-        $brand_qry = $conn->query("SELECT * FROM brands WHERE id = {$brand_id} AND status = 1");
-    } elseif (base64_decode($brand_param, true) !== false && is_numeric(base64_decode($brand_param, true))) {
-        // Handle base64 encoded ID
-        $brand_id = intval(base64_decode($brand_param, true));
         $brand_qry = $conn->query("SELECT * FROM brands WHERE id = {$brand_id} AND status = 1");
     } else {
-        // Handle MD5 hash
         $brand_qry = $conn->query("SELECT * FROM brands WHERE md5(id) = '{$brand_param}' AND status = 1");
-=======
-        $brand_qry = $conn->query("SELECT * FROM brands where id = {$brand_id} AND status = 1");
-    } else {
-        // Handle MD5 hash
-        $brand_qry = $conn->query("SELECT * FROM brands where md5(id) = '{$brand_param}' AND status = 1");
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
     }
     
     if($brand_qry && $brand_qry->num_rows > 0){
         $brand_data = $brand_qry->fetch_assoc();
         $brand_id = $brand_data['id'];
-<<<<<<< HEAD
-        $brand_name = !empty($brand_data['name_ar']) ? $brand_data['name_ar'] : $brand_data['name'];
-        $title = "منتجات " . $brand_name;
-        $sub_title = "جميع المنتجات المتوفرة من " . $brand_name;
-    }
-}
-
-// Handle search
-$search_term = null;
-if(isset($_GET['search']) && !empty($_GET['search'])){
-    $search_term = $_GET['search'];
-    $title = "نتائج البحث";
-    $sub_title = "البحث عن: " . htmlspecialchars($search_term);
-}
-
-// منع تضمين topBarNav.php لأنه مُضمن في header.php
-// include 'inc/topBarNav.php';
-=======
         $title = htmlspecialchars($brand_data['name']);
         $sub_title = "جميع منتجات " . htmlspecialchars($brand_data['name']);
         $pageTitle = htmlspecialchars($brand_data['name']) . " - Gayar Plus";
     }
 }
 
-// Handle series filtering (support both MD5 and direct ID)
-$series_id = null;
-$series_data = null;
-if(isset($_GET['s'])){
-    $series_param = $_GET['s'];
-    
-    // Check if it's a direct ID
-    if (is_numeric($series_param)) {
-        $series_id = intval($series_param);
-        $series_qry = $conn->query("SELECT s.*, b.name as brand_name FROM series s LEFT JOIN brands b ON s.brand_id = b.id WHERE s.id = {$series_id} AND s.status = 1");
-    } else {
-        // Handle MD5 hash
-        $series_qry = $conn->query("SELECT s.*, b.name as brand_name FROM series s LEFT JOIN brands b ON s.brand_id = b.id WHERE md5(s.id) = '{$series_param}' AND s.status = 1");
-    }
-    
-    if($series_qry && $series_qry->num_rows > 0){
-        $series_data = $series_qry->fetch_assoc();
-        $series_id = $series_data['id'];
-        $sub_title = htmlspecialchars($series_data['name']);
-        if(isset($_GET['b']) && !empty($series_data['brand_name'])) {
-            $title = htmlspecialchars($series_data['brand_name']) . " - " . htmlspecialchars($series_data['name']);
-        } else {
-            $title = htmlspecialchars($series_data['name']);
-        }
-        $pageTitle = htmlspecialchars($series_data['name']) . " - Gayar Plus";
-    }
-}
-
-// Handle model filtering (support both MD5 and direct ID)
-$model_id = null;
-$model_data = null;
-if(isset($_GET['m'])){
-    $model_param = $_GET['m'];
-    
-    // Check if it's a direct ID
-    if (is_numeric($model_param)) {
-        $model_id = intval($model_param);
-        $model_qry = $conn->query("SELECT m.*, s.name as series_name, b.name as brand_name FROM models m LEFT JOIN series s ON m.series_id = s.id LEFT JOIN brands b ON s.brand_id = b.id WHERE m.id = {$model_id} AND m.status = 1");
-    } else {
-        // Handle MD5 hash
-        $model_qry = $conn->query("SELECT m.*, s.name as series_name, b.name as brand_name FROM models m LEFT JOIN series s ON m.series_id = s.id LEFT JOIN brands b ON s.brand_id = b.id WHERE md5(m.id) = '{$model_param}' AND m.status = 1");
-    }
-    
-    if($model_qry && $model_qry->num_rows > 0){
-        $model_data = $model_qry->fetch_assoc();
-        $model_id = $model_data['id'];
-        $sub_title = htmlspecialchars($model_data['name']);
-        if(isset($_GET['s']) && !empty($model_data['series_name'])) {
-            $title = htmlspecialchars($model_data['brand_name']) . " - " . htmlspecialchars($model_data['series_name']) . " - " . htmlspecialchars($model_data['name']);
-        } else {
-            $title = htmlspecialchars($model_data['name']);
-        }
-        $pageTitle = htmlspecialchars($model_data['name']) . " - Gayar Plus";
-    }
-}
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
-
 include 'inc/header.php'
 ?>
-
-<!-- Pattern Background -->
-<div class="pattern-background"></div>
-
-<!-- Breadcrumb -->
-<section class="breadcrumb">
-    <div class="breadcrumb-container">
-        <nav class="breadcrumb-nav">
-            <a href="./">الرئيسية</a>
-            <span class="breadcrumb-separator"><i class="fas fa-chevron-left"></i></span>
-<<<<<<< HEAD
-            <?php if(isset($brand_data)): ?>
-            <a href="./?p=products&brand=<?= $brand_data['id'] ?>"><?= htmlspecialchars(!empty($brand_data['name_ar']) ? $brand_data['name_ar'] : $brand_data['name']) ?></a>
-=======
-            <?php if(isset($_GET['b']) && isset($brand_data)): ?>
-            <a href="./?p=products&b=<?= is_numeric($_GET['b']) ? md5($_GET['b']) : $_GET['b'] ?>"><?= htmlspecialchars($brand_data['name']) ?></a>
-            <span class="breadcrumb-separator"><i class="fas fa-chevron-left"></i></span>
-            <?php endif; ?>
-            <?php if(isset($_GET['s']) && isset($series_data)): ?>
-            <a href="./?p=products&b=<?= $_GET['b'] ?? '' ?>&s=<?= is_numeric($_GET['s']) ? md5($_GET['s']) : $_GET['s'] ?>"><?= htmlspecialchars($series_data['name']) ?></a>
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
-            <span class="breadcrumb-separator"><i class="fas fa-chevron-left"></i></span>
-            <?php endif; ?>
-            <span class="breadcrumb-current">المنتجات</span>
-        </nav>
-    </div>
-</section>
 
 <!-- Products Hero Section -->
 <section class="products-hero">
@@ -200,13 +38,6 @@ include 'inc/header.php'
         <div class="hero-content">
             <h1 class="hero-title"><?= $title ?></h1>
             <p class="hero-subtitle"><?= $sub_title ?></p>
-            
-            <?php if(isset($_GET['search'])): ?>
-            <div class="search-badge">
-                <i class="fas fa-search"></i>
-                <span>نتائج البحث عن: "<?= htmlspecialchars($_GET['search']) ?>"</span>
-            </div>
-            <?php endif; ?>
         </div>
     </div>
 </section>
@@ -220,167 +51,26 @@ include 'inc/header.php'
                 $whereData = "";
                 $params = [];
                 
-<<<<<<< HEAD
                 if($brand_id) {
                     $whereData = " AND p.brand_id = ?";
                     $params = [$brand_id];
-                } elseif($search_term) {
-                    $whereData = " AND (p.product_name LIKE ? OR p.description LIKE ?)";
-                    $params = ["%{$search_term}%", "%{$search_term}%"];
                 }
                 
                 // Execute the main query
-                $sql = "SELECT p.*, 
-                               c.category as category_name, 
-                               sc.sub_category as sub_category_name,
-                               b.name as brand_name, 
-                               b.name_ar as brand_name_ar
-                        FROM products p 
-                        LEFT JOIN categories c ON p.category_id = c.id 
-                        LEFT JOIN sub_categories sc ON p.sub_category_id = sc.id 
-                        LEFT JOIN brands b ON p.brand_id = b.id 
-                        WHERE p.status = 1 {$whereData} 
-                        ORDER BY p.date_created DESC";
-                
-                if(!empty($params)) {
-                    $stmt = $conn->prepare($sql);
-                    if($search_term) {
-                        $stmt->bind_param("ss", $params[0], $params[1]);
-                    } else {
-                        $stmt->bind_param("i", $params[0]);
-                    }
-=======
-                if(isset($_GET['search']) && !empty($_GET['search'])) {
-                    $search_term = TextCleaner::sanitize($_GET['search']);
-                    $whereData = " and (p.product_name LIKE ? or p.description LIKE ?)";
-                    $params[] = "%{$search_term}%";
-                    $params[] = "%{$search_term}%";
-                }
-                elseif(isset($_GET['b']) && isset($_GET['s']) && isset($_GET['m'])) {
-                    // Filter by brand, series, and model
-                    // Handle both MD5 hashes and direct IDs
-                    if (is_numeric($_GET['b'])) {
-                        $brand_id = intval($_GET['b']);
-                    } else {
-                        $brand_result = $conn->query("SELECT id FROM brands WHERE md5(id) = '{$_GET['b']}' AND status = 1");
-                        $brand_id = ($brand_result && $brand_result->num_rows > 0) ? $brand_result->fetch_assoc()['id'] : null;
-                    }
-                    
-                    if (is_numeric($_GET['s'])) {
-                        $series_id = intval($_GET['s']);
-                    } else {
-                        $series_result = $conn->query("SELECT id FROM series WHERE md5(id) = '{$_GET['s']}' AND status = 1");
-                        $series_id = ($series_result && $series_result->num_rows > 0) ? $series_result->fetch_assoc()['id'] : null;
-                    }
-                    
-                    if (is_numeric($_GET['m'])) {
-                        $model_id = intval($_GET['m']);
-                    } else {
-                        $model_result = $conn->query("SELECT id FROM models WHERE md5(id) = '{$_GET['m']}' AND status = 1");
-                        $model_id = ($model_result && $model_result->num_rows > 0) ? $model_result->fetch_assoc()['id'] : null;
-                    }
-                    
-                    if($brand_id && $series_id && $model_id) {
-                        $whereData = " and p.brand_id = ? and p.series_id = ? and p.model_id = ?";
-                        $params = [$brand_id, $series_id, $model_id];
-                    }
-                }
-                elseif(isset($_GET['b']) && isset($_GET['s'])) {
-                    // Filter by brand and series
-                    // Handle both MD5 hashes and direct IDs
-                    if (is_numeric($_GET['b'])) {
-                        $brand_id = intval($_GET['b']);
-                    } else {
-                        $brand_result = $conn->query("SELECT id FROM brands WHERE md5(id) = '{$_GET['b']}' AND status = 1");
-                        $brand_id = ($brand_result && $brand_result->num_rows > 0) ? $brand_result->fetch_assoc()['id'] : null;
-                    }
-                    
-                    if (is_numeric($_GET['s'])) {
-                        $series_id = intval($_GET['s']);
-                    } else {
-                        $series_result = $conn->query("SELECT id FROM series WHERE md5(id) = '{$_GET['s']}' AND status = 1");
-                        $series_id = ($series_result && $series_result->num_rows > 0) ? $series_result->fetch_assoc()['id'] : null;
-                    }
-                    
-                    if($brand_id && $series_id) {
-                        $whereData = " and p.brand_id = ? and p.series_id = ?";
-                        $params = [$brand_id, $series_id];
-                    }
-                }
-                elseif(isset($_GET['b'])) {
-                    // Filter by brand only
-                    // Handle both MD5 hashes and direct IDs
-                    if (is_numeric($_GET['b'])) {
-                        $brand_id = intval($_GET['b']);
-                    } else {
-                        $brand_result = $conn->query("SELECT id FROM brands WHERE md5(id) = '{$_GET['b']}' AND status = 1");
-                        $brand_id = ($brand_result && $brand_result->num_rows > 0) ? $brand_result->fetch_assoc()['id'] : null;
-                    }
-                    
-                    if($brand_id) {
-                        $whereData = " and p.brand_id = ?";
-                        $params = [$brand_id];
-                    }
-                }
-                elseif(isset($_GET['s'])) {
-                    // Filter by series only
-                    // Handle both MD5 hashes and direct IDs
-                    if (is_numeric($_GET['s'])) {
-                        $series_id = intval($_GET['s']);
-                    } else {
-                        $series_result = $conn->query("SELECT id FROM series WHERE md5(id) = '{$_GET['s']}' AND status = 1");
-                        $series_id = ($series_result && $series_result->num_rows > 0) ? $series_result->fetch_assoc()['id'] : null;
-                    }
-                    
-                    if($series_id) {
-                        $whereData = " and p.series_id = ?";
-                        $params = [$series_id];
-                    }
-                }
-                elseif(isset($_GET['m'])) {
-                    // Filter by model only
-                    // Handle both MD5 hashes and direct IDs
-                    if (is_numeric($_GET['m'])) {
-                        $model_id = intval($_GET['m']);
-                    } else {
-                        $model_result = $conn->query("SELECT id FROM models WHERE md5(id) = '{$_GET['m']}' AND status = 1");
-                        $model_id = ($model_result && $model_result->num_rows > 0) ? $model_result->fetch_assoc()['id'] : null;
-                    }
-                    
-                    if($model_id) {
-                        $whereData = " and p.model_id = ?";
-                        $params = [$model_id];
-                    }
-                }
-                
-                // Execute the main query
-                $sql = "SELECT p.*, b.name as brand_name, s.name as series_name, m.name as model_name, p.image as image 
+                $sql = "SELECT p.*, b.name as brand_name, p.image as image 
                         FROM products p 
                         LEFT JOIN brands b ON p.brand_id = b.id 
-                        LEFT JOIN series s ON p.series_id = s.id 
-                        LEFT JOIN models m ON p.model_id = m.id 
                         WHERE p.status = 1 {$whereData} 
                         ORDER BY p.featured DESC, p.id DESC";
 
                 if(!empty($params)) {
                     $stmt = $conn->prepare($sql);
-                    $types = str_repeat('s', count($params));
-                    $stmt->bind_param($types, ...$params);
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
+                    $stmt->bind_param("i", $params[0]);
                     $stmt->execute();
                     $products = $stmt->get_result();
                 } else {
                     $products = $conn->query($sql);
                 }
-<<<<<<< HEAD
-                
-                if($products && $products->num_rows > 0):
-                    while($row = $products->fetch_assoc()): 
-                        // Check uploads directory for images
-                        $image_path = 'uploads/product_'.$row['id'];
-                        $images = [];
-                        if(is_dir($image_path)) {
-=======
 
                 if($products && $products->num_rows > 0):
                     while($row = $products->fetch_assoc()): 
@@ -388,18 +78,14 @@ include 'inc/header.php'
                         $image_path = $row['image'] ? $row['image'] : 'uploads/product_'.$row['id'];
                         $images = [];
                         if(is_dir($image_path) && !$row['image']) {
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
                             $files = scandir($image_path);
                             foreach($files as $file) {
                                 if(!in_array($file, ['.', '..'])) {
                                     $images[] = $image_path.'/'.$file;
                                 }
                             }
-<<<<<<< HEAD
-=======
                         } elseif ($row['image']) {
                             $images[] = $row['image'];
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
                         }
                         
                         // Get pricing info
@@ -410,7 +96,7 @@ include 'inc/header.php'
                             $price_info = $inventory->fetch_assoc();
                         }
             ?>
-            <div class="product-card will-change" onclick="window.location.href='./?p=product_view&id=<?= md5($row['id']) ?>'">
+            <div class="product-card" onclick="window.location.href='./?p=product_view&id=<?= md5($row['id']) ?>'">
                 <div class="product-image">
                     <?php if(!empty($images)): ?>
                         <img src="<?= validate_image($images[0]) ?>" alt="<?= htmlspecialchars($row['product_name']) ?>" loading="lazy">
@@ -418,66 +104,17 @@ include 'inc/header.php'
                         <i class="fas fa-mobile-alt"></i>
                     <?php endif; ?>
                     
-<<<<<<< HEAD
-                    <?php if(isset($row['featured']) && $row['featured'] == 1): ?>
-=======
                     <?php if($row['featured'] == 1): ?>
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
                     <div class="product-badge">الأكثر مبيعاً</div>
                     <?php endif; ?>
                 </div>
                 
                 <div class="product-info">
-<<<<<<< HEAD
-                    <div class="product-category">
-                        <?php
-                        // عرض الفئة والفئة الفرعية بدلاً من البراند
-                        $category_display = '';
-                        if (isset($row['sub_category_name']) && !empty($row['sub_category_name'])) {
-                            $category_display = htmlspecialchars($row['sub_category_name']);
-                        } elseif (isset($row['category_name']) && !empty($row['category_name'])) {
-                            $category_display = htmlspecialchars($row['category_name']);
-                        } elseif (isset($row['brand_name_ar']) && $row['brand_name_ar']) {
-                            $category_display = htmlspecialchars($row['brand_name_ar']);
-                        } elseif (isset($row['brand_name']) && $row['brand_name']) {
-                            $category_display = htmlspecialchars($row['brand_name']);
-                        } else {
-                            $category_display = 'ملحقات';
-                        }
-                        echo $category_display;
-                        ?>
-                    </div>
-                    <h3 class="product-title"><?= htmlspecialchars($row['product_name']) ?></h3>
-                    <p class="product-description"><?= TextCleaner::cleanAndTruncate($row['description'], 100) ?></p>
-                    
-                    <?php if(isset($row['has_colors']) && $row['has_colors'] == 1 && !empty($row['colors'])): ?>
-                    <?php 
-                        $colors = json_decode($row['colors'], true);
-                        if(is_array($colors) && count($colors) > 0):
-                    ?>
-                    <div class="product-colors">
-                        <div class="color-dots">
-                            <?php foreach(array_slice($colors, 0, 4) as $color): ?>
-                            <div class="color-dot" 
-                                 style="background-color: <?= htmlspecialchars($color['code']) ?>"
-                                 title="<?= htmlspecialchars($color['name']) ?>"></div>
-                            <?php endforeach; ?>
-                            <?php if(count($colors) > 4): ?>
-                            <span class="more-colors">+<?= count($colors) - 4 ?></span>
-                            <?php endif; ?>
-                        </div>
-                    </div>
-                    <?php endif; ?>
-                    <?php endif; ?>
-                    
-                    <div class="product-actions">
-=======
                     <div class="product-category"><?= $row['brand_name'] ? htmlspecialchars($row['brand_name']) : 'ملحقات' ?></div>
                     <h3 class="product-title"><?= htmlspecialchars($row['product_name']) ?></h3>
                     <p class="product-description"><?= TextCleaner::cleanAndTruncate($row['description'], 100) ?></p>
                     
                     <div class="product-footer">
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
                         <span class="product-price">
                             <?php if($price_info && $price_info['price'] > 0): ?>
                                 <?= TextCleaner::formatPrice($price_info['price']) ?>
@@ -513,107 +150,7 @@ include 'inc/header.php'
 </section>
 
 <style>
-<<<<<<< HEAD
 /* Products Page Styles */
-.pattern-background {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(135deg, rgba(102, 126, 234, 0.03) 0%, rgba(118, 75, 162, 0.03) 100%);
-    z-index: -1;
-}
-
-.breadcrumb {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
-    padding: 1rem 0;
-    margin-top: 80px;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-}
-
-.breadcrumb-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 1rem;
-}
-
-.breadcrumb-nav {
-    display: flex;
-    align-items: center;
-    font-size: 0.9rem;
-}
-
-.breadcrumb-nav a {
-    color: #667eea;
-    text-decoration: none;
-    transition: color 0.3s ease;
-}
-
-.breadcrumb-nav a:hover {
-    color: #764ba2;
-}
-
-.breadcrumb-separator {
-    margin: 0 0.5rem;
-    color: #a0a0a0;
-    font-size: 0.8rem;
-}
-
-.breadcrumb-current {
-    color: #2d3748;
-    font-weight: 600;
-}
-
-.products-hero {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 4rem 0;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-}
-
-.products-hero::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="2" fill="white" opacity="0.1"/></svg>');
-    background-size: 30px 30px;
-    animation: float 20s linear infinite;
-}
-
-@keyframes float {
-    0% { transform: translate(-50%, -50%) rotate(0deg); }
-    100% { transform: translate(-50%, -50%) rotate(360deg); }
-}
-
-.hero-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 1rem;
-    position: relative;
-    z-index: 1;
-}
-
-.hero-title {
-    font-size: 3rem;
-    font-weight: 800;
-    margin-bottom: 1rem;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.hero-subtitle {
-    font-size: 1.3rem;
-    opacity: 0.9;
-    margin-bottom: 2rem;
-    font-weight: 300;
-=======
-/* Products Page Specific Styles */
 .products-hero {
     padding: 8rem 0 6rem;
     background: linear-gradient(135deg, var(--light-gray) 0%, var(--pure-white) 100%);
@@ -633,61 +170,21 @@ include 'inc/header.php'
     color: var(--text-secondary);
     max-width: 600px;
     margin: 0 auto 2rem;
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
-}
-
-.search-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-<<<<<<< HEAD
-    background: rgba(255, 255, 255, 0.2);
-    padding: 0.75rem 1.5rem;
-    border-radius: 25px;
-    backdrop-filter: blur(10px);
-    font-weight: 500;
-}
-
-.products-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 4rem 1rem;
-=======
-    background: linear-gradient(135deg, var(--primary-blue), var(--primary-navy));
-    color: white;
-    padding: 0.75rem 1.5rem;
-    border-radius: 20px;
-    font-weight: 600;
-    margin-top: 1rem;
 }
 
 .products-container {
     max-width: 1400px;
     margin: 0 auto;
     padding: 0 2rem;
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
 }
 
 .products-grid {
     display: grid;
-<<<<<<< HEAD
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-=======
     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
     gap: 2rem;
 }
 
 .product-card {
-<<<<<<< HEAD
-    background: white;
-    border-radius: 16px;
-    overflow: hidden;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    cursor: pointer;
-    border: 1px solid rgba(0, 0, 0, 0.05);
-=======
     background: var(--pure-white);
     border-radius: 24px;
     border: 1px solid var(--medium-gray);
@@ -695,7 +192,6 @@ include 'inc/header.php'
     transition: var(--transition);
     cursor: pointer;
     position: relative;
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
     display: flex;
     flex-direction: column;
     height: 100%;
@@ -703,41 +199,12 @@ include 'inc/header.php'
 
 .product-card:hover {
     transform: translateY(-8px);
-<<<<<<< HEAD
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-    border-color: rgba(102, 126, 234, 0.2);
-=======
     box-shadow: var(--shadow-xl);
     border-color: var(--primary-blue);
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
 }
 
 .product-image {
     height: 240px;
-<<<<<<< HEAD
-    background: #f8f9fa;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    overflow: hidden;
-}
-
-.product-image img {
-    max-width: 85%;
-    max-height: 85%;
-    object-fit: contain;
-    transition: transform 0.3s ease;
-}
-
-.product-card:hover .product-image img {
-    transform: scale(1.05);
-}
-
-.product-image i {
-    font-size: 3rem;
-    color: #e2e8f0;
-=======
     background: var(--light-gray);
     position: relative;
     overflow: hidden;
@@ -762,46 +229,10 @@ include 'inc/header.php'
 .product-card:hover .product-image img,
 .product-card:hover .product-image i {
     transform: scale(1.1);
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
 }
 
 .product-badge {
     position: absolute;
-<<<<<<< HEAD
-    top: 10px;
-    right: 10px;
-    background: linear-gradient(135deg, #ff6b6b, #ff5722);
-    color: white;
-    padding: 0.3rem 0.8rem;
-    border-radius: 15px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-}
-
-.product-info {
-    padding: 1.5rem;
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    gap: 0.75rem;
-}
-
-.product-category {
-    color: #667eea;
-    font-size: 0.85rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.product-title {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: #2d3748;
-    line-height: 1.4;
-    margin: 0;
-=======
     top: 1rem;
     right: 1rem;
     background: var(--accent-emerald);
@@ -834,7 +265,6 @@ include 'inc/header.php'
     color: var(--text-primary);
     margin-bottom: 1rem;
     line-height: 1.4;
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
@@ -842,91 +272,6 @@ include 'inc/header.php'
 }
 
 .product-description {
-<<<<<<< HEAD
-    color: #718096;
-    font-size: 0.9rem;
-    line-height: 1.5;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    margin: 0;
-    flex: 1;
-}
-
-.product-colors {
-    margin: 0.5rem 0;
-}
-
-.color-dots {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-}
-
-.color-dot {
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    border: 2px solid #ffffff;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.05);
-    transition: all 0.2s ease;
-    cursor: pointer;
-    flex-shrink: 0;
-}
-
-.color-dot:hover {
-    transform: scale(1.3);
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2), 0 0 0 2px rgba(59, 130, 246, 0.3);
-    z-index: 2;
-    position: relative;
-}
-
-.more-colors {
-    font-size: 0.75rem;
-    color: #6b7280;
-    font-weight: 600;
-    margin-left: 0.5rem;
-    background: #f3f4f6;
-    padding: 0.125rem 0.375rem;
-    border-radius: 8px;
-    border: 1px solid #e5e7eb;
-}
-
-.product-actions {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: auto;
-    gap: 1rem;
-}
-
-.product-price {
-    font-size: 1.2rem;
-    font-weight: 700;
-    color: #667eea;
-}
-
-.add-to-cart {
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    color: white;
-    border: none;
-    padding: 0.6rem 1.2rem;
-    border-radius: 25px;
-    font-weight: 600;
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    white-space: nowrap;
-}
-
-.add-to-cart:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
-=======
     color: var(--text-secondary);
     margin-bottom: 1.5rem;
     line-height: 1.6;
@@ -968,62 +313,12 @@ include 'inc/header.php'
 .add-to-cart:hover {
     background: var(--primary-navy);
     transform: translateY(-2px);
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
 }
 
 .no-products {
     grid-column: 1 / -1;
     text-align: center;
     padding: 4rem 2rem;
-<<<<<<< HEAD
-}
-
-.no-products-content {
-    background: white;
-    border-radius: 20px;
-    padding: 3rem 2rem;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-    max-width: 500px;
-    margin: 0 auto;
-}
-
-.no-products-content i {
-    font-size: 4rem;
-    color: #d1d5db;
-    margin-bottom: 1.5rem;
-}
-
-.no-products-content h3 {
-    font-size: 1.5rem;
-    color: #374151;
-    margin-bottom: 1rem;
-}
-
-.no-products-content p {
-    color: #6b7280;
-    margin-bottom: 2rem;
-    font-size: 1.1rem;
-}
-
-.btn-primary {
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    color: white;
-    padding: 0.75rem 2rem;
-    border-radius: 25px;
-    text-decoration: none;
-    font-weight: 600;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    transition: all 0.3s ease;
-}
-
-.btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
-    text-decoration: none;
-    color: white;
-=======
     background: var(--light-gray);
     border-radius: 24px;
     border: 1px solid var(--medium-gray);
@@ -1052,7 +347,6 @@ include 'inc/header.php'
     color: var(--text-secondary);
     margin-bottom: 2rem;
     line-height: 1.6;
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
 }
 
 /* Responsive Design */
@@ -1061,29 +355,12 @@ include 'inc/header.php'
         font-size: 2rem;
     }
     
-<<<<<<< HEAD
-    .hero-subtitle {
-        font-size: 1.1rem;
-    }
-    
-    .products-grid {
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-        gap: 1.5rem;
-    }
-    
-    .product-info {
-        padding: 1.25rem;
-    }
-    
-    .product-actions {
-=======
     .products-grid {
         grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
         gap: 1.5rem;
     }
     
     .product-footer {
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
         flex-direction: column;
         gap: 1rem;
         align-items: stretch;
@@ -1101,72 +378,6 @@ function addToCart(button, productId) {
     if(window.addToCart) {
         window.addToCart(button, productId);
     } else {
-        // Fallback notification
-<<<<<<< HEAD
-        console.log('Adding product to cart:', productId);
-        
-        if (button.disabled) return;
-        
-        button.disabled = true;
-        var originalHTML = button.innerHTML;
-        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الإضافة...';
-        
-        fetch('ajax/add_to_cart.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: 'product_id=' + productId + '&quantity=1'
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Update cart count
-                var cartElements = document.querySelectorAll('.cart-count, .cart-badge, #cart-count');
-                cartElements.forEach(function(element) {
-                    if (element) {
-                        element.textContent = data.cart_count;
-                    }
-                });
-                
-                // Show success
-                button.innerHTML = '<i class="fas fa-check"></i> تمت الإضافة!';
-                button.style.background = '#10b981';
-                
-                setTimeout(function() {
-                    button.innerHTML = originalHTML;
-                    button.style.background = '';
-                    button.disabled = false;
-                }, 2000);
-            } else {
-                throw new Error(data.message || 'فشل في إضافة المنتج');
-            }
-        })
-        .catch(error => {
-            console.error('خطأ:', error);
-            button.innerHTML = originalHTML;
-            button.disabled = false;
-        });
-    }
-}
-
-// Initialize device menu for products page
-document.addEventListener('DOMContentLoaded', function() {
-    // Wait a bit for the navigation to load, then initialize
-    setTimeout(function() {
-        if (typeof window.initDeviceMenu === 'function') {
-            window.initDeviceMenu();
-            console.log('✅ Device menu manually initialized for products page');
-        }
-    }, 500);
-    
-    // Backup initialization
-    setTimeout(function() {
-        if (typeof window.initDeviceMenu === 'function') {
-            window.initDeviceMenu();
-        }
-    }, 1500);
-=======
         showNotification('تم إضافة المنتج إلى السلة!', 'success');
     }
 }
@@ -1204,34 +415,6 @@ function showNotification(message, type = 'success') {
         }, 300);
     }, 3000);
 }
-
-// Animate products on scroll
-document.addEventListener('DOMContentLoaded', function() {
-    const observerOptions = {
-        threshold: 0.1,
-        rootMargin: '0px 0px -50px 0px'
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach((entry, index) => {
-            if (entry.isIntersecting) {
-                setTimeout(() => {
-                    entry.target.style.opacity = '1';
-                    entry.target.style.transform = 'translateY(0)';
-                }, index * 100);
-            }
-        });
-    }, observerOptions);
-
-    // Observe product cards
-    document.querySelectorAll('.product-card').forEach((card, index) => {
-        card.style.opacity = '0';
-        card.style.transform = 'translateY(30px)';
-        card.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
-        observer.observe(card);
-    });
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
-});
 </script>
 
 <?php include 'inc/modern-footer.php'; ?>

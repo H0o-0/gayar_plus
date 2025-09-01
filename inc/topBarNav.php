@@ -126,7 +126,7 @@ if (!isset($conn)) {
     gap: 1rem !important;
 }
 
-.search-btn, .cart-btn {
+.cart-btn {
     background: #f8fafc;
     border: 2px solid #e2e8f0;
     color: #475569;
@@ -141,7 +141,7 @@ if (!isset($conn)) {
     position: relative;
 }
 
-.search-btn:hover, .cart-btn:hover {
+.cart-btn:hover {
     background: #3b82f6;
     border-color: #3b82f6;
     color: white;
@@ -162,85 +162,6 @@ if (!isset($conn)) {
     text-align: center;
 }
 
-/* Search Modal Styles */
-.search-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 10000;
-    display: flex;
-    align-items: flex-start;
-    justify-content: center;
-    padding-top: 100px;
-}
-
-.search-container {
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
-    width: 90%;
-    max-width: 600px;
-    overflow: hidden;
-}
-
-.search-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem 1.5rem;
-    border-bottom: 1px solid #e2e8f0;
-    background: #f8fafc;
-}
-
-.search-header h3 {
-    margin: 0;
-    color: #1e293b;
-    font-size: 1.25rem;
-}
-
-.close-search {
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    cursor: pointer;
-    color: #64748b;
-    padding: 0.25rem;
-    border-radius: 6px;
-    transition: all 0.2s ease;
-}
-
-.close-search:hover {
-    background: #e2e8f0;
-    color: #1e293b;
-}
-
-.search-body {
-    padding: 1.5rem;
-}
-
-.search-input {
-    width: 100%;
-    padding: 0.75rem 1rem;
-    border: 2px solid #e2e8f0;
-    border-radius: 8px;
-    font-size: 1rem;
-    outline: none;
-    transition: border-color 0.2s ease;
-}
-
-.search-input:focus {
-    border-color: #3b82f6;
-}
-
-.search-results {
-    margin-top: 1rem;
-    max-height: 300px;
-    overflow-y: auto;
-}
-
 /* Mobile Responsive */
 @media (max-width: 768px) {
     .nav-container {
@@ -258,27 +179,15 @@ if (!isset($conn)) {
     .cart-section {
         flex: 0 0 auto !important;
     }
-    
-    .search-modal {
-        padding-top: 50px;
-    }
-    
-    .search-container {
-        width: 95%;
-        margin: 0 auto;
-    }
 }
 </style>
 
 <!-- Navigation Bar -->
 <nav class="navbar" id="navbar">
     <div class="nav-container">
-        <!-- Cart Actions - Far Left -->
+        <!-- Cart Actions - Far Right -->
         <div class="cart-section">
             <div class="nav-actions">
-                <button class="search-btn" onclick="openSearch()">
-                    <i class="fas fa-search"></i>
-                </button>
                 <a href="./?p=cart" class="cart-btn">
                     <i class="fas fa-shopping-cart"></i>
                     <span class="cart-badge" id="cart-count">0</span>
@@ -290,13 +199,7 @@ if (!isset($conn)) {
         <div class="menu-section">
             <ul class="nav-menu">
                 <li class="nav-item">
-                    <a href="./" class="nav-link">الرئيسية</a>
-                </li>
-                <li class="nav-item">
                     <a href="./?p=products" class="nav-link">المنتجات</a>
-                </li>
-                <li class="nav-item">
-                    <a href="./?p=accessories" class="nav-link">الملحقات</a>
                 </li>
                 <li class="nav-item">
                     <a href="./?p=about" class="nav-link">من نحن</a>
@@ -317,37 +220,7 @@ if (!isset($conn)) {
     </div>
 </nav>
 
-<!-- Search Modal -->
-<div class="search-modal" id="search-modal" style="display: none;">
-    <div class="search-container">
-        <div class="search-header">
-            <h3>البحث في المتجر</h3>
-            <button class="close-search" onclick="closeSearch()">&times;</button>
-        </div>
-        <div class="search-body">
-            <input type="text" class="search-input" id="search-input" placeholder="ابحث عن منتج، شركة، أو فئة...">
-            <div class="search-results" id="search-results"></div>
-        </div>
-    </div>
-</div>
-
 <script>
-// Function to open search modal
-function openSearch() {
-    const searchModal = document.getElementById('search-modal');
-    if (searchModal) {
-        searchModal.style.display = 'block';
-        document.getElementById('search-input')?.focus();
-    }
-}
-
-// Function to close search modal
-function closeSearch() {
-    const searchModal = document.getElementById('search-modal');
-    if (searchModal) {
-        searchModal.style.display = 'none';
-    }
-}
 
 // Load and update cart count for all pages
 function loadCartCount() {
