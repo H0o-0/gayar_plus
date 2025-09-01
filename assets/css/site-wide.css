@@ -33,6 +33,11 @@
 
 /* Global Styles */
 html {
+<<<<<<< HEAD
+=======
+    direction: rtl !important;
+    text-align: right !important;
+>>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
     scroll-behavior: smooth;
 }
 
@@ -42,6 +47,11 @@ body {
     color: var(--text-primary) !important;
     line-height: 1.6 !important;
     overflow-x: hidden !important;
+<<<<<<< HEAD
+=======
+    direction: rtl !important;
+    text-align: right !important;
+>>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
     margin: 0 !important;
     padding: 90px 0 0 0 !important;
 }
@@ -216,6 +226,7 @@ body {
     justify-content: center !important;
 }
 
+<<<<<<< HEAD
 
 
 
@@ -229,6 +240,151 @@ body {
 
 
 
+=======
+/* Mega Menu */
+.mega-menu {
+    position: absolute !important;
+    top: 100% !important;
+    right: 0 !important;
+    width: 800px !important;
+    background: var(--pure-white) !important;
+    border-radius: var(--border-radius) !important;
+    box-shadow: var(--shadow-xl) !important;
+    border: 1px solid var(--medium-gray) !important;
+    padding: 2rem !important;
+    display: none !important; /* Changed from opacity/visibility to display */
+    direction: rtl !important;
+    z-index: 9999 !important; /* Increased z-index to ensure menu appears above other elements */
+    margin-top: 0 !important;
+    padding-top: 2rem !important;
+}
+
+/* قائمة أدوات الصيانة الصغيرة */
+.nav-item:nth-child(2) .mega-menu {
+    width: 120px !important;
+    padding: 0.5rem !important;
+}
+
+/* Show mega menu when dropdown is active */
+.dropdown.show .mega-menu,
+.nav-item.show .mega-menu {
+    display: block !important;
+}
+
+/* Ensure mega menu is visible on hover */
+.nav-devices:hover .mega-menu,
+.nav-devices.show .mega-menu {
+    display: block !important;
+}
+
+/* Additional rule to ensure menu visibility */
+.mega-menu.show {
+    display: block !important;
+}
+
+.menu-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 2rem !important;
+    min-height: 300px !important;
+}
+
+/* تخطيط بسيط لأدوات الصيانة */
+.nav-item:nth-child(2) .menu-grid {
+    display: block !important;
+    gap: 0 !important;
+    min-height: auto !important;
+}
+
+.menu-section {
+    padding: 0 !important;
+}
+
+/* أدوات الصيانة - مسافة صغيرة */
+.nav-item:nth-child(2) .menu-section {
+    padding: 0 !important;
+}
+
+.menu-title {
+    font-size: 1rem !important;
+    font-weight: 700 !important;
+    color: var(--text-primary) !important;
+    margin-bottom: 1rem !important;
+    padding-bottom: 0.5rem !important;
+    border-bottom: 2px solid var(--medium-gray) !important;
+}
+
+/* Always show menu titles */
+.menu-title {
+    display: block !important;
+}
+
+.menu-item {
+    padding: 0.75rem 1rem !important;
+    border-radius: 8px !important;
+    transition: var(--transition) !important;
+    cursor: pointer !important;
+    color: var(--text-secondary) !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.75rem !important;
+    margin-bottom: 0.5rem !important;
+}
+
+.menu-item:hover {
+    background: var(--light-gray) !important;
+    color: var(--primary-blue) !important;
+}
+
+/* Maintenance tools menu items */
+.nav-item:nth-child(2) .menu-item {
+    color: var(--text-secondary) !important;
+    cursor: pointer !important;
+    padding: 0.5rem !important;
+    text-align: center !important;
+    font-size: 0.875rem !important;
+    justify-content: center !important;
+}
+
+.nav-item:nth-child(2) .menu-item:hover {
+    background: var(--light-gray) !important;
+    color: var(--primary-blue) !important;
+}
+
+.brand-item {
+    transition: var(--transition) !important;
+    cursor: pointer !important;
+}
+
+.brand-item:hover {
+    background: var(--primary-blue) !important;
+    color: white !important;
+}
+
+.brand-item:hover .brand-icon {
+    color: white !important;
+}
+
+.brand-icon {
+    width: 24px !important;
+    height: 24px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    color: var(--primary-blue) !important;
+    transition: var(--transition) !important;
+}
+
+/* Active state for selected brand */
+.brand-item.active {
+    background: var(--primary-blue) !important;
+    color: white !important;
+}
+
+.brand-item.active .brand-icon {
+    color: white !important;
+}
+>>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
 
 /* Main Content */
 .main-content,
@@ -822,6 +978,18 @@ body {
         display: none !important;
     }
     
+<<<<<<< HEAD
+=======
+    .mega-menu {
+        width: 100vw !important;
+        right: -2rem !important;
+        border-radius: 0 !important;
+    }
+    
+    .menu-grid {
+        grid-template-columns: 1fr !important;
+    }
+>>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
     
     /* Responsive footer adjustments */
     .footer {

@@ -1,7 +1,11 @@
 <?php
 if(isset($_GET['id']) && $_GET['id'] > 0){
     $qry = $conn->query("SELECT * from `brands` where id = '{$_GET['id']}' ");
+<<<<<<< HEAD
     if($qry && $qry->num_rows > 0){
+=======
+    if($qry->num_rows > 0){
+>>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
         foreach($qry->fetch_assoc() as $k => $v){
             $$k=$v;
         }
@@ -16,6 +20,7 @@ if(isset($_GET['id']) && $_GET['id'] > 0){
 		<form action="" id="brand-form">
 			<input type="hidden" name ="id" value="<?php echo isset($id) ? $id : '' ?>">
 			<div class="form-group">
+<<<<<<< HEAD
 				<label for="name" class="control-label">Brand Name (English)</label>
                 <textarea name="name" id="" cols="30" rows="2" class="form-control form no-resize"><?php echo isset($name) ? $name : ''; ?></textarea>
 			</div>
@@ -24,6 +29,12 @@ if(isset($_GET['id']) && $_GET['id'] > 0){
                 <textarea name="name_ar" id="" cols="30" rows="2" class="form-control form no-resize" dir="rtl"><?php echo isset($name_ar) ? $name_ar : ''; ?></textarea>
 			</div>
             <div class="form-group">
+=======
+				<label for="name" class="control-label">Brand Name</label>
+                <textarea name="name" id="" cols="30" rows="2" class="form-control form no-resize"><?php echo isset($name) ? $name : ''; ?></textarea>
+			</div>
+            <div class="form-group">
+>>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
 				<label for="description" class="control-label">Description</label>
                 <textarea name="description" id="" cols="30" rows="2" class="form-control form no-resize summernote"><?php echo isset($description) ? $description : ''; ?></textarea>
 			</div>

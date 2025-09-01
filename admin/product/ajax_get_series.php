@@ -2,6 +2,7 @@
 require_once '../../config.php';
 
 if(isset($_POST['brand_id'])){
+<<<<<<< HEAD
     $brand_id = intval($_POST['brand_id']);
     
     $qry = $conn->query("SELECT * FROM series WHERE brand_id = '$brand_id' AND status = 1 ORDER BY name ASC");
@@ -15,6 +16,11 @@ if(isset($_POST['brand_id'])){
         exit;
     }
     
+=======
+    $brand_id = $_POST['brand_id'];
+    
+    $qry = $conn->query("SELECT * FROM series WHERE brand_id = '$brand_id' AND status = 1 ORDER BY name ASC");
+>>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
     $series = [];
     
     while($row = $qry->fetch_assoc()){
@@ -28,6 +34,7 @@ if(isset($_POST['brand_id'])){
     
     echo json_encode($response);
     exit;
+<<<<<<< HEAD
 } else {
     $response = [
         'status' => 'failed',
@@ -35,5 +42,7 @@ if(isset($_POST['brand_id'])){
     ];
     echo json_encode($response);
     exit;
+=======
+>>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
 }
 ?>

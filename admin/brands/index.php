@@ -39,8 +39,12 @@ var _base_url_ = '<?php echo $_settings->base_url ?>';
 					<?php 
 					$i = 1;
 						$qry = $conn->query("SELECT * from `brands` order by `name` asc ");
+<<<<<<< HEAD
 						if($qry && $qry->num_rows > 0):
 							while($row = $qry->fetch_assoc()):
+=======
+						while($row = $qry->fetch_assoc()):
+>>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
 					?>
 						<tr>
 							<td class="text-center"><?php echo $i++; ?></td>
@@ -65,6 +69,7 @@ var _base_url_ = '<?php echo $_settings->base_url ?>';
 				                  </div>
 							</td>
 						</tr>
+<<<<<<< HEAD
 					<?php 
 							endwhile; 
 					else: 
@@ -73,6 +78,9 @@ var _base_url_ = '<?php echo $_settings->base_url ?>';
 							<td colspan="5" class="text-center">No brands found</td>
 						</tr>
 					<?php endif; ?>
+=======
+					<?php endwhile; ?>
+>>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
 				</tbody>
 			</table>
 		</div>

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <?php
 $pageTitle = "اتصل بنا - Gayar Plus";
 require_once 'initialize.php';
@@ -5,6 +6,8 @@ require_once 'classes/TextCleaner.php';
 include 'inc/header.php';
 ?>
 
+=======
+>>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
 <style>
 /* Contact Page Styles */
 .contact-hero {

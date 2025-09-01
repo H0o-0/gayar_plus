@@ -18,6 +18,7 @@ if (!isset($conn) || !$conn) {
     exit;
 }
 
+<<<<<<< HEAD
 // Handle both numeric IDs and MD5 hashes
 $sql_condition = "";
 if (is_numeric($product_id)) {
@@ -61,11 +62,30 @@ if (!$stmt) {
 }
 
 $stmt->bind_param("s", $search_value);
+=======
+// Use prepared statement to prevent SQL injection
+$stmt = $conn->prepare("SELECT p.*, m.brand_id, m.series_id, b.name as brand_name, s.name as series_name, m.name as model_name 
+                         FROM products p 
+                         LEFT JOIN models m ON p.model_id = m.id 
+                         LEFT JOIN brands b ON m.brand_id = b.id 
+                         LEFT JOIN series s ON m.series_id = s.id 
+                         WHERE MD5(p.id) = ? AND p.status = 1");
+
+// Check if prepare was successful
+if (!$stmt) {
+    error_log("Prepare failed: " . $conn->error);
+    header('Location: ./products.php');
+    exit;
+}
+
+$stmt->bind_param("s", $product_id);
+>>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
 $stmt->execute();
 $result = $stmt->get_result();
 
 // Check if query was successful and has results
 if(!$result || $result->num_rows == 0) {
+<<<<<<< HEAD
     error_log("Product not found in product_view.php - ID: " . $product_id);
     // Include header first
     include 'inc/header.php';
@@ -98,10 +118,19 @@ $product['product_name'] = $product['product_name'] ?? 'منتج غير محدد
 // Use brand_name_ar if available, otherwise use brand_name
 $product['display_brand_name'] = (!empty($product['brand_name_ar']) ? $product['brand_name_ar'] : $product['brand_name']) ?? 'ملحقات عامة';
 
+=======
+    header('Location: ./products.php');
+    exit;
+}
+
+// Get product data
+$product = $result->fetch_assoc();
+>>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
 $pageTitle = $product['product_name'];
 
 // Get images
 $images = [];
+<<<<<<< HEAD
 // Check for uploaded images
 $image_path = 'uploads/product_'.$product['id'];
 if(is_dir($image_path)) {
@@ -109,10 +138,24 @@ if(is_dir($image_path)) {
     foreach($files as $file) {
         if(!in_array($file, ['.', '..'])) {
             $images[] = $image_path.'/'.$file;
+=======
+if ($product['image']) {
+    $images[] = $product['image'];
+} else {
+    // Check for uploaded images
+    $image_path = 'uploads/product_'.$product['id'];
+    if(is_dir($image_path)) {
+        $files = scandir($image_path);
+        foreach($files as $file) {
+            if(!in_array($file, ['.', '..'])) {
+                $images[] = $image_path.'/'.$file;
+            }
+>>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
         }
     }
 }
 
+<<<<<<< HEAD
 // احصل على معلومات السعر - استخدم سعر المنتج مباشرة من جدول products
 $price_info = null;
 if(isset($product['price']) && $product['price'] > 0) {
@@ -134,12 +177,27 @@ if(!$price_info) {
         }
     } else {
         error_log("Price prepare failed in product_view.php: " . $conn->error);
+=======
+// Get price information
+$price_stmt = $conn->prepare("SELECT * FROM inventory WHERE product_id = ? LIMIT 1");
+$price_info = null;
+if ($price_stmt) {
+    $price_stmt->bind_param("i", $product['id']);
+    $price_stmt->execute();
+    $price_result = $price_stmt->get_result();
+    if($price_result && $price_result->num_rows > 0) {
+        $price_info = $price_result->fetch_assoc();
+>>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
     }
 }
 
 // Get related products - Enhanced logic to show more relevant products
 // If the product has a model_id, show products from the same model
+<<<<<<< HEAD
 // Otherwise, show products from the same category
+=======
+// Otherwise, show products from the same brand/series
+>>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
 $related_products = [];
 
 // First, get the current product's model_id if available
@@ -147,9 +205,16 @@ $current_product_model = $product['model_id'];
 
 // If product has a model_id, show other products from the same model
 if ($current_product_model) {
+<<<<<<< HEAD
     $related_stmt = $conn->prepare("SELECT p.*, b.name as brand_name, b.name_ar as brand_name_ar 
                                     FROM products p 
                                     LEFT JOIN brands b ON p.brand_id = b.id 
+=======
+    $related_stmt = $conn->prepare("SELECT p.*, b.name as brand_name 
+                                    FROM products p 
+                                    LEFT JOIN models m ON p.model_id = m.id 
+                                    LEFT JOIN brands b ON m.brand_id = b.id 
+>>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
                                     WHERE p.id != ? AND p.model_id = ? AND p.status = 1 
                                     ORDER BY RAND() LIMIT 4");
     if ($related_stmt) {
@@ -161,6 +226,7 @@ if ($current_product_model) {
         }
     }
 } 
+<<<<<<< HEAD
 // If no model_id or not enough products, fall back to same category
 else if ($product['category_id']) {
     $related_stmt = $conn->prepare("SELECT p.*, b.name as brand_name, b.name_ar as brand_name_ar 
@@ -170,6 +236,18 @@ else if ($product['category_id']) {
                                     ORDER BY RAND() LIMIT 4");
     if ($related_stmt) {
         $related_stmt->bind_param("ii", $product['id'], $product['category_id']);
+=======
+// If no model_id or not enough products, fall back to same brand
+else if ($product['brand_id']) {
+    $related_stmt = $conn->prepare("SELECT p.*, b.name as brand_name 
+                                    FROM products p 
+                                    LEFT JOIN models m ON p.model_id = m.id 
+                                    LEFT JOIN brands b ON m.brand_id = b.id 
+                                    WHERE p.id != ? AND m.brand_id = ? AND p.status = 1 
+                                    ORDER BY RAND() LIMIT 4");
+    if ($related_stmt) {
+        $related_stmt->bind_param("ii", $product['id'], $product['brand_id']);
+>>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
         $related_stmt->execute();
         $related_result = $related_stmt->get_result();
         while($row = $related_result->fetch_assoc()) {
@@ -372,6 +450,38 @@ ob_end_flush(); // Flush the output buffer
     color: #dc3545;
 }
 
+<<<<<<< HEAD
+=======
+.quantity-selector {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 1rem 0;
+}
+
+.quantity-btn {
+    width: 36px;
+    height: 36px;
+    border: 1px solid #dee2e6;
+    background: #f8f9fa;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.quantity-input {
+    width: 50px;
+    height: 36px;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    text-align: center;
+    font-size: 1rem;
+}
+
+>>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
 .product-features {
     background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
     border-radius: 16px;
@@ -381,6 +491,7 @@ ob_end_flush(); // Flush the output buffer
     border: 1px solid #e9ecef;
 }
 
+<<<<<<< HEAD
 .product-colors {
     margin: 1.5rem 0;
     padding: 1rem;
@@ -443,6 +554,8 @@ ob_end_flush(); // Flush the output buffer
     color: #495057;
 }
 
+=======
+>>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
 .features-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -598,6 +711,7 @@ ob_end_flush(); // Flush the output buffer
             <li><a href="./" style="color: #007bff; text-decoration: none;">الرئيسية</a></li>
             <li style="margin: 0 0.5rem; color: #6c757d;">/</li>
             <li><a href="./?p=products" style="color: #007bff; text-decoration: none;">المنتجات</a></li>
+<<<<<<< HEAD
             <?php if(!empty($product['brand_id']) && !empty($product['display_brand_name'])): ?>
             <li style="margin: 0 0.5rem; color: #6c757d;">/</li>
             <li><a href="./?p=products&brand=<?= $product['brand_id'] ?>" style="color: #007bff; text-decoration: none;"><?= htmlspecialchars($product['display_brand_name']) ?></a></li>
@@ -609,6 +723,19 @@ ob_end_flush(); // Flush the output buffer
             <?php if(!empty($product['model_name'])): ?>
             <li style="margin: 0 0.5rem; color: #6c757d;">/</li>
             <li><a href="./?p=products&model=<?= $product['model_id'] ?? '' ?>" style="color: #007bff; text-decoration: none;"><?= htmlspecialchars($product['model_name']) ?></a></li>
+=======
+            <?php if($product['brand_name']): ?>
+            <li style="margin: 0 0.5rem; color: #6c757d;">/</li>
+            <li><a href="./?p=products&brand=<?= md5($product['brand_id']) ?>" style="color: #007bff; text-decoration: none;"><?= htmlspecialchars($product['brand_name']) ?></a></li>
+            <?php endif; ?>
+            <?php if($product['series_name']): ?>
+            <li style="margin: 0 0.5rem; color: #6c757d;">/</li>
+            <li><a href="./?p=products&brand=<?= md5($product['brand_id']) ?>&series=<?= md5($product['series_id']) ?>" style="color: #007bff; text-decoration: none;"><?= htmlspecialchars($product['series_name']) ?></a></li>
+            <?php endif; ?>
+            <?php if($product['model_name']): ?>
+            <li style="margin: 0 0.5rem; color: #6c757d;">/</li>
+            <li><a href="./?p=products&brand=<?= md5($product['brand_id']) ?>&series=<?= md5($product['series_id']) ?>&model=<?= md5($product['model_id']) ?>" style="color: #007bff; text-decoration: none;"><?= htmlspecialchars($product['model_name']) ?></a></li>
+>>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
             <?php endif; ?>
             <li style="margin: 0 0.5rem; color: #6c757d;">/</li>
             <li style="color: #6c757d;"><?= htmlspecialchars($product['product_name']) ?></li>
@@ -642,6 +769,13 @@ ob_end_flush(); // Flush the output buffer
         <div class="product-details">
             <h1 class="product-title"><?= htmlspecialchars($product['product_name']) ?></h1>
             
+<<<<<<< HEAD
+=======
+            <?php if($product['brand_name']): ?>
+            <p class="product-brand">من <?= htmlspecialchars($product['brand_name']) ?></p>
+            <?php endif; ?>
+            
+>>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
             <div class="product-price">
                 <?php if($price_info): ?>
                     <?= TextCleaner::formatPrice($price_info['price']) ?>
@@ -653,6 +787,7 @@ ob_end_flush(); // Flush the output buffer
             <div class="product-description">
                 <?= TextCleaner::sanitizeForDescription($product['description']) ?>
             </div>
+<<<<<<< HEAD
             
             <?php if(isset($product['has_colors']) && $product['has_colors'] == 1 && !empty($product['colors'])): ?>
             <?php 
@@ -679,10 +814,40 @@ ob_end_flush(); // Flush the output buffer
 
             <!-- Product Actions -->
             <div class="product-actions">
+=======
+
+            <!-- Quantity Selector -->
+            <div class="quantity-selector">
+                <label style="font-weight: 600; color: #495057;">الكمية:</label>
+                <button class="quantity-btn" onclick="decreaseQuantity()">-</button>
+                <input type="number" class="quantity-input" id="quantity" value="1" min="1" max="10">
+                <button class="quantity-btn" onclick="increaseQuantity()">+</button>
+            </div>
+
+            <!-- Product Actions -->
+            <div class="product-actions">
+                <?php if($price_info): ?>
+>>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
                 <button class="btn btn-primary" onclick="addToCart(<?= $product['id'] ?>)">
                     <i class="fas fa-cart-plus"></i>
                     أضف إلى السلة
                 </button>
+<<<<<<< HEAD
+=======
+                <button class="btn btn-secondary" onclick="buyNow(<?= $product['id'] ?>)">
+                    <i class="fas fa-bolt"></i>
+                    اشتري الآن
+                </button>
+                <?php else: ?>
+                <button class="btn btn-secondary" disabled>
+                    <i class="fas fa-clock"></i>
+                    غير متوفر حالياً
+                </button>
+                <?php endif; ?>
+                <button class="btn btn-wishlist" onclick="addToWishlist(<?= $product['id'] ?>)">
+                    <i class="fas fa-heart"></i>
+                </button>
+>>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
             </div>
 
             <!-- Product Features -->
@@ -726,12 +891,25 @@ ob_end_flush(); // Flush the output buffer
                     <?php 
                     // Get images for related product
                     $related_images = [];
+<<<<<<< HEAD
                     $related_image_path = 'uploads/product_'.$related['id'];
                     if(is_dir($related_image_path)) {
                         $files = scandir($related_image_path);
                         foreach($files as $file) {
                             if(!in_array($file, ['.', '..'])) {
                                 $related_images[] = $related_image_path.'/'.$file;
+=======
+                    if ($related['image']) {
+                        $related_images[] = $related['image'];
+                    } else {
+                        $related_image_path = 'uploads/product_'.$related['id'];
+                        if(is_dir($related_image_path)) {
+                            $files = scandir($related_image_path);
+                            foreach($files as $file) {
+                                if(!in_array($file, ['.', '..'])) {
+                                    $related_images[] = $related_image_path.'/'.$file;
+                                }
+>>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
                             }
                         }
                     }
@@ -784,6 +962,7 @@ function changeMainImage(src, thumbnail) {
     }
 }
 
+<<<<<<< HEAD
 function addToCart(productId) {
     console.log('🛒 Adding product to cart:', productId);
     
@@ -909,6 +1088,61 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }, 1500);
 });
+=======
+function increaseQuantity() {
+    const quantityInput = document.getElementById('quantity');
+    const currentValue = parseInt(quantityInput.value);
+    if(currentValue < 10) {
+        quantityInput.value = currentValue + 1;
+    }
+}
+
+function decreaseQuantity() {
+    const quantityInput = document.getElementById('quantity');
+    const currentValue = parseInt(quantityInput.value);
+    if(currentValue > 1) {
+        quantityInput.value = currentValue - 1;
+    }
+}
+
+function addToCart(productId) {
+    const quantity = document.getElementById('quantity').value;
+    
+    if(window.addToCart) {
+        // استخدام الدالة العامة مع زر وهمي
+        const fakeButton = {
+            disabled: false,
+            innerHTML: 'إضافة للسلة',
+            style: {}
+        };
+        window.addToCart(fakeButton, productId, quantity);
+    } else {
+        // Fallback
+        alert('تم إضافة المنتج إلى السلة!');
+    }
+}
+
+function buyNow(productId) {
+    // Redirect to checkout with this product
+    addToCart(productId);
+    setTimeout(() => {
+        window.location.href = 'cart.php';
+    }, 500);
+}
+
+function addToWishlist(productId) {
+    // Implement wishlist functionality
+    if(window.GayarPlus && window.GayarPlus.showSuccessNotification) {
+        window.GayarPlus.showSuccessNotification('تم إضافة المنتج إلى المفضلة!');
+    } else {
+        alert('تم إضافة المنتج إلى المفضلة!');
+    }
+}
+
+function viewProduct(productId) {
+    window.location.href = `./?p=product_view_redirect&id=${productId}`;
+}
+>>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
 </script>
 
 <?php include 'inc/modern-footer.php'; ?>

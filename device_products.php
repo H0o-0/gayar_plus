@@ -36,10 +36,16 @@ if(isset($_GET['brand'])){
     if($brand_qry && $brand_qry->num_rows > 0){
         $brand_data = $brand_qry->fetch_assoc();
         $brand_id = $brand_data['id'];
+<<<<<<< HEAD
         $brand_name = !empty($brand_data['name_ar']) ? $brand_data['name_ar'] : $brand_data['name'];
         $title = "منتجات " . htmlspecialchars($brand_name);
         $sub_title = "جميع المنتجات المرتبطة بعلامة " . htmlspecialchars($brand_name);
         $pageTitle = "منتجات " . htmlspecialchars($brand_name) . " - Gayar Plus";
+=======
+        $title = "منتجات " . htmlspecialchars($brand_data['name']);
+        $sub_title = "جميع المنتجات المرتبطة بعلامة " . htmlspecialchars($brand_data['name']);
+        $pageTitle = "منتجات " . htmlspecialchars($brand_data['name']) . " - Gayar Plus";
+>>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
     }
 }
 
@@ -50,6 +56,7 @@ if(isset($_GET['series'])){
     // Check if it's a direct ID
     if (is_numeric($series_param)) {
         $series_id = intval($series_param);
+<<<<<<< HEAD
         $series_qry = $conn->query("SELECT s.*, b.name, b.name_ar as brand_name_ar FROM series s LEFT JOIN brands b ON s.brand_id = b.id WHERE s.id = {$series_id} AND s.status = 1");
     } elseif (base64_decode($series_param, true) !== false && is_numeric(base64_decode($series_param, true))) {
         // Handle base64 encoded ID
@@ -58,11 +65,22 @@ if(isset($_GET['series'])){
     } else {
         // Handle MD5 hash
         $series_qry = $conn->query("SELECT s.*, b.name, b.name_ar as brand_name_ar FROM series s LEFT JOIN brands b ON s.brand_id = b.id WHERE md5(s.id) = '{$series_param}' AND s.status = 1");
+=======
+        $series_qry = $conn->query("SELECT s.*, b.name as brand_name FROM series s LEFT JOIN brands b ON s.brand_id = b.id WHERE s.id = {$series_id} AND s.status = 1");
+    } elseif (base64_decode($series_param, true) !== false && is_numeric(base64_decode($series_param, true))) {
+        // Handle base64 encoded ID
+        $series_id = intval(base64_decode($series_param, true));
+        $series_qry = $conn->query("SELECT s.*, b.name as brand_name FROM series s LEFT JOIN brands b ON s.brand_id = b.id WHERE s.id = {$series_id} AND s.status = 1");
+    } else {
+        // Handle MD5 hash
+        $series_qry = $conn->query("SELECT s.*, b.name as brand_name FROM series s LEFT JOIN brands b ON s.brand_id = b.id WHERE md5(s.id) = '{$series_param}' AND s.status = 1");
+>>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
     }
     
     if($series_qry && $series_qry->num_rows > 0){
         $series_data = $series_qry->fetch_assoc();
         $series_id = $series_data['id'];
+<<<<<<< HEAD
         $series_name = !empty($series_data['name_ar']) ? $series_data['name_ar'] : $series_data['name'];
         $sub_title = "جميع المنتجات المرتبطة بسلسلة " . htmlspecialchars($series_name);
         if(isset($brand_data)) {
@@ -72,6 +90,15 @@ if(isset($_GET['series'])){
             $title = "سلسلة " . htmlspecialchars($series_name);
         }
         $pageTitle = "سلسلة " . htmlspecialchars($series_name) . " - Gayar Plus";
+=======
+        $sub_title = "جميع المنتجات المرتبطة بسلسلة " . htmlspecialchars($series_data['name']);
+        if(isset($brand_data)) {
+            $title = htmlspecialchars($brand_data['name']) . " - " . htmlspecialchars($series_data['name']);
+        } else {
+            $title = "سلسلة " . htmlspecialchars($series_data['name']);
+        }
+        $pageTitle = "سلسلة " . htmlspecialchars($series_data['name']) . " - Gayar Plus";
+>>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
     }
 }
 
@@ -82,6 +109,7 @@ if(isset($_GET['model'])){
     // Check if it's a direct ID
     if (is_numeric($model_param)) {
         $model_id = intval($model_param);
+<<<<<<< HEAD
         $model_qry = $conn->query("SELECT m.*, s.name as series_name, s.name_ar as series_name_ar, b.name as brand_name, b.name_ar as brand_name_ar FROM models m LEFT JOIN series s ON m.series_id = s.id LEFT JOIN brands b ON s.brand_id = b.id WHERE m.id = {$model_id} AND m.status = 1");
     } elseif (base64_decode($model_param, true) !== false && is_numeric(base64_decode($model_param, true))) {
         // Handle base64 encoded ID
@@ -90,11 +118,22 @@ if(isset($_GET['model'])){
     } else {
         // Handle MD5 hash
         $model_qry = $conn->query("SELECT m.*, s.name as series_name, s.name_ar as series_name_ar, b.name as brand_name, b.name_ar as brand_name_ar FROM models m LEFT JOIN series s ON m.series_id = s.id LEFT JOIN brands b ON s.brand_id = b.id WHERE md5(m.id) = '{$model_param}' AND m.status = 1");
+=======
+        $model_qry = $conn->query("SELECT m.*, s.name as series_name, b.name as brand_name FROM models m LEFT JOIN series s ON m.series_id = s.id LEFT JOIN brands b ON s.brand_id = b.id WHERE m.id = {$model_id} AND m.status = 1");
+    } elseif (base64_decode($model_param, true) !== false && is_numeric(base64_decode($model_param, true))) {
+        // Handle base64 encoded ID
+        $model_id = intval(base64_decode($model_param, true));
+        $model_qry = $conn->query("SELECT m.*, s.name as series_name, b.name as brand_name FROM models m LEFT JOIN series s ON m.series_id = s.id LEFT JOIN brands b ON s.brand_id = b.id WHERE m.id = {$model_id} AND m.status = 1");
+    } else {
+        // Handle MD5 hash
+        $model_qry = $conn->query("SELECT m.*, s.name as series_name, b.name as brand_name FROM models m LEFT JOIN series s ON m.series_id = s.id LEFT JOIN brands b ON s.brand_id = b.id WHERE md5(m.id) = '{$model_param}' AND m.status = 1");
+>>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
     }
     
     if($model_qry && $model_qry->num_rows > 0){
         $model_data = $model_qry->fetch_assoc();
         $model_id = $model_data['id'];
+<<<<<<< HEAD
         $model_name = !empty($model_data['name_ar']) ? $model_data['name_ar'] : $model_data['name'];
         $sub_title = "جميع المنتجات المرتبطة بموديل " . htmlspecialchars($model_name);
         if(isset($series_data) && isset($brand_data)) {
@@ -105,6 +144,15 @@ if(isset($_GET['model'])){
             $title = "موديل " . htmlspecialchars($model_name);
         }
         $pageTitle = "موديل " . htmlspecialchars($model_name) . " - Gayar Plus";
+=======
+        $sub_title = "جميع المنتجات المرتبطة بموديل " . htmlspecialchars($model_data['name']);
+        if(isset($series_data) && isset($brand_data)) {
+            $title = htmlspecialchars($brand_data['name']) . " - " . htmlspecialchars($series_data['name']) . " - " . htmlspecialchars($model_data['name']);
+        } else {
+            $title = "موديل " . htmlspecialchars($model_data['name']);
+        }
+        $pageTitle = "موديل " . htmlspecialchars($model_data['name']) . " - Gayar Plus";
+>>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
     }
 }
 
@@ -121,11 +169,19 @@ include 'inc/header.php'
             <a href="./">الرئيسية</a>
             <span class="breadcrumb-separator"><i class="fas fa-chevron-left"></i></span>
             <?php if(isset($_GET['brand']) && isset($brand_data)): ?>
+<<<<<<< HEAD
             <a href="./?p=device_products&brand=<?= $_GET['brand'] ?>"><?= htmlspecialchars(!empty($brand_data['name_ar']) ? $brand_data['name_ar'] : $brand_data['name']) ?></a>
             <span class="breadcrumb-separator"><i class="fas fa-chevron-left"></i></span>
             <?php endif; ?>
             <?php if(isset($_GET['series']) && isset($series_data)): ?>
             <a href="./?p=device_products&brand=<?= $_GET['brand'] ?? '' ?>&series=<?= $_GET['series'] ?>"><?= htmlspecialchars(!empty($series_data['name_ar']) ? $series_data['name_ar'] : $series_data['name']) ?></a>
+=======
+            <a href="./?p=device_products&brand=<?= $_GET['brand'] ?>"><?= htmlspecialchars($brand_data['name']) ?></a>
+            <span class="breadcrumb-separator"><i class="fas fa-chevron-left"></i></span>
+            <?php endif; ?>
+            <?php if(isset($_GET['series']) && isset($series_data)): ?>
+            <a href="./?p=device_products&brand=<?= $_GET['brand'] ?? '' ?>&series=<?= $_GET['series'] ?>"><?= htmlspecialchars($series_data['name']) ?></a>
+>>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
             <span class="breadcrumb-separator"><i class="fas fa-chevron-left"></i></span>
             <?php endif; ?>
             <span class="breadcrumb-current">المنتجات</span>
@@ -156,23 +212,36 @@ include 'inc/header.php'
                     $whereData = " and p.model_id = ?";
                     $params = [$model_id];
                 } elseif($series_id) {
+<<<<<<< HEAD
                     // Since series_id doesn't exist in products table, filter by brand instead
                     if($brand_id) {
                         $whereData = " and p.brand_id = ?";
                         $params = [$brand_id];
                     }
+=======
+                    $whereData = " and p.series_id = ?";
+                    $params = [$series_id];
+>>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
                 } elseif($brand_id) {
                     $whereData = " and p.brand_id = ?";
                     $params = [$brand_id];
                 }
                 
                 // Execute the main query
+<<<<<<< HEAD
                 $sql = "SELECT p.*, c.category as brand_name, sc.sub_category as series_name, m.name as model_name, b.name as actual_brand_name, b.name_ar as actual_brand_name_ar
                         FROM products p 
                         LEFT JOIN categories c ON p.category_id = c.id 
                         LEFT JOIN sub_categories sc ON p.sub_category_id = sc.id 
                         LEFT JOIN models m ON p.model_id = m.id 
                         LEFT JOIN brands b ON p.brand_id = b.id 
+=======
+                $sql = "SELECT p.*, b.name as brand_name, s.name as series_name, m.name as model_name, p.image as image 
+                        FROM products p 
+                        LEFT JOIN brands b ON p.brand_id = b.id 
+                        LEFT JOIN series s ON p.series_id = s.id 
+                        LEFT JOIN models m ON p.model_id = m.id 
+>>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
                         WHERE p.status = 1 {$whereData} 
                         ORDER BY p.date_created DESC";
 
@@ -188,16 +257,28 @@ include 'inc/header.php'
 
                 if($products && $products->num_rows > 0):
                     while($row = $products->fetch_assoc()): 
+<<<<<<< HEAD
                         // Check uploads directory for images
                         $image_path = 'uploads/product_'.$row['id'];
                         $images = [];
                         if(is_dir($image_path)) {
+=======
+                        // Use image from database if available, otherwise check uploads
+                        $image_path = $row['image'] ? $row['image'] : 'uploads/product_'.$row['id'];
+                        $images = [];
+                        if(is_dir($image_path) && !$row['image']) {
+>>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
                             $files = scandir($image_path);
                             foreach($files as $file) {
                                 if(!in_array($file, ['.', '..'])) {
                                     $images[] = $image_path.'/'.$file;
                                 }
                             }
+<<<<<<< HEAD
+=======
+                        } elseif ($row['image']) {
+                            $images[] = $row['image'];
+>>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
                         }
                         
                         // Get pricing info
@@ -229,6 +310,7 @@ include 'inc/header.php'
                         <?php 
                         if($model_data && $model_data['name']) {
                             echo htmlspecialchars($model_data['name']);
+<<<<<<< HEAD
                         } elseif($series_data && !empty($series_data['name_ar'])) {
                             echo htmlspecialchars($series_data['name_ar']);
                         } elseif($series_data && !empty($series_data['name'])) {
@@ -236,6 +318,11 @@ include 'inc/header.php'
                         } elseif($brand_data && !empty($brand_data['name_ar'])) {
                             echo htmlspecialchars($brand_data['name_ar']);
                         } elseif($brand_data && !empty($brand_data['name'])) {
+=======
+                        } elseif($series_data && $series_data['name']) {
+                            echo htmlspecialchars($series_data['name']);
+                        } elseif($brand_data && $brand_data['name']) {
+>>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
                             echo htmlspecialchars($brand_data['name']);
                         } else {
                             echo 'ملحقات';
@@ -280,6 +367,7 @@ include 'inc/header.php'
     </div>
 </section>
 
+<<<<<<< HEAD
 <?php include 'inc/modern-footer.php'; ?>
 
 <script>
@@ -301,3 +389,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 1500);
 });
 </script>
+=======
+<?php include 'inc/modern-footer.php'; ?>
+>>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8

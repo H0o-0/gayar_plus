@@ -14,7 +14,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['brand_id'])) {
         exit;
     }
     
+<<<<<<< HEAD
     // Fetch products specifically published under this brand
+=======
+    // Fetch products related to this brand
+>>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
     $query = "SELECT p.*, c.category as category_name, sc.sub_category as sub_category_name 
               FROM products p 
               LEFT JOIN categories c ON p.category_id = c.id 
@@ -40,11 +44,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['brand_id'])) {
                 echo '</div>';
             }
         } else {
+<<<<<<< HEAD
             echo '<div class="alert alert-info text-center" style="padding: 2rem; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 10px; color: #6c757d;">';
             echo '<i class="fas fa-info-circle" style="font-size: 2rem; color: #17a2b8; margin-bottom: 1rem;"></i><br>';
             echo '<h5 style="margin-bottom: 1rem;">لم يتم نشر منتجات بعد</h5>';
             echo '<p>لم يتم نشر أي منتجات تحت هذه العلامة التجارية حتى الآن.</p>';
             echo '</div>';
+=======
+            echo '<div class="alert alert-info">لا توجد منتجات متوفرة لهذا الجهاز حالياً.</div>';
+>>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
         }
         
         $stmt->close();

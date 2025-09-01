@@ -399,6 +399,7 @@ async function performSearch(query) {
 
 // عرض المنتج
 function viewProduct(productId) {
+<<<<<<< HEAD
     // Ensure we have a valid productId
     if (!productId) {
         console.error('viewProduct: productId is required');
@@ -415,6 +416,9 @@ function viewProduct(productId) {
         // Assume it's already an MD5 hash
         window.location.href = `./?p=product_view&id=${productHash}`;
     }
+=======
+    window.location.href = `view_product.php?id=${productId}`;
+>>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
 }
 
 // ========== إدارة السلة المتقدمة ==========

@@ -333,11 +333,17 @@ class Master extends DBConnection {
             if(!empty($data)) $data .=",";
                 $data .= " `description`='".addslashes(htmlentities($description))."' ";
         }
+<<<<<<< HEAD
         $check_query = $this->conn->query("SELECT * FROM `brands` where (`name` = '{$name}' OR `name_ar` = '{$name}' OR `name` = '{$name_ar}' OR `name_ar` = '{$name_ar}') ".((!empty($id) ? " and id != {$id} " : ""))."");
         if($this->capture_err())
             return $this->capture_err();
         
         $check = ($check_query && $check_query->num_rows > 0) ? $check_query->num_rows : 0;
+=======
+        $check = $this->conn->query("SELECT * FROM `brands` where `name` = '{$name}' ".(!empty($id) ? " and id != {$id} " : "")." ")->num_rows;
+        if($this->capture_err())
+            return $this->capture_err();
+>>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
         if($check > 0){
             $resp['status'] = 'failed';
             $resp['msg'] = "Brand already exist.";
@@ -441,6 +447,7 @@ class Master extends DBConnection {
             if(!empty($data)) $data .=",";
                 $data .= " `description`='".addslashes(htmlentities($description))."' ";
         }
+<<<<<<< HEAD
         
         // Check if model already exists with same name and series_id
         $check_query = $this->conn->query("SELECT * FROM `models` where `name` = '{$name}' and `series_id` = '{$series_id}' ".((!empty($id) ? " and id != {$id} " : ""))." ");
@@ -448,6 +455,11 @@ class Master extends DBConnection {
             return $this->capture_err();
             
         $check = ($check_query && $check_query->num_rows > 0) ? $check_query->num_rows : 0;
+=======
+        $check = $this->conn->query("SELECT * FROM `models` where `category` = '{$category}' and `series_id` = '{$series_id}' ".(!empty($id) ? " and id != {$id} " : "")." ")->num_rows;
+        if($this->capture_err())
+            return $this->capture_err();
+>>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
         if($check > 0){
             $resp['status'] = 'failed';
             $resp['msg'] = "Model already exist.";
@@ -461,7 +473,10 @@ class Master extends DBConnection {
             $sql = "UPDATE `models` set {$data} where id = '{$id}' ";
             $save = $this->conn->query($sql);
         }
+<<<<<<< HEAD
         
+=======
+>>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
         if($save){
             $resp['status'] = 'success';
             if(empty($id))
@@ -555,6 +570,7 @@ class Master extends DBConnection {
         return json_encode($resp);
     }
     
+<<<<<<< HEAD
     function save_product_new(){
         extract($_POST);
         $data = "";
@@ -670,6 +686,8 @@ class Master extends DBConnection {
         return json_encode($resp);
     }
     
+=======
+>>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
     function save_product(){
         extract($_POST);
         $data = "";
@@ -686,6 +704,7 @@ class Master extends DBConnection {
         }
         
         // الحقول المسموح بها في جدول products
+<<<<<<< HEAD
         $allowed_fields = ['category_id', 'sub_category_id', 'model_id', 'product_name', 'description', 'status', 'has_colors', 'colors', 'price', 'quantity', 'unit'];
         
         // معالجة بيانات الألوان
@@ -703,6 +722,9 @@ class Master extends DBConnection {
         } else {
             $_POST['colors'] = null;
         }
+=======
+        $allowed_fields = ['category_id', 'sub_category_id', 'model_id', 'product_name', 'description', 'status', 'has_colors'];
+>>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
         
         foreach($_POST as $k =>$v){
             if(!in_array($k,array('id','description')) && in_array($k, $allowed_fields)){
@@ -774,6 +796,70 @@ class Master extends DBConnection {
                 }
             }
             
+<<<<<<< HEAD
+=======
+            // معالجة بيانات المخزون (السعر والكمية)
+            if(!empty($_POST['price']) || !empty($_POST['quantity'])){
+                // التحقق من وجود سجل مخزون مسبق
+                $inventory_check = $this->conn->query("SELECT id FROM inventory WHERE product_id = '$pid' LIMIT 1");
+                
+                if($inventory_check && $inventory_check->num_rows > 0){
+                    // تحديث السجل الموجود
+                    $inventory_id = $inventory_check->fetch_assoc()['id'];
+                    $inventory_data = "";
+                    
+                    if(!empty($_POST['price'])){
+                        $inventory_data .= "price = '" . $_POST['price'] . "'";
+                    }
+                    
+                    if(!empty($_POST['quantity'])){
+                        if(!empty($inventory_data)) $inventory_data .= ", ";
+                        $inventory_data .= "quantity = '" . $_POST['quantity'] . "'";
+                    }
+                    
+                    if(!empty($_POST['unit'])){
+                        if(!empty($inventory_data)) $inventory_data .= ", ";
+                        $inventory_data .= "unit = '" . $_POST['unit'] . "'";
+                    }
+                    
+                    if(!empty($inventory_data)){
+                        $this->conn->query("UPDATE inventory SET $inventory_data WHERE id = '$inventory_id'");
+                    }
+                } else {
+                    // إنشاء سجل جديد
+                    $inventory_fields = [];
+                    $inventory_values = [];
+                    
+                    $inventory_fields[] = 'product_id';
+                    $inventory_values[] = "'$pid'";
+                    
+                    if(!empty($_POST['price'])){
+                        $inventory_fields[] = 'price';
+                        $inventory_values[] = "'" . $_POST['price'] . "'";
+                    }
+                    
+                    if(!empty($_POST['quantity'])){
+                        $inventory_fields[] = 'quantity';
+                        $inventory_values[] = "'" . $_POST['quantity'] . "'";
+                    }
+                    
+                    if(!empty($_POST['unit'])){
+                        $inventory_fields[] = 'unit';
+                        $inventory_values[] = "'" . $_POST['unit'] . "'";
+                    } else {
+                        $inventory_fields[] = 'unit';
+                        $inventory_values[] = "'قطعة'";
+                    }
+                    
+                    if(count($inventory_fields) > 1){
+                        $inventory_sql = "INSERT INTO inventory (" . implode(', ', $inventory_fields) . ") VALUES (" . implode(', ', $inventory_values) . ")";
+                        $this->conn->query($inventory_sql);
+                        error_log("Inventory SQL: " . $inventory_sql);
+                    }
+                }
+            }
+            
+>>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
             if(empty($id))
                 $this->settings->set_flashdata('success',"New Product successfully saved.");
             else
@@ -1241,9 +1327,12 @@ if (basename($_SERVER['PHP_SELF']) == 'Master.php' || (isset($_GET['f']) && !emp
 		case 'save_product':
 			echo $Master->save_product();
 		break;
+<<<<<<< HEAD
 		case 'save_product_new':
 			echo $Master->save_product_new();
 		break;
+=======
+>>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
 		case 'delete_product':
 			echo $Master->delete_product();
 		break;

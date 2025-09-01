@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Product Form</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Test Product Form</h1>
+    <form id="product-form">
+        <input type="hidden" name="brand_id" value="12">
+        <input type="hidden" name="series_id" value="137">
+        <input type="hidden" name="model_id" value="40">
+        <input type="hidden" name="product_name" value="Test Product from Web Form">
+        <input type="hidden" name="description" value="This is a test product submitted from web form">
+        <input type="hidden" name="status" value="1">
+        
+        <button type="submit">Submit Product</button>
+    </form>
+
+    <div id="result"></div>
+
+    <script>
+    $(document).ready(function(){
+        $('#product-form').submit(function(e){
+            e.preventDefault();
+            var _this = $(this)
+            
+            $.ajax({
+                url:'classes/Master.php?f=save_product',
+                data: new FormData($(this)[0]),
+                cache: false,
+                contentType: false,
+                processData: false,
+                method: 'POST',
+                type: 'POST',
+                dataType: 'json',
+                success:function(resp){
+                    if(typeof resp =='object' && resp.status == 'success'){
+                        $('#result').html('<p style="color: green;">Product saved successfully!</p>');
+                    }else{
+                        $('#result').html('<p style="color: red;">Error: ' + JSON.stringify(resp) + '</p>');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    $('#result').html('<p style="color: red;">AJAX Error: ' + error + '</p>');
+                    console.log('XHR:', xhr);
+                    console.log('Status:', status);
+                    console.log('Error:', error);
+                }
+            })
+        })
+    });
+    </script>
+</body>
+</html>

@@ -201,6 +201,21 @@
     transform: translateX(4px);
 }
 
+<<<<<<< HEAD
+=======
+.mega-menu {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+}
+
+.nav-item:hover .mega-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+>>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
 
 /* ========== حركات الخطوط المتدرجة للبطاقات ========== */
 

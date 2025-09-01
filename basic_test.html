@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Basic Navigation Test</title>
+    <link rel="stylesheet" href="assets/css/site-wide.css">
+    <style>
+        .test-nav {
+            background: #f8f9fa;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        .test-menu {
+            display: none;
+            background: white;
+            border: 1px solid #ddd;
+            padding: 1rem;
+            margin-top: 0.5rem;
+        }
+        .test-item {
+            padding: 0.5rem;
+            cursor: pointer;
+            border: 1px solid #eee;
+            margin: 0.25rem 0;
+        }
+        .test-item:hover {
+            background: #e9ecef;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-nav">
+        <h3>اختبار التنقل الأساسي</h3>
+        <button id="test-trigger">عرض القائمة</button>
+        <div id="test-menu" class="test-menu">
+            <div class="test-item" data-id="1">Apple</div>
+            <div class="test-item" data-id="2">Samsung</div>
+            <div class="test-item" data-id="3">Xiaomi</div>
+            <div id="test-results"></div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const trigger = document.getElementById('test-trigger');
+            const menu = document.getElementById('test-menu');
+            const results = document.getElementById('test-results');
+            
+            trigger.addEventListener('click', function() {
+                if (menu.style.display === 'block') {
+                    menu.style.display = 'none';
+                } else {
+                    menu.style.display = 'block';
+                }
+            });
+            
+            const items = document.querySelectorAll('.test-item');
+            items.forEach(function(item) {
+                item.addEventListener('click', function() {
+                    const id = this.dataset.id;
+                    results.innerHTML = '<p>تم النقر على العنصر: ' + id + '</p>';
+                    
+                    // Simulate AJAX call
+                    results.innerHTML += '<p>جاري التحميل...</p>';
+                    
+                    // Simulate response after delay
+                    setTimeout(function() {
+                        results.innerHTML = '<p>تم تحميل البيانات للعنصر: ' + id + '</p>';
+                        results.innerHTML += '<div class="test-item">الفئة 1 للعنصر ' + id + '</div>';
+                        results.innerHTML += '<div class="test-item">الفئة 2 للعنصر ' + id + '</div>';
+                    }, 1000);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
