@@ -1,0 +1,720 @@
+/* ملف CSS مخصص للنصوص وتنسيقها - Gayar Plus */
+/* يمكنك تعديل هذا الملف لتغيير مواضع النصوص وأحجامها */
+
+/* ========== الخطوط الأساسية من الكود الأصلي ========== */
+
+/* خط الصفحة الأساسي */
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: var(--text-primary);
+    line-height: 1.6;
+    direction: rtl;
+}
+
+/* ========== العناوين الرئيسية من الكود الأصلي ========== */
+
+/* عنوان الهيرو الرئيسي */
+.hero-title {
+    font-size: 3.5rem;
+    font-weight: 800;
+    line-height: 1.1;
+    color: var(--text-primary);
+    margin-bottom: 1.5rem;
+    letter-spacing: -0.025em;
+}
+
+/* النص المميز في الهيرو */
+.hero-highlight {
+    color: var(--primary-blue);
+}
+
+/* النص الفرعي في الهيرو */
+.hero-subtitle {
+    font-size: 1.25rem;
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+    line-height: 1.6;
+}
+
+/* عناوين الأقسام */
+.section-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    letter-spacing: -0.025em;
+}
+
+/* النص الفرعي للأقسام */
+.section-subtitle {
+    font-size: 1.125rem;
+    color: var(--text-secondary);
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* ========== نصوص التنقل من الكود الأصلي ========== */
+
+/* اللوغو */
+.logo {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--primary-navy);
+    text-decoration: none;
+    letter-spacing: -0.025em;
+}
+
+/* روابط التنقل */
+.nav-link {
+    color: var(--text-primary);
+    text-decoration: none;
+    font-weight: 500;
+    padding: 0.75rem 1.25rem;
+    border-radius: var(--border-radius);
+    transition: var(--transition);
+    position: relative;
+}
+
+.nav-link:hover {
+    color: var(--primary-blue);
+    background: var(--light-gray);
+}
+
+/* عناوين القوائم المنسدلة */
+.menu-title {
+    font-weight: 700;
+    color: var(--primary-navy);
+    margin-bottom: 1rem;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* عناصر القوائم المنسدلة */
+.menu-item {
+    padding: 0.75rem;
+    margin: 0.25rem 0;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: var(--transition);
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.menu-item:hover {
+    background: var(--light-gray);
+    color: var(--primary-blue);
+    transform: translateX(4px);
+}
+
+/* ========== نصوص المنتجات من الكود الأصلي ========== */
+
+/* فئة المنتج */
+.product-category {
+    font-size: 0.875rem;
+    color: var(--text-light);
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* عنوان المنتج */
+.product-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    line-height: 1.4;
+}
+
+/* وصف المنتج */
+.product-description {
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+}
+
+/* سعر المنتج */
+.product-price {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--primary-navy);
+}
+
+/* شارة المنتج */
+.product-badge {
+    background: var(--accent-emerald);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+/* ========== نصوص المميزات من الكود الأصلي ========== */
+
+/* عنوان الميزة */
+.feature-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+}
+
+/* وصف الميزة */
+.feature-description {
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+/* ========== الإحصائيات من الكود الأصلي ========== */
+
+/* رقم الإحصائية */
+.stat-number {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--primary-navy);
+    display: block;
+}
+
+/* تسمية الإحصائية */
+.stat-label {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+/* ========== الأزرار من الكود الأصلي ========== */
+
+/* الزر الأساسي */
+.btn-primary {
+    color: white;
+    padding: 1rem 2rem;
+    border-radius: var(--border-radius);
+    text-decoration: none;
+    font-weight: 600;
+    transition: var(--transition);
+    border: none;
+    cursor: pointer;
+}
+
+/* الزر الثانوي */
+.btn-secondary {
+    color: var(--text-primary);
+    padding: 1rem 2rem;
+    border-radius: var(--border-radius);
+    text-decoration: none;
+    font-weight: 600;
+    transition: var(--transition);
+    border: 2px solid var(--medium-gray);
+}
+
+.btn-secondary:hover {
+    border-color: var(--primary-blue);
+    color: var(--primary-blue);
+    background: var(--light-gray);
+}
+
+/* زر إضافة للسلة */
+.add-to-cart {
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* ========== نصوص الفوتر من الكود الأصلي ========== */
+
+/* عناوين أقسام الفوتر */
+.footer-section h3 {
+    color: var(--primary-navy);
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    font-size: 1.125rem;
+}
+
+/* نصوص وروابط الفوتر */
+.footer-section p,
+.footer-section a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    line-height: 2;
+    transition: var(--transition);
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.footer-section a:hover {
+    color: var(--primary-blue);
+    transform: translateX(4px);
+}
+
+/* نص أسفل الفوتر */
+.footer-bottom {
+    text-align: center;
+    padding-top: 2rem;
+    margin-top: 3rem;
+    border-top: 1px solid var(--medium-gray);
+    color: var(--text-secondary);
+}
+
+/* ========== عداد سلة المشتريات من الكود الأصلي ========== */
+
+.cart-badge {
+    background: var(--accent-emerald);
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ========== النصوص الأساسية والمساعدة ========== */
+
+/* النصوص العامة */
+p {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+}
+
+/* النصوص الصغيرة */
+.text-small {
+    font-size: 0.875rem;
+    color: var(--text-light);
+}
+
+/* النصوص الكبيرة */
+.text-large {
+    font-size: 1.125rem;
+    color: var(--text-primary);
+}
+
+/* النصوص المميزة */
+.text-highlight {
+    color: var(--primary-blue);
+    font-weight: 600;
+}
+
+/* النصوص الثانوية */
+.text-secondary {
+    color: var(--text-secondary);
+}
+
+/* النصوص الفاتحة */
+.text-light {
+    color: var(--text-light);
+}
+
+/* ========== القوائم من الكود الأصلي ========== */
+
+/* قائمة التنقل */
+.nav-menu {
+    display: flex;
+    list-style: none;
+    gap: 2rem;
+    align-items: center;
+}
+
+/* عناصر قائمة التنقل */
+.nav-item {
+    position: relative;
+}
+
+/* ========== العناوين التفاعلية ========== */
+
+/* عناوين قابلة للنقر */
+.clickable-title:hover {
+    color: var(--primary-blue);
+    cursor: pointer;
+}
+
+/* عناوين مع خط سفلي */
+.underlined-title {
+    border-bottom: 2px solid var(--primary-blue);
+    padding-bottom: 0.5rem;
+    display: inline-block;
+}
+
+/* ========== النصوص المتحركة والمؤثرات ========== */
+
+/* نص مع تأثير الوهج */
+.glow-text {
+    text-shadow: 0 0 10px var(--primary-blue);
+}
+
+/* نص مع تدرج لوني */
+.gradient-text {
+    background: linear-gradient(135deg, var(--primary-blue), var(--primary-navy));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* نص مع تأثير الحركة */
+.animated-text {
+    animation: gentle-pulse 2s infinite;
+}
+
+/* ========== محاذاة النصوص ========== */
+
+/* النصوص في المنتصف */
+.text-center {
+    text-align: center;
+}
+
+/* النصوص لليمين */
+.text-right {
+    text-align: right;
+}
+
+/* النصوص لليسار */
+.text-left {
+    text-align: left;
+}
+
+/* ========== الوزن والحجم المتغير ========== */
+
+/* خط عريض */
+.font-bold {
+    font-weight: 700;
+}
+
+/* خط عريض جداً */
+.font-extra-bold {
+    font-weight: 800;
+}
+
+/* خط متوسط */
+.font-medium {
+    font-weight: 500;
+}
+
+/* خط عادي */
+.font-normal {
+    font-weight: 400;
+}
+
+/* خط رفيع */
+.font-light {
+    font-weight: 300;
+}
+
+/* ========== أحجام الخطوط المتنوعة ========== */
+
+.text-xs {
+    font-size: 0.75rem;
+}
+
+.text-sm {
+    font-size: 0.875rem;
+}
+
+.text-base {
+    font-size: 1rem;
+}
+
+.text-lg {
+    font-size: 1.125rem;
+}
+
+.text-xl {
+    font-size: 1.25rem;
+}
+
+.text-2xl {
+    font-size: 1.5rem;
+}
+
+.text-3xl {
+    font-size: 1.875rem;
+}
+
+.text-4xl {
+    font-size: 2.25rem;
+}
+
+.text-5xl {
+    font-size: 3rem;
+}
+
+.text-6xl {
+    font-size: 3.5rem;
+}
+
+/* ========== ارتفاع السطر المتنوع ========== */
+
+.leading-none {
+    line-height: 1;
+}
+
+.leading-tight {
+    line-height: 1.25;
+}
+
+.leading-normal {
+    line-height: 1.5;
+}
+
+.leading-relaxed {
+    line-height: 1.6;
+}
+
+.leading-loose {
+    line-height: 2;
+}
+
+/* ========== تباعد الأحرف ========== */
+
+.tracking-tight {
+    letter-spacing: -0.025em;
+}
+
+.tracking-normal {
+    letter-spacing: 0;
+}
+
+.tracking-wide {
+    letter-spacing: 0.025em;
+}
+
+.tracking-wider {
+    letter-spacing: 0.05em;
+}
+
+.tracking-widest {
+    letter-spacing: 0.1em;
+}
+
+/* ========== حالة الأحرف ========== */
+
+.uppercase {
+    text-transform: uppercase;
+}
+
+.lowercase {
+    text-transform: lowercase;
+}
+
+.capitalize {
+    text-transform: capitalize;
+}
+
+.normal-case {
+    text-transform: none;
+}
+
+/* ========== قطع النص ========== */
+
+.truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.text-ellipsis {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* نص متعدد الأسطر مع قطع */
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* ========== تنسيقات متجاوبة للنصوص ========== */
+
+@media (max-width: 768px) {
+    /* عنوان الهيرو على الهاتف */
+    .hero-title {
+        font-size: 2.5rem;
+    }
+    
+    /* عناوين الأقسام على الهاتف */
+    .section-title {
+        font-size: 2rem;
+    }
+    
+    /* النص الفرعي للهيرو على الهاتف */
+    .hero-subtitle {
+        font-size: 1.125rem;
+    }
+    
+    /* النص الفرعي للأقسام على الهاتف */
+    .section-subtitle {
+        font-size: 1rem;
+    }
+    
+    /* عنوان المنتج على الهاتف */
+    .product-title {
+        font-size: 1.125rem;
+    }
+    
+    /* سعر المنتج على الهاتف */
+    .product-price {
+        font-size: 1.25rem;
+    }
+    
+    /* أرقام الإحصائيات على الهاتف */
+    .stat-number {
+        font-size: 1.5rem;
+    }
+    
+    /* اللوغو على الهاتف */
+    .logo {
+        font-size: 1.5rem;
+    }
+    
+    /* عناوين الفوتر على الهاتف */
+    .footer-section h3 {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    /* عنوان الهيرو على الشاشات الصغيرة جداً */
+    .hero-title {
+        font-size: 2rem;
+    }
+    
+    /* عناوين الأقسام على الشاشات الصغيرة جداً */
+    .section-title {
+        font-size: 1.75rem;
+    }
+    
+    /* النص الفرعي للهيرو على الشاشات الصغيرة جداً */
+    .hero-subtitle {
+        font-size: 1rem;
+    }
+    
+    /* عنوان المنتج على الشاشات الصغيرة جداً */
+    .product-title {
+        font-size: 1rem;
+    }
+    
+    /* اللوغو على الشاشات الصغيرة جداً */
+    .logo {
+        font-size: 1.25rem;
+    }
+}
+
+/* ========== إعدادات خاصة بالطباعة ========== */
+
+@media print {
+    /* إخفاء العناصر غير المرغوبة في الطباعة */
+    .nav-actions,
+    .hero-cta,
+    .add-to-cart,
+    .social-links {
+        display: none !important;
+    }
+    
+    /* تحسين الألوان للطباعة */
+    .hero-title,
+    .section-title,
+    .logo {
+        color: #000 !important;
+    }
+    
+    /* تحسين الخطوط للطباعة */
+    body {
+        font-size: 12pt;
+        line-height: 1.4;
+    }
+    
+    .hero-title {
+        font-size: 24pt;
+    }
+    
+    .section-title {
+        font-size: 18pt;
+    }
+}
+
+/* ========== متغيرات الألوان للنصوص ========== */
+
+:root {
+    --text-primary: #1e293b;
+    --text-secondary: #64748b;
+    --text-light: #94a3b8;
+    --primary-navy: #1e3a8a;
+    --primary-blue: #3b82f6;
+    --accent-emerald: #059669;
+    --pure-white: #ffffff;
+    --light-gray: #f8fafc;
+    --medium-gray: #e2e8f0;
+}
+
+/* ========== أنماط خاصة بالاتجاه العربي ========== */
+
+/* تحسين عرض النصوص العربية */
+.arabic-text {
+    direction: rtl;
+    text-align: right;
+    font-family: 'Inter', 'Tajawal', 'Cairo', sans-serif;
+}
+
+/* تحسين عرض النصوص الإنجليزية */
+.english-text {
+    direction: ltr;
+    text-align: left;
+    font-family: 'Inter', sans-serif;
+}
+
+/* نص مختلط عربي-إنجليزي */
+.mixed-text {
+    direction: rtl;
+    text-align: right;
+    unicode-bidi: bidi-override;
+}
+
+/* ========== تحسينات إضافية للقراءة ========== */
+
+/* تحسين قابلية القراءة */
+.readable-text {
+    font-size: 1.125rem;
+    line-height: 1.7;
+    color: var(--text-primary);
+    max-width: 65ch;
+    margin: 0 auto;
+}
+
+/* نص مع تباعد محسن */
+.spaced-text {
+    letter-spacing: 0.025em;
+    word-spacing: 0.1em;
+}
+
+/* نص مع تنسيق عمودي محسن */
+.vertical-rhythm h1,
+.vertical-rhythm h2,
+.vertical-rhythm h3 {
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+}
+
+.vertical-rhythm p {
+    margin-bottom: 1em;
+}

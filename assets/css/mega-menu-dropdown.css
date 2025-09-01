@@ -1,0 +1,755 @@
+/* =====================================================
+   قائمة الملحقات المتدرجة الاحترافية - Mega Menu Dropdown
+   ===================================================== */
+
+/* إعدادات عامة للقائمة الرئيسية */
+.mega-menu-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.mega-menu-toggle {
+    position: relative;
+    padding: 0.75rem 1.5rem;
+    color: #475569;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1rem;
+    border-radius: 12px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    direction: rtl;
+    text-align: right;
+}
+
+.mega-menu-toggle:hover {
+    color: #3b82f6;
+    background: #eff6ff;
+    transform: translateY(-1px);
+}
+
+.mega-menu-toggle::after {
+    content: '\f078';
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    font-size: 0.75rem;
+    margin-right: 0.5rem;
+    transition: transform 0.3s ease;
+}
+
+.mega-menu-dropdown:hover .mega-menu-toggle::after {
+    transform: rotate(180deg);
+}
+
+/* القائمة الرئيسية المنسدلة */
+.mega-menu-content {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: white;
+    width: 380px;
+    min-height: 300px;
+    max-height: 500px;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+    border: 1px solid #e5e7eb;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(-50%) translateY(-20px) scale(0.95);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 10000;
+    margin-top: 12px;
+    overflow: hidden;
+    backdrop-filter: blur(20px);
+}
+
+.mega-menu-dropdown:hover .mega-menu-content {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0) scale(1);
+}
+
+/* رأس القائمة */
+.mega-menu-header {
+    padding: 1.5rem 1.5rem 1rem;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border-bottom: 1px solid #e2e8f0;
+    text-align: center;
+    position: relative;
+}
+
+.mega-menu-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 3px;
+    background: linear-gradient(90deg, #3b82f6, #1e40af);
+    border-radius: 2px;
+}
+
+.mega-menu-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+    background: linear-gradient(135deg, #3b82f6, #1e40af);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.mega-menu-subtitle {
+    font-size: 0.875rem;
+    color: #64748b;
+    margin: 0.5rem 0 0;
+    font-weight: 500;
+}
+
+/* محتوى القائمة مع السكرول */
+.mega-menu-scroll {
+    max-height: 350px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 0.5rem 0;
+    position: relative;
+}
+
+/* شريط التمرير المخصص */
+.mega-menu-scroll::-webkit-scrollbar {
+    width: 6px;
+}
+
+.mega-menu-scroll::-webkit-scrollbar-track {
+    background: #f8fafc;
+    border-radius: 3px;
+}
+
+.mega-menu-scroll::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #cbd5e1, #94a3b8);
+    border-radius: 3px;
+    transition: background 0.3s ease;
+}
+
+.mega-menu-scroll::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #94a3b8, #64748b);
+}
+
+/* حاوي العلامة التجارية */
+.brand-menu-item {
+    position: relative;
+    border-bottom: 1px solid #f3f4f6;
+    transition: all 0.3s ease;
+}
+
+.brand-menu-item:last-child {
+    border-bottom: none;
+}
+
+.brand-menu-item:hover {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+}
+
+/* رابط العلامة التجارية الرئيسي */
+.brand-main-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.5rem;
+    color: #374151;
+    text-decoration: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-weight: 600;
+    position: relative;
+    direction: rtl;
+    text-align: right;
+}
+
+.brand-main-link::before {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 0;
+    background: linear-gradient(135deg, #3b82f6, #1e40af);
+    transition: width 0.3s ease;
+    border-radius: 0 8px 8px 0;
+}
+
+.brand-main-link:hover {
+    color: #3b82f6;
+    padding-right: 2rem;
+    background: rgba(59, 130, 246, 0.05);
+}
+
+.brand-main-link:hover::before {
+    width: 4px;
+}
+
+.brand-name-text {
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.brand-arrow {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    transition: all 0.3s ease;
+    transform: rotate(0deg);
+}
+
+.brand-menu-item:hover .brand-arrow {
+    color: #3b82f6;
+    transform: rotate(-90deg) translateX(2px);
+}
+
+/* القائمة الفرعية للفئات */
+.categories-submenu {
+    position: absolute;
+    top: 0;
+    right: 100%;
+    width: 280px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15);
+    border: 1px solid #e5e7eb;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(15px) scale(0.95);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 10001;
+    margin-right: 8px;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+}
+
+.brand-menu-item:hover .categories-submenu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(0) scale(1);
+}
+
+/* رأس القائمة الفرعية */
+.submenu-header {
+    padding: 1rem 1.25rem 0.75rem;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border-bottom: 1px solid #e2e8f0;
+    text-align: center;
+}
+
+.submenu-brand-name {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 0.25rem;
+}
+
+.submenu-count {
+    font-size: 0.75rem;
+    color: #64748b;
+    margin: 0;
+}
+
+/* قائمة الفئات */
+.categories-list {
+    max-height: 300px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 0.5rem 0;
+}
+
+.categories-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.categories-list::-webkit-scrollbar-track {
+    background: #f8fafc;
+}
+
+.categories-list::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 2px;
+}
+
+/* عنصر الفئة */
+.category-menu-item {
+    position: relative;
+    border-bottom: 1px solid #f8fafc;
+}
+
+.category-menu-item:last-child {
+    border-bottom: none;
+}
+
+.category-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1.25rem;
+    color: #374151;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    position: relative;
+    direction: rtl;
+    text-align: right;
+}
+
+.category-link::before {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 0;
+    background: linear-gradient(135deg, #10b981, #059669);
+    transition: width 0.3s ease;
+}
+
+.category-link:hover {
+    color: #10b981;
+    background: rgba(16, 185, 129, 0.05);
+    padding-right: 1.75rem;
+}
+
+.category-link:hover::before {
+    width: 3px;
+}
+
+.category-name {
+    flex: 1;
+    font-weight: 500;
+}
+
+.category-arrow {
+    font-size: 0.7rem;
+    color: #9ca3af;
+    transition: all 0.3s ease;
+}
+
+.category-menu-item:hover .category-arrow {
+    color: #10b981;
+    transform: rotate(-90deg);
+}
+
+/* رابط "جميع الفئات" */
+.all-categories-link {
+    background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+    color: #1e40af !important;
+    font-weight: 700 !important;
+    border-bottom: 2px solid #dbeafe;
+    margin-bottom: 0.5rem;
+}
+
+.all-categories-link:hover {
+    background: linear-gradient(135deg, #3b82f6, #1e40af) !important;
+    color: white !important;
+}
+
+.all-categories-link::before {
+    background: #3b82f6 !important;
+}
+
+/* القائمة الفرعية للموديلات */
+.models-submenu {
+    position: absolute;
+    top: 0;
+    right: 100%;
+    width: 240px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+    border: 1px solid #e5e7eb;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(10px) scale(0.95);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 10002;
+    margin-right: 8px;
+    overflow: hidden;
+    backdrop-filter: blur(8px);
+}
+
+.category-menu-item:hover .models-submenu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(0) scale(1);
+}
+
+/* رأس قائمة الموديلات */
+.models-header {
+    padding: 0.75rem 1rem 0.5rem;
+    background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+    border-bottom: 1px solid #d1fae5;
+    text-align: center;
+}
+
+.models-category-name {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #059669;
+    margin: 0 0 0.25rem;
+}
+
+.models-count {
+    font-size: 0.7rem;
+    color: #6b7280;
+    margin: 0;
+}
+
+/* قائمة الموديلات */
+.models-list {
+    max-height: 250px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 0.5rem 0;
+}
+
+.models-list::-webkit-scrollbar {
+    width: 3px;
+}
+
+.models-list::-webkit-scrollbar-track {
+    background: #f8fafc;
+}
+
+.models-list::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 2px;
+}
+
+.model-link {
+    display: block;
+    padding: 0.625rem 1rem;
+    color: #374151;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.25s ease;
+    border-bottom: 1px solid #f8fafc;
+    position: relative;
+    direction: rtl;
+    text-align: right;
+}
+
+.model-link:last-child {
+    border-bottom: none;
+}
+
+.model-link::before {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 0;
+    background: #f59e0b;
+    transition: width 0.25s ease;
+}
+
+.model-link:hover {
+    color: #f59e0b;
+    background: rgba(245, 158, 11, 0.05);
+    padding-right: 1.5rem;
+}
+
+.model-link:hover::before {
+    width: 3px;
+}
+
+/* رابط "جميع الموديلات" */
+.all-models-link {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    color: #92400e !important;
+    font-weight: 700 !important;
+    border-bottom: 2px solid #fbbf24;
+    margin-bottom: 0.5rem;
+}
+
+.all-models-link:hover {
+    background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+    color: white !important;
+}
+
+/* تأثيرات التحميل */
+.loading-spinner {
+    display: none;
+    text-align: center;
+    padding: 2rem;
+    color: #6b7280;
+}
+
+.loading-spinner.active {
+    display: block;
+}
+
+.spinner {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    border: 3px solid #f3f4f6;
+    border-radius: 50%;
+    border-top-color: #3b82f6;
+    animation: spin 1s ease-in-out infinite;
+    margin-bottom: 1rem;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* رسائل الخطأ والحالات الفارغة */
+.no-data-message {
+    text-align: center;
+    padding: 2rem 1.5rem;
+    color: #6b7280;
+    font-size: 0.9rem;
+}
+
+.no-data-message i {
+    font-size: 2rem;
+    color: #d1d5db;
+    margin-bottom: 1rem;
+    display: block;
+}
+
+.error-message {
+    text-align: center;
+    padding: 1.5rem;
+    color: #ef4444;
+    font-size: 0.875rem;
+    background: #fef2f2;
+    border-radius: 8px;
+    margin: 0.5rem;
+}
+
+/* تحسينات الأداء */
+.mega-menu-content * {
+    will-change: transform, opacity;
+}
+
+/* تصميم متجاوب للشاشات المختلفة */
+
+/* الشاشات المتوسطة (Tablets) */
+@media (max-width: 1024px) {
+    .mega-menu-content {
+        width: 350px;
+    }
+    
+    .categories-submenu {
+        width: 260px;
+    }
+    
+    .models-submenu {
+        width: 220px;
+    }
+}
+
+/* الشاشات الصغيرة (Mobile) */
+@media (max-width: 768px) {
+    .mega-menu-dropdown {
+        position: static;
+        width: 100%;
+    }
+    
+    .mega-menu-content {
+        position: static;
+        transform: none;
+        width: 100%;
+        opacity: 0;
+        max-height: 0;
+        margin: 0;
+        border-radius: 0;
+        box-shadow: inset 0 4px 12px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .mega-menu-dropdown.mobile-active .mega-menu-content {
+        opacity: 1;
+        max-height: 80vh;
+    }
+    
+    .mega-menu-toggle {
+        width: 100%;
+        justify-content: space-between;
+        padding: 1rem 1.25rem;
+        background: #f8fafc;
+        border-radius: 8px;
+        margin-bottom: 0.5rem;
+    }
+    
+    /* القوائم الفرعية في الموبايل */
+    .categories-submenu,
+    .models-submenu {
+        position: static;
+        width: 100%;
+        margin: 0;
+        border-radius: 0;
+        box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.05);
+        transform: none;
+        max-height: 0;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+    
+    .brand-menu-item.mobile-expanded .categories-submenu {
+        opacity: 1;
+        visibility: visible;
+        max-height: 300px;
+    }
+    
+    .category-menu-item.mobile-expanded .models-submenu {
+        opacity: 1;
+        visibility: visible;
+        max-height: 200px;
+    }
+    
+    /* تحسين الحشو للموبايل */
+    .brand-main-link,
+    .category-link,
+    .model-link {
+        padding: 0.875rem 1rem;
+        font-size: 0.9rem;
+    }
+    
+    .mega-menu-header {
+        padding: 1rem;
+    }
+    
+    .mega-menu-title {
+        font-size: 1.1rem;
+    }
+    
+    .mega-menu-subtitle {
+        font-size: 0.8rem;
+    }
+}
+
+/* شاشات صغيرة جداً */
+@media (max-width: 480px) {
+    .mega-menu-content {
+        border-radius: 0;
+        box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+    
+    .categories-submenu,
+    .models-submenu {
+        border-radius: 0;
+    }
+    
+    .brand-main-link,
+    .category-link,
+    .model-link {
+        padding: 0.75rem 0.875rem;
+        font-size: 0.85rem;
+    }
+    
+    .mega-menu-header {
+        padding: 0.875rem;
+    }
+    
+    .mega-menu-title {
+        font-size: 1rem;
+    }
+    
+    .mega-menu-subtitle {
+        font-size: 0.75rem;
+    }
+}
+
+/* تحسينات الأداء والحركة */
+.mega-menu-dropdown,
+.categories-submenu,
+.models-submenu {
+    contain: layout style paint;
+}
+
+/* تأثيرات متقدمة للتفاعل */
+.brand-menu-item:hover {
+    background: linear-gradient(135deg, 
+        rgba(59, 130, 246, 0.03) 0%, 
+        rgba(59, 130, 246, 0.06) 100%);
+}
+
+.category-menu-item:hover {
+    background: linear-gradient(135deg, 
+        rgba(16, 185, 129, 0.03) 0%, 
+        rgba(16, 185, 129, 0.06) 100%);
+}
+
+.model-link:hover {
+    background: linear-gradient(135deg, 
+        rgba(245, 158, 11, 0.03) 0%, 
+        rgba(245, 158, 11, 0.06) 100%);
+}
+
+/* تحسين الخطوط العربية */
+.mega-menu-content,
+.categories-submenu,
+.models-submenu {
+    font-family: 'Inter', 'Segoe UI', 'Roboto', 'Cairo', sans-serif;
+    direction: rtl;
+    text-align: right;
+}
+
+/* إخفاء القوائم عند الخروج من المنطقة */
+.mega-menu-dropdown:not(:hover) .mega-menu-content {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(-50%) translateY(-20px) scale(0.95);
+    transition-delay: 150ms;
+}
+
+.brand-menu-item:not(:hover) .categories-submenu {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(15px) scale(0.95);
+    transition-delay: 100ms;
+}
+
+.category-menu-item:not(:hover) .models-submenu {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(10px) scale(0.95);
+    transition-delay: 50ms;
+}
+
+/* تأثيرات إضافية للمراحل المختلفة */
+.mega-menu-dropdown:hover .mega-menu-toggle {
+    background: #eff6ff;
+    color: #3b82f6;
+}
+
+/* تحسين الظلال والعمق */
+.mega-menu-content {
+    box-shadow: 
+        0 20px 60px rgba(0, 0, 0, 0.12),
+        0 8px 25px rgba(0, 0, 0, 0.08),
+        0 0 0 1px rgba(0, 0, 0, 0.05);
+}
+
+.categories-submenu {
+    box-shadow: 
+        0 15px 50px rgba(0, 0, 0, 0.1),
+        0 6px 20px rgba(0, 0, 0, 0.06),
+        0 0 0 1px rgba(0, 0, 0, 0.04);
+}
+
+.models-submenu {
+    box-shadow: 
+        0 12px 40px rgba(0, 0, 0, 0.08),
+        0 4px 15px rgba(0, 0, 0, 0.05),
+        0 0 0 1px rgba(0, 0, 0, 0.03);
+}

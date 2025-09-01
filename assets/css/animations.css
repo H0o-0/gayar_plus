@@ -1,0 +1,604 @@
+/* ملف CSS مخصص للحركات والأنيميشن - Gayar Plus */
+/* يمكنك تعديل هذا الملف لإضافة أو تعديل الحركات والأنيميشن */
+
+/* ========== الحركات الأساسية من الكود الأصلي ========== */
+
+/* حركة الطفو للبطاقات في الهيرو */
+@keyframes float {
+    0%, 100% { 
+        transform: translateY(0px); 
+    }
+    50% { 
+        transform: translateY(-20px); 
+    }
+}
+
+/* حركة النبضة اللطيفة للعناصر التفاعلية */
+@keyframes gentle-pulse {
+    0%, 100% { 
+        opacity: 1; 
+    }
+    50% { 
+        opacity: 0.8; 
+    }
+}
+
+/* حركة الظهور التدريجي للتابز */
+@keyframes fadeIn {
+    from { 
+        opacity: 0; 
+        transform: translateY(10px); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0); 
+    }
+}
+
+/* حركة النبضة للأزرار */
+@keyframes pulse {
+    0%, 100% { 
+        transform: scale(1); 
+    }
+    50% { 
+        transform: scale(1.05); 
+    }
+}
+
+/* ========== تطبيق الحركات على العناصر ========== */
+
+/* تطبيق حركة الطفو على بطاقات الهيرو */
+.hero-card:nth-child(1) {
+    animation: float 6s ease-in-out infinite;
+}
+
+.hero-card:nth-child(2) {
+    animation: float 6s ease-in-out infinite reverse;
+}
+
+.hero-card:nth-child(3) {
+    animation: float 8s ease-in-out infinite;
+}
+
+/* تطبيق النبضة اللطيفة على العناصر التفاعلية */
+.interactive-hover:hover {
+    animation: gentle-pulse 2s infinite;
+}
+
+/* تطبيق حركة الظهور على محتوى التابز */
+.tab-content {
+    display: none;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* تطبيق النبضة على العناصر */
+.pulse {
+    animation: pulse 2s infinite;
+}
+
+/* ========== حركات التفاعل الأساسية ========== */
+
+/* تحسينات الأداء */
+.will-change {
+    will-change: transform, opacity;
+}
+
+/* التمرير السلس */
+.smooth-scroll {
+    scroll-behavior: smooth;
+}
+
+/* ========== حركات hover للعناصر المختلفة ========== */
+
+/* حركات البطاقات */
+.product-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.product-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+    border-color: var(--primary-blue);
+}
+
+.feature-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.feature-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+}
+
+.hero-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hero-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+}
+
+/* حركات الأيقونات */
+.product-image i {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.product-card:hover .product-image i {
+    transform: scale(1.1);
+    color: var(--primary-navy);
+}
+
+.feature-icon {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.feature-card:hover .feature-icon {
+    transform: scale(1.1);
+}
+
+/* حركات الأزرار */
+.btn-primary {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+}
+
+.btn-secondary {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-secondary:hover {
+    border-color: var(--primary-blue);
+    color: var(--primary-blue);
+    background: var(--light-gray);
+}
+
+.add-to-cart {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.add-to-cart:hover {
+    background: var(--primary-navy);
+    transform: translateY(-2px);
+}
+
+/* حركات أزرار التنقل */
+.search-btn, .cart-btn {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.search-btn:hover, .cart-btn:hover {
+    background: var(--light-gray);
+    color: var(--primary-blue);
+    border-color: var(--primary-blue);
+}
+
+/* حركات القوائم */
+.nav-link {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.nav-link:hover {
+    color: var(--primary-blue);
+    background: var(--light-gray);
+}
+
+.menu-item {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.menu-item:hover {
+    background: var(--light-gray);
+    color: var(--primary-blue);
+    transform: translateX(4px);
+}
+
+
+/* ========== حركات الخطوط المتدرجة للبطاقات ========== */
+
+.feature-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-blue), var(--accent-emerald));
+    transform: scaleX(0);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.feature-card:hover::before {
+    transform: scaleX(1);
+}
+
+/* ========== حركات الروابط الاجتماعية ========== */
+
+.social-link {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.social-link:hover {
+    background: var(--primary-blue);
+    color: white;
+    border-color: var(--primary-blue);
+    transform: translateY(-2px);
+}
+
+.footer-section a {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.footer-section a:hover {
+    color: var(--primary-blue);
+    transform: translateX(4px);
+}
+
+/* ========== حركات شريط التنقل ========== */
+
+.navbar {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.navbar.scrolled {
+    background: rgba(255, 255, 255, 0.98);
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+}
+
+/* ========== حركات إضافية للمنتجات ========== */
+
+.main-image {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.main-image-placeholder {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.thumbnail {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.thumbnail:hover,
+.thumbnail.active {
+    border-color: var(--primary-blue);
+    transform: scale(1.05);
+}
+
+.zoom-btn {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.zoom-btn:hover {
+    background: var(--pure-white);
+    color: var(--primary-blue);
+    transform: scale(1.05);
+}
+
+.color-option {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.color-option.active {
+    border-color: var(--primary-blue);
+    transform: scale(1.1);
+}
+
+.quantity-btn {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.quantity-btn:hover {
+    background: var(--primary-blue);
+    color: white;
+}
+
+.tab-btn {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tab-btn.active {
+    color: var(--primary-blue);
+    border-bottom-color: var(--primary-blue);
+}
+
+.rating-bar-progress {
+    transition: width 0.5s ease;
+}
+
+/* ========== حركات خاصة بالتفاعل مع JavaScript ========== */
+
+/* حركة تكبير العناصر التفاعلية */
+.interactive-element {
+    transition: transform 0.3s ease;
+}
+
+.interactive-element:hover {
+    transform: scale(1.05);
+}
+
+/* حركة الإشعارات */
+.notification {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: translateX(100%);
+}
+
+.notification.show {
+    transform: translateX(0);
+}
+
+/* حركة العناصر المرئية تدريجياً */
+.fade-in-element {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.fade-in-element.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* ========== حركات متقدمة للخلفية ========== */
+
+@keyframes movePattern {
+    0% { transform: translate(0, 0); }
+    100% { transform: translate(50px, 50px); }
+}
+
+@keyframes floatingBubbles {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(20px, -20px) scale(1.1); }
+}
+
+@keyframes gradientShift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+/* ========== حركات ظهور العناصر ========== */
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* ========== حركات الأزرار المتقدمة ========== */
+
+@keyframes buttonPulse {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+    }
+}
+
+.btn-primary:focus {
+    animation: buttonPulse 1.5s infinite;
+}
+
+@keyframes bounceIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.3);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.05);
+    }
+    70% {
+        transform: scale(0.9);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* ========== حركات التحميل والانتظار ========== */
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading-spinner {
+    animation: spin 1s linear infinite;
+}
+
+.loading-pulse {
+    animation: pulse 2s ease-in-out infinite;
+}
+
+/* ========== حركات الألوان والوهج ========== */
+
+@keyframes glow {
+    0%, 100% {
+        text-shadow: 0 0 5px var(--primary-blue), 0 0 10px var(--primary-blue), 0 0 15px var(--primary-blue);
+    }
+    50% {
+        text-shadow: 0 0 10px var(--primary-blue), 0 0 20px var(--primary-blue), 0 0 30px var(--primary-blue);
+    }
+}
+
+.glow-text:hover {
+    animation: glow 2s ease-in-out infinite;
+}
+
+/* ========== إعدادات الحركة لتحسين الأداء ========== */
+
+* {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.gpu-acceleration {
+    transform: translateZ(0);
+    will-change: transform;
+}
+
+/* ========== تنسيقات متجاوبة للحركات ========== */
+
+@media (max-width: 768px) {
+    .product-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .feature-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .hero-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-1px);
+    }
+    
+    .add-to-cart:hover {
+        transform: translateY(-1px);
+    }
+    
+    /* تقليل مدة الحركات على الموبايل */
+    .float {
+        animation-duration: 4s;
+    }
+    
+    .gentle-pulse {
+        animation-duration: 1.5s;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    .float, .gentle-pulse, .pulse, .fadeIn, .spin, .glow, .buttonPulse, .bounceIn {
+        animation: none !important;
+    }
+}
+
+/* ========== حركات خاصة بالواجهة ========== */
+
+/* حركة القائمة المنسدلة */
+.dropdown-chevron {
+    transition: transform 0.3s ease;
+}
+
+.dropdown:hover .dropdown-chevron {
+    transform: rotate(180deg);
+}
+
+/* حركة الصور */
+.image-hover {
+    transition: transform 0.5s ease;
+}
+
+.image-hover:hover {
+    transform: scale(1.05);
+}
+
+/* حركة الروابط مع خط تحتي */
+.link-underline {
+    position: relative;
+    overflow: hidden;
+}
+
+.link-underline::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: -100%;
+    width: 100%;
+    height: 2px;
+    background: var(--primary-blue);
+    transition: left 0.3s ease;
+}
+
+.link-underline:hover::before {
+    left: 0;
+}
+
+/* حركة البطاقات مع وهج */
+.card-glow:hover {
+    box-shadow: 0 0 30px rgba(59, 130, 246, 0.3);
+}
+
+/* حركة العداد */
+@keyframes countUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.counter-animation {
+    animation: countUp 0.8s ease-out;
+}
