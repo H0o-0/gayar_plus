@@ -8,7 +8,6 @@ class TextCleaner {
      */
     public static function sanitizeForDescription($text) {
         if (empty($text)) {
-<<<<<<< HEAD
             return 'وصف غير متوفر';
         }
         
@@ -48,35 +47,6 @@ class TextCleaner {
         if (strlen($text) > 300) {
             $text = substr($text, 0, 300) . '...';
         }
-=======
-            return '';
-        }
-        
-        // Remove potentially dangerous HTML tags
-        $allowed_tags = '<p><br><br/><strong><b><em><i><u><ul><ol><li><h1><h2><h3><h4><h5><h6><span><div>';
-        $text = strip_tags($text, $allowed_tags);
-        
-        // Clean up extra whitespace
-        $text = preg_replace('/\s+/', ' ', $text);
-        $text = trim($text);
-        
-        // Convert special characters to HTML entities for safety
-        $text = htmlspecialchars($text, ENT_QUOTES, 'UTF-8', false);
-        
-        // Convert back some allowed HTML tags
-        $text = str_replace('&lt;br&gt;', '<br>', $text);
-        $text = str_replace('&lt;br/&gt;', '<br/>', $text);
-        $text = str_replace('&lt;p&gt;', '<p>', $text);
-        $text = str_replace('&lt;/p&gt;', '</p>', $text);
-        $text = str_replace('&lt;strong&gt;', '<strong>', $text);
-        $text = str_replace('&lt;/strong&gt;', '</strong>', $text);
-        $text = str_replace('&lt;b&gt;', '<b>', $text);
-        $text = str_replace('&lt;/b&gt;', '</b>', $text);
-        $text = str_replace('&lt;em&gt;', '<em>', $text);
-        $text = str_replace('&lt;/em&gt;', '</em>', $text);
-        $text = str_replace('&lt;i&gt;', '<i>', $text);
-        $text = str_replace('&lt;/i&gt;', '</i>', $text);
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
         
         return $text;
     }
@@ -193,7 +163,6 @@ class TextCleaner {
     }
     
     /**
-<<<<<<< HEAD
      * Ultra aggressive cleaning for severely corrupted content
      * @param string $text The text to clean
      * @return string Clean and safe text
@@ -225,10 +194,27 @@ class TextCleaner {
         
         return $text;
     }
+    
+    /**
+     * Format text for safe HTML output
+     * @param string $text The text to format
+     * @return string Formatted text
+     */
+    public static function formatForHtml($text) {
+        if (empty($text)) {
+            return '';
+        }
+        
+        // Convert newlines to <br> tags
+        $text = nl2br($text);
+        
+        // Escape HTML entities
+        $text = htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
+        
+        return $text;
+    }
 
     /**
-=======
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
      * General purpose sanitization method
      * @param string $text The text to sanitize
      * @return string Sanitized text

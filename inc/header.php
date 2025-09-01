@@ -1,18 +1,11 @@
 <!DOCTYPE html>
-<<<<<<< HEAD
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-=======
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
     <title><?php echo isset($pageTitle) ? $pageTitle . ' - ' : ''; ?>Gayar Plus - متجرك الأول للملحقات</title>
     <link rel="icon" href="<?php echo validate_image('admin/images/cropped_circle_image.png') ?>" />
     
@@ -22,7 +15,6 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     
-<<<<<<< HEAD
     <!-- Bootstrap CSS for dropdown functionality -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     
@@ -49,18 +41,6 @@
     
     <!-- Mega Menu Performance Optimizations -->
     <link rel="stylesheet" href="./assets/css/mega-menu-performance.css">
-    
-=======
-    <!-- Site-Wide Modern CSS (Based on preview.html) -->
-    <link rel="stylesheet" href="./assets/css/site-wide.css">
-    
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    
-    <!-- Site-Wide Modern Scripts (Based on preview.html) -->
-    <script src="./assets/js/site-wide.js"></script>
-    
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
     <script>
         // Ensure base_url is properly defined for all pages
         var _base_url_ = '<?php echo defined('base_url') ? base_url : '/'; ?>';
@@ -185,10 +165,4 @@
 </head>
 <body class="smooth-scroll">
 
-<<<<<<< HEAD
 <?php include 'topBarNav.php'; ?>
-=======
-<?php include 'topBarNav.php'; ?>
-</body>
-</html>
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8

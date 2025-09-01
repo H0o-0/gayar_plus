@@ -39,17 +39,10 @@
                     $i = 1;
                     $qry = $conn->query("SELECT m.*, b.name as brand_name, s.name as series_name 
                                         FROM `models` m 
-<<<<<<< HEAD
                                         INNER JOIN `series` s ON s.id = m.series_id 
                                         INNER JOIN `brands` b ON b.id = s.brand_id 
                                         ORDER BY b.name, s.name, m.name ASC");
                     if($qry && $qry->num_rows > 0):
-=======
-                                        INNER JOIN `brands` b ON b.id = m.brand_id 
-                                        INNER JOIN `series` s ON s.id = m.series_id 
-                                        ORDER BY b.name, s.name, m.name ASC");
-                    if($qry->num_rows > 0):
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
                         while($row = $qry->fetch_assoc()):
                     ?>
                         <tr>

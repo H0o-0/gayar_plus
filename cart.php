@@ -316,16 +316,10 @@ include 'inc/header.php';
             <?php if(isset($_SESSION['cart']) && !empty($_SESSION['cart'])): ?>
                 <?php 
                 $total = 0;
-<<<<<<< HEAD
                 $cart_has_items = false;
                 foreach($_SESSION['cart'] as $cart_item_key => $item): 
                     // Debug: Check what keys are available in the item
                     error_log("Cart item: " . print_r($item, true));
-=======
-                foreach($_SESSION['cart'] as $item): 
-                    // Debug: Check what keys are available in the item
-                    // error_log("Cart item keys: " . print_r(array_keys($item), true));
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
                     
                     // Check if product_id exists, if not try to find the correct key
                     $product_id = null;
@@ -335,15 +329,11 @@ include 'inc/header.php';
                         $product_id = $item['id'];
                     } else {
                         // Skip this item if we can't find a product ID
-<<<<<<< HEAD
                         error_log("No product ID found in cart item: " . print_r($item, true));
-=======
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
                         continue;
                     }
                     
                     // Ensure we have valid values for price and quantity
-<<<<<<< HEAD
                     $price = isset($item['price']) && $item['price'] > 0 ? $item['price'] : 50000;
                     $quantity = isset($item['quantity']) && $item['quantity'] > 0 ? $item['quantity'] : 1;
                     $product_name = isset($item['name']) ? $item['name'] : 'منتج غير محدد';
@@ -390,32 +380,6 @@ include 'inc/header.php';
                     
                     $subtotal = $price * $quantity;
                     $total += $subtotal;
-=======
-                    $price = isset($item['price']) ? $item['price'] : 0;
-                    $quantity = isset($item['quantity']) ? $item['quantity'] : 1;
-                    
-                    $product_query = $conn->query("SELECT p.*, c.category as brand_name FROM products p LEFT JOIN categories c ON p.category_id = c.id WHERE p.id = {$product_id} AND p.status = 1");
-                    if($product_query && $product_query->num_rows > 0):
-                        $product = $product_query->fetch_assoc();
-                        
-                        // Get product image
-                        $image_path = $product['image'] ? $product['image'] : 'uploads/product_'.$product['id'];
-                        $image = '';
-                        if(is_dir($image_path) && !$product['image']) {
-                            $files = scandir($image_path);
-                            foreach($files as $file) {
-                                if(!in_array($file, ['.', '..'])) {
-                                    $image = $image_path.'/'.$file;
-                                    break;
-                                }
-                            }
-                        } elseif ($product['image']) {
-                            $image = $product['image'];
-                        }
-                        
-                        $subtotal = $price * $quantity;
-                        $total += $subtotal;
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
                 ?>
                 <div class="cart-item" data-product-id="<?= $product['id'] ?>">
                     <div class="cart-item-image">
@@ -428,12 +392,9 @@ include 'inc/header.php';
                     
                     <div class="cart-item-details">
                         <h3 class="cart-item-title"><?= htmlspecialchars($product['product_name']) ?></h3>
-<<<<<<< HEAD
-=======
                         <?php if($product['brand_name']): ?>
                             <p><?= htmlspecialchars($product['brand_name']) ?></p>
                         <?php endif; ?>
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
                         <div class="cart-item-price"><?= TextCleaner::formatPrice($price) ?></div>
                         
                         <div class="cart-item-actions">
@@ -448,7 +409,6 @@ include 'inc/header.php';
                         </div>
                     </div>
                 </div>
-<<<<<<< HEAD
                 <?php endforeach; ?>
                 
                 <?php if(!$cart_has_items): ?>
@@ -459,10 +419,6 @@ include 'inc/header.php';
                     <a href="./" class="btn-checkout">تسوق الآن</a>
                 </div>
                 <?php endif; ?>
-=======
-                <?php endif; ?>
-                <?php endforeach; ?>
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
             <?php else: ?>
             <div class="empty-cart">
                 <i class="fas fa-shopping-cart"></i>
@@ -599,7 +555,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
-<<<<<<< HEAD
 
 // Initialize device menu for cart page
 document.addEventListener('DOMContentLoaded', function() {
@@ -618,8 +573,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }, 1500);
 });
-=======
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
 </script>
 
 <?php include 'inc/modern-footer.php'; ?>

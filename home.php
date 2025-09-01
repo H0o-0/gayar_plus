@@ -1,17 +1,9 @@
 <?php
-<<<<<<< HEAD
-// TEST MARKER - If you see this, the file is being updated
-echo '<!-- TEST: File updated successfully at ' . date('Y-m-d H:i:s') . ' -->';
-
-=======
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
 $pageTitle = 'الصفحة الرئيسية';
 require_once 'config.php';
 require_once 'classes/TextCleaner.php';
 include 'inc/header.php';
 ?>
-
-<<<<<<< HEAD
 <style>
 /* Global Container and Layout */
 .container {
@@ -362,15 +354,14 @@ include 'inc/header.php';
 .modern-product-card {
     background: white;
     border-radius: 16px;
-    overflow: hidden;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    border: 2px solid #f8fafc;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    cursor: pointer;
+    overflow: hidden;
     position: relative;
+    height: 350px;
+    width: 100%;
+    max-width: 320px;
+    margin: 0 auto;
 }
 
 .modern-product-card::before {
@@ -397,7 +388,7 @@ include 'inc/header.php';
 
 .card-image-container {
     position: relative;
-    height: 240px;
+    height: 180px;
     background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
     overflow: hidden;
     display: flex;
@@ -1253,67 +1244,13 @@ include 'inc/header.php';
                     <i class="fas fa-chevron-down"></i>
                     عرض المزيد
                 </button>
-=======
-<!-- Pattern Background -->
-<div class="pattern-background"></div>
-
-<!-- Hero Section -->
-<section class="hero">
-    <div class="hero-container">
-        <div class="hero-content">
-            <h1 class="hero-title">
-                متجرك الأول 
-                <span class="hero-highlight">للملحقات الذكية</span>
-            </h1>
-            <p class="hero-subtitle">
-                اكتشف مجموعة متميزة من ملحقات الهواتف عالية الجودة مع ضمان الأصالة وأفضل الأسعار في العراق
-            </p>
-            <div class="hero-cta">
-                <a href="#products" class="btn-primary">تسوق الآن</a>
-                <a href="./?p=about" class="btn-secondary">تعرف علينا</a>
             </div>
-            <div class="hero-stats">
-                <div class="stat">
-                    <span class="stat-number">
-                        <?php
-                        $product_count = $conn->query("SELECT COUNT(*) as count FROM products WHERE status = 1")->fetch_assoc()['count'];
-                        echo number_format($product_count) . '+';
-                        ?>
-                    </span>
-                    <span class="stat-label">منتج متنوع</span>
-                </div>
-                <div class="stat">
-                    <span class="stat-number">50K+</span>
-                    <span class="stat-label">عميل راضي</span>
-                </div>
-                <div class="stat">
-                    <span class="stat-number">24/7</span>
-                    <span class="stat-label">دعم فني</span>
-                </div>
-            </div>
-        </div>
-        
-        <div class="hero-visual">
-            <div class="hero-card">
-                <h3 style="margin-bottom: 1rem;">جودة مضمونة</h3>
-                <p>منتجات أصلية 100%</p>
-            </div>
-            <div class="hero-card">
-                <i class="fas fa-shipping-fast" style="font-size: 2rem; color: var(--primary-blue); margin-bottom: 1rem;"></i>
-                <h4>توصيل سريع</h4>
-                <p>خلال 24 ساعة</p>
-            </div>
-            <div class="hero-card">
-                <h4 style="margin-bottom: 0.5rem;">ضمان شامل</h4>
-                <p>حتى سنة كاملة</p>
-            </div>
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
+    </div>
         </div>
     </div>
 </section>
 
 <!-- Featured Products -->
-<<<<<<< HEAD
 <section class="section products-section" id="products">
     <div class="container">
         <div class="section-header">
@@ -1321,31 +1258,17 @@ include 'inc/header.php';
             <p class="section-subtitle">اكتشف أحدث الملحقات والمنتجات التي وصلت حديثاً إلى متجرنا</p>
         </div>
     
-    <div class="products-grid" id="main-products-grid">
-        <?php
-        // استعلام المنتجات
-=======
-<section class="section" id="products">
-    <div class="section-header">
-        <h2 class="section-title">أحدث المنتجات</h2>
-        <p class="section-subtitle">اكتشف أحدث الملحقات والمنتجات التي وصلت حديثاً إلى متجرنا</p>
-    </div>
-    
-    <div class="products-grid" id="main-products-grid">
-        <?php
-        // Simplified query to check products
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
+        <div class="products-grid" id="main-products-grid">
+            <?php
+            // استعلام المنتجات
         $products_query = "
             SELECT 
                 p.id,
                 p.product_name,
                 p.description,
                 p.date_created,
-<<<<<<< HEAD
                 p.has_colors,
                 p.colors,
-=======
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
                 c.category as category_name,
                 sc.sub_category as sub_category_name
             FROM products p 
@@ -1360,11 +1283,7 @@ include 'inc/header.php';
         
         if($featured_products && $featured_products->num_rows > 0):
             while($product = $featured_products->fetch_assoc()):
-<<<<<<< HEAD
                 // جلب معلومات المخزون والسعر
-=======
-                // Get inventory data separately with better error handling
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
                 $inventory_query = "SELECT price, quantity FROM inventory WHERE product_id = " . intval($product['id']) . " LIMIT 1";
                 $inventory_result = $conn->query($inventory_query);
                 
@@ -1373,7 +1292,6 @@ include 'inc/header.php';
                     $product['price'] = $inventory['price'] > 0 ? $inventory['price'] : 50000;
                     $product['stock_quantity'] = $inventory['quantity'] > 0 ? $inventory['quantity'] : 1;
                 } else {
-<<<<<<< HEAD
                     $product['price'] = 50000;
                     $product['stock_quantity'] = 1;
                 }
@@ -1381,17 +1299,6 @@ include 'inc/header.php';
                 // معالجة الصور
                 $upload_path = 'uploads/product_'.$product['id'];
                 $main_image = null;
-=======
-                    // Set default values if no inventory found
-                    $product['price'] = 50000; // Default price of 50,000 IQD
-                    $product['stock_quantity'] = 1; // Set to 1 to make products available
-                }
-                
-                // Get product images with proper error handling
-                $upload_path = 'uploads/product_'.$product['id'];
-                $main_image = null;
-                $fallback_image = './assets/images/no-image.svg';
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
                 
                 if(is_dir($upload_path)){
                     $files = scandir($upload_path);
@@ -1403,18 +1310,8 @@ include 'inc/header.php';
                     }
                 }
                 
-<<<<<<< HEAD
                 $display_image = $main_image ?: './assets/images/no-image.svg';
                 $formatted_price = $product['price'] ? number_format($product['price']) . ' IQD' : 'السعر غير محدد';
-=======
-                // Use fallback if no image found
-                $display_image = $main_image ? validate_image($main_image) : './assets/images/no-image.svg';
-                
-                // Format price safely
-                $formatted_price = $product['price'] ? number_format($product['price']) . ' IQD' : 'السعر غير محدد';
-                
-                // Clean description - إزالة جميع الأكواد HTML مع الحفاظ على النص العربي
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
                 $short_description = TextCleaner::cleanAndTruncate($product['description'], 80);
         ?>
         <div class="modern-product-card" data-product-id="<?= $product['id'] ?>">
@@ -1438,13 +1335,7 @@ include 'inc/header.php';
             
             <div class="card-content">
                 <div class="product-category">
-<<<<<<< HEAD
-                    <?php 
-                    echo $product['category_name'] ? htmlspecialchars($product['category_name']) : 'منتجات عامة';
-                    ?>
-=======
                     <?= $product['category_name'] ? htmlspecialchars($product['category_name']) : 'منتجات عامة' ?>
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
                 </div>
                 
                 <h3 class="product-name">
@@ -1457,7 +1348,10 @@ include 'inc/header.php';
                 
                 <div class="product-meta">
                     <span class="product-price"><?= $formatted_price ?></span>
-<<<<<<< HEAD
+                    <span class="stock-info">
+                        <i class="fas fa-box"></i> 
+                        <?= $product['stock_quantity'] ?> قطعة
+                    </span>
                 </div>
                 
                 <?php if(isset($product['has_colors']) && $product['has_colors'] == 1 && !empty($product['colors'])): ?>
@@ -1479,15 +1373,6 @@ include 'inc/header.php';
                 </div>
                 <?php endif; ?>
                 <?php endif; ?>
-                
-=======
-                    <span class="stock-info">
-                        <i class="fas fa-box"></i> 
-                        <?= $product['stock_quantity'] ?> قطعة
-                    </span>
-                </div>
-                
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
                 <div class="card-actions">
                     <?php if($product['stock_quantity'] > 0): ?>
                     <button class="add-to-cart-btn" 
@@ -1504,11 +1389,7 @@ include 'inc/header.php';
                     </button>
                     <?php endif; ?>
                     
-<<<<<<< HEAD
-                    <button class="view-details-btn" onclick="event.stopPropagation(); window.location.href='./?p=product_view&id=<?= md5($product['id']) ?>'">
-=======
                     <button class="view-details-btn" onclick="viewProduct(<?= $product['id'] ?>)">
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
                         <i class="fas fa-info-circle"></i>
                         تفاصيل
                     </button>
@@ -1525,18 +1406,12 @@ include 'inc/header.php';
             <p>نعمل على إضافة منتجات جديدة قريباً</p>
         </div>
         <?php endif; ?>
-<<<<<<< HEAD
         </div>
     </div>
-=======
-    </div>
-
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
 </section>
 
 <!-- Features Section -->
 <section class="section">
-<<<<<<< HEAD
     <div class="container">
         <div class="section-header">
             <h2 class="section-title">لماذا Gayar Plus؟</h2>
@@ -1544,14 +1419,6 @@ include 'inc/header.php';
         </div>
         
         <div class="features-grid">
-=======
-    <div class="section-header">
-        <h2 class="section-title">لماذا Gayar Plus؟</h2>
-        <p class="section-subtitle">نحن نفخر بتقديم تجربة تسوق استثنائية تجمع بين الجودة والأمان والراحة</p>
-    </div>
-    
-    <div class="features-grid">
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
         <div class="feature-card will-change">
             <div class="feature-icon">
                 <i class="fas fa-shield-check"></i>
@@ -1586,12 +1453,9 @@ include 'inc/header.php';
     </div>
 </section>
 
-<<<<<<< HEAD
-=======
 <!-- Modern Footer Only -->
 
 <!-- Working Cart System -->
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
 <script>
 // Cart variables
 var cartCount = 0;
@@ -1605,11 +1469,7 @@ function showNotification(message, type) {
     notification.className = 'cart-notification';
     notification.style.cssText = 
         'position: fixed; top: 80px; right: 20px; z-index: 10000;' +
-<<<<<<< HEAD
         'background: ' + (type === 'success' ? '#10b981' : (type === 'info' ? '#3b82f6' : '#ef4444')) + ';' +
-=======
-        'background: ' + (type === 'success' ? '#10b981' : '#ef4444') + ';' +
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
         'color: white; padding: 1rem 1.5rem; border-radius: 12px;' +
         'box-shadow: 0 10px 30px rgba(0,0,0,0.2); font-weight: 600;' +
         'max-width: 300px; font-size: 14px;';
@@ -1620,7 +1480,6 @@ function showNotification(message, type) {
     setTimeout(function() { notification.remove(); }, 3000);
 }
 
-<<<<<<< HEAD
 // Mobile brands toggle functionality
 var brandsExpanded = false;
 
@@ -1680,9 +1539,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
-
-=======
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
 // Add to cart function
 function addToCart(button, productId) {
     console.log('🛒 Adding product:', productId);
@@ -1737,15 +1593,11 @@ function addToCart(button, productId) {
 // View product details
 function viewProduct(productId) {
     if (productId) {
-<<<<<<< HEAD
         if (typeof productId === 'number' || /^\d+$/.test(productId)) {
             window.location.href = 'product_view.php?id=' + productId;
         } else {
             window.location.href = './?p=product_view&id=' + productId;
         }
-=======
-        window.location.href = './?p=product_view_redirect&id=' + productId;
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
     }
 }
 
@@ -1775,7 +1627,6 @@ function loadCartCount() {
     });
 }
 
-<<<<<<< HEAD
 // Brand navigation function
 function goToBrand(brandId) {
     if (!brandId) {
@@ -1800,11 +1651,6 @@ function goToBrand(brandId) {
 // Initialize when page loads
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 تحميل نظام السلة والبراندات...');
-=======
-// Initialize when page loads
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 تحميل نظام السلة...');
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
     
     loadCartCount();
     
@@ -1819,12 +1665,9 @@ document.addEventListener('DOMContentLoaded', function() {
     var addButtons = document.querySelectorAll('.add-to-cart-btn');
     console.log('✅ وُجد ' + addButtons.length + ' زر إضافة للسلة');
     
-<<<<<<< HEAD
     var brandBlocks = document.querySelectorAll('.brand-block');
     console.log('🏷️ وُجد ' + brandBlocks.length + ' بلوك براند');
     
-=======
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
     console.log('🎉 تم تحميل النظام بنجاح!');
 });
 
@@ -1832,325 +1675,7 @@ document.addEventListener('DOMContentLoaded', function() {
 window.addToCart = addToCart;
 window.viewProduct = viewProduct;
 window.showNotification = showNotification;
-<<<<<<< HEAD
 window.goToBrand = goToBrand;
 </script>
 
 <?php include 'inc/modern-footer.php'; ?>
-=======
-</script>
-
-<style>
-/* ضمان ظهور الفوتر */
-.footer {
-    display: block !important;
-    visibility: visible !important;
-    position: relative !important;
-    z-index: 1 !important;
-    opacity: 1 !important;
-}
-
-/* إخفاء الفوتر القديم فقط */
-.techstore-footer,
-.old-footer {
-    display: none !important;
-}
-
-/* إخفاء عناصر غير مرغوب فيها فقط */
-.btn-circle,
-.floating-btn {
-    display: none !important;
-}
-
-/* Modern Product Cards Styles */
-.products-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 2rem;
-    padding: 2rem 0;
-    max-width: 1200px;
-    margin: 0 auto;
-}
-
-.modern-product-card {
-    background: white;
-    border-radius: 16px;
-    overflow: hidden;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    border: 1px solid #f0f0f0;
-    position: relative;
-}
-
-.modern-product-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-    border-color: #e0e0e0;
-}
-
-.card-image-container {
-    position: relative;
-    height: 220px;
-    overflow: hidden;
-    background: #f8f9fa;
-}
-
-.product-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.3s ease;
-}
-
-.modern-product-card:hover .product-image {
-    transform: scale(1.05);
-}
-
-.product-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.6);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.modern-product-card:hover .product-overlay {
-    opacity: 1;
-}
-
-.quick-view-btn {
-    background: white;
-    border: none;
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: transform 0.2s ease;
-    color: #333;
-    font-size: 18px;
-}
-
-.quick-view-btn:hover {
-    transform: scale(1.1);
-}
-
-.stock-badge {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.stock-badge.in-stock {
-    background: #10b981;
-    color: white;
-}
-
-.stock-badge.out-of-stock {
-    background: #ef4444;
-    color: white;
-}
-
-.card-content {
-    padding: 1.5rem;
-}
-
-.product-category {
-    color: #6b7280;
-    font-size: 13px;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 0.5rem;
-}
-
-.product-name {
-    font-size: 18px;
-    font-weight: 700;
-    color: #1f2937;
-    margin: 0 0 0.75rem 0;
-    line-height: 1.4;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
-
-.product-desc {
-    color: #6b7280;
-    font-size: 14px;
-    line-height: 1.5;
-    margin-bottom: 1rem;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
-
-.product-meta {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.5rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid #f3f4f6;
-}
-
-.product-price {
-    font-size: 20px;
-    font-weight: 800;
-    color: #059669;
-}
-
-.stock-info {
-    color: #6b7280;
-    font-size: 12px;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-}
-
-.card-actions {
-    display: flex;
-    gap: 0.75rem;
-}
-
-.add-to-cart-btn {
-    flex: 2;
-    background: linear-gradient(135deg, #059669, #10b981);
-    color: white;
-    border: none;
-    padding: 12px 16px;
-    border-radius: 10px;
-    font-weight: 600;
-    font-size: 14px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    transition: all 0.2s ease;
-}
-
-.add-to-cart-btn:hover:not(.disabled) {
-    background: linear-gradient(135deg, #047857, #059669);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(5, 150, 105, 0.3);
-}
-
-.add-to-cart-btn.disabled {
-    background: #9ca3af;
-    cursor: not-allowed;
-    opacity: 0.6;
-}
-
-.view-details-btn {
-    flex: 1;
-    background: white;
-    color: #374151;
-    border: 2px solid #e5e7eb;
-    padding: 12px 16px;
-    border-radius: 10px;
-    font-weight: 600;
-    font-size: 14px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    transition: all 0.2s ease;
-}
-
-.view-details-btn:hover {
-    border-color: #059669;
-    color: #059669;
-    background: #f0fdf4;
-}
-
-.no-products-message {
-    grid-column: 1 / -1;
-    text-align: center;
-    padding: 4rem 2rem;
-    color: #6b7280;
-}
-
-.no-products-message i {
-    font-size: 4rem;
-    margin-bottom: 1rem;
-    color: #d1d5db;
-}
-
-.no-products-message h3 {
-    font-size: 1.5rem;
-    margin-bottom: 0.5rem;
-    color: #374151;
-}
-
-/* تأثيرات الإشعارات */
-.cart-notification {
-    animation: slideInFromRight 0.3s ease-out;
-}
-
-/* Fix for devices dropdown menu */
-.nav-devices .mega-menu {
-    display: none !important;
-}
-
-.nav-devices.show .mega-menu {
-    display: block !important;
-}
-
-@keyframes slideInFromRight {
-    from {
-        transform: translateX(100%);
-        opacity: 0;
-    }
-    to {
-        transform: translateX(0);
-        opacity: 1;
-    }
-}
-
-@media (max-width: 768px) {
-    .products-grid {
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 1rem;
-        padding: 1rem;
-    }
-    
-    .card-content {
-        padding: 1rem;
-    }
-    
-    .card-actions {
-        flex-direction: column;
-    }
-    
-    .view-details-btn {
-        flex: auto;
-    }
-    
-    .cart-notification {
-        right: 10px;
-        max-width: calc(100vw - 20px);
-        font-size: 13px;
-    }
-}
-</style>
-
-<?php include 'inc/modern-footer.php'; ?>
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8

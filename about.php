@@ -3,13 +3,7 @@ $pageTitle = "من نحن - Gayar Plus";
 require_once 'initialize.php';
 require_once 'classes/TextCleaner.php';
 
-<<<<<<< HEAD
 // Header is included by index.php when routing, no need to include it here
-=======
-// Removed direct topBarNav.php include to prevent duplicate navbar
-// include 'inc/topBarNav.php';
-
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
 include 'inc/header.php';
 ?>
 
@@ -181,8 +175,5 @@ include 'inc/header.php';
     </div>
 </div>
 
-<<<<<<< HEAD
 <!-- Footer is included by index.php when routing -->
-=======
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
 <?php include 'inc/modern-footer.php'; ?>
