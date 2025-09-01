@@ -1,14 +1,9 @@
 <?php
 if(isset($_GET['id']) && $_GET['id'] > 0){
-<<<<<<< HEAD
     $qry = $conn->query("SELECT m.*, s.brand_id FROM `models` m 
                          LEFT JOIN `series` s ON s.id = m.series_id 
                          WHERE m.id = '{$_GET['id']}' ");
     if($qry && $qry->num_rows > 0){
-=======
-    $qry = $conn->query("SELECT * from `models` where id = '{$_GET['id']}' ");
-    if($qry->num_rows > 0){
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
         foreach($qry->fetch_assoc() as $k => $v){
             $$k = $v;
         }
@@ -26,32 +21,20 @@ if(isset($_GET['id']) && $_GET['id'] > 0){
             
             <div class="form-group">
                 <label for="brand_id" class="control-label">البراند <span class="text-danger">*</span></label>
-<<<<<<< HEAD
-                <select id="brand_id" class="form-control select2" required>
+                <select name="brand_id" id="brand_id" class="form-control select2" required>
                     <option value="">اختر البراند</option>
                     <?php 
                     $brands = $conn->query("SELECT * FROM `brands` WHERE status = 1 ORDER BY name ASC");
                     if($brands && $brands->num_rows > 0):
                         while($row = $brands->fetch_assoc()):
-=======
-                <select name="brand_id" id="brand_id" class="form-control select2" required>
-                    <option value="">اختر البراند</option>
-                    <?php 
-                    $brands = $conn->query("SELECT * FROM `brands` WHERE status = 1 ORDER BY name ASC");
-                    while($row = $brands->fetch_assoc()):
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
                     ?>
                         <option value="<?php echo $row['id'] ?>" <?php echo isset($brand_id) && $brand_id == $row['id'] ? 'selected' : '' ?>>
                             <?php echo $row['name'] ?>
                         </option>
-<<<<<<< HEAD
                     <?php 
                         endwhile;
                     endif;
                     ?>
-=======
-                    <?php endwhile; ?>
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
                 </select>
             </div>
             
@@ -62,23 +45,15 @@ if(isset($_GET['id']) && $_GET['id'] > 0){
                     <?php 
                     if(isset($brand_id) && $brand_id > 0):
                         $series = $conn->query("SELECT * FROM `series` WHERE brand_id = '{$brand_id}' AND status = 1 ORDER BY name ASC");
-<<<<<<< HEAD
                         if($series && $series->num_rows > 0):
                             while($row = $series->fetch_assoc()):
-=======
-                        while($row = $series->fetch_assoc()):
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
                     ?>
                         <option value="<?php echo $row['id'] ?>" <?php echo isset($series_id) && $series_id == $row['id'] ? 'selected' : '' ?>>
                             <?php echo $row['name'] ?>
                         </option>
                     <?php 
-<<<<<<< HEAD
                             endwhile;
                         endif;
-=======
-                        endwhile;
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
                     endif;
                     ?>
                 </select>

@@ -23,20 +23,12 @@ header('Content-Type: application/json');
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-<<<<<<< HEAD
 if(!isset($_POST['category_id'])) {
-=======
-if(!isset($_GET['category_id'])) {
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
     echo json_encode(['success' => false, 'message' => 'Category ID required']);
     exit;
 }
 
-<<<<<<< HEAD
 $category_id = intval($_POST['category_id']);
-=======
-$category_id = intval($_GET['category_id']);
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
 
 try {
     // Check if database connection is available
@@ -53,11 +45,7 @@ try {
     error_log("Fetching models for category_id (series_id): " . $category_id);
     
     $models = $conn->query("
-<<<<<<< HEAD
-        SELECT DISTINCT m.id, COALESCE(NULLIF(m.name_ar, ''), m.name) as name 
-=======
-        SELECT DISTINCT m.id, m.name 
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
+        SELECT DISTINCT m.id, COALESCE(NULLIF(m.name_ar, ''), m.name) as name
         FROM models m 
         WHERE m.series_id = $category_id AND m.status = 1 
         ORDER BY m.name ASC

@@ -23,20 +23,12 @@ header('Content-Type: application/json');
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-<<<<<<< HEAD
 if(!isset($_POST['brand_id'])) {
-=======
-if(!isset($_GET['brand_id'])) {
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
     echo json_encode(['success' => false, 'message' => 'Brand ID required']);
     exit;
 }
 
-<<<<<<< HEAD
 $brand_id = intval($_POST['brand_id']);
-=======
-$brand_id = intval($_GET['brand_id']);
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
 
 try {
     // Check if database connection is available
@@ -52,16 +44,11 @@ try {
     // Log the query for debugging
     error_log("Fetching categories for brand_id: " . $brand_id);
     
-<<<<<<< HEAD
     // Remove debug output - this breaks JSON response
     // echo "<script>console.log('AJAX: Fetching categories for brand_id: " . $brand_id . "');</script>";
     
     $categories = $conn->query("
-        SELECT DISTINCT s.id, COALESCE(NULLIF(s.name_ar, ''), s.name) as name 
-=======
-    $categories = $conn->query("
-        SELECT DISTINCT s.id, s.name 
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
+        SELECT DISTINCT s.id, COALESCE(NULLIF(s.name_ar, ''), s.name) as name
         FROM series s 
         WHERE s.brand_id = $brand_id AND s.status = 1 
         ORDER BY s.name ASC
