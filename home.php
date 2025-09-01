@@ -203,18 +203,6 @@ include 'inc/header.php';
     transition: all 0.1s ease;
 }
 
-.brand-block::after {
-    content: '';
-    position: absolute;
-    bottom: -10px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 60px;
-    height: 4px;
-    background: linear-gradient(90deg, #3b82f6, #1e40af);
-    border-radius: 2px;
-    animation: slideIn 0.8s ease-out 0.3s both;
-}
 
 .brand-logo-wrapper {
     width: clamp(60px, 8vw, 80px);
@@ -1507,7 +1495,8 @@ function toggleBrands() {
 // Fix brand click behavior
 function goToBrand(brandId) {
     if (brandId) {
-        window.location.href = './?p=products&brand=' + btoa(brandId);
+        // استخدام المعرف المباشر بدلاً من التشفير
+        window.location.href = './?p=products&b=' + brandId;
     }
 }
 
