@@ -93,11 +93,33 @@ include 'inc/header.php';
     margin-bottom: 0.5rem;
 }
 
+.cart-item-meta {
+    margin: 0.75rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.meta-item {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.meta-item i {
+    color: var(--primary-blue);
+    font-size: 0.8rem;
+    width: 12px;
+}
+
 .cart-item-price {
     font-size: 1.1rem;
     font-weight: 700;
     color: var(--primary-blue);
     margin-bottom: 1rem;
+    margin-top: 0.5rem;
 }
 
 .cart-item-actions {
@@ -392,9 +414,48 @@ include 'inc/header.php';
                     
                     <div class="cart-item-details">
                         <h3 class="cart-item-title"><?= htmlspecialchars($product['product_name']) ?></h3>
-                        <?php if($product['brand_name']): ?>
-                            <p><?= htmlspecialchars($product['brand_name']) ?></p>
+                        
+                        <?php 
+                        // Get additional product details
+                        $details = [];
+                        if($product['brand_name']) {
+                            $details[] = '<i class="fas fa-tag"></i> ' . htmlspecialchars($product['brand_name']);
+                        }
+                        
+                        // Get series/model info if available
+                        if(isset($product['sub_category_id']) && $product['sub_category_id']) {
+                            $series_query = $conn->query("SELECT name FROM series WHERE id = {$product['sub_category_id']}");
+                            if($series_query && $series_query->num_rows > 0) {
+                                $series = $series_query->fetch_assoc();
+                                $details[] = '<i class="fas fa-mobile-alt"></i> ' . htmlspecialchars($series['name']);
+                            }
+                        }
+                        
+                        if(isset($product['model_id']) && $product['model_id']) {
+                            $model_query = $conn->query("SELECT model_name FROM models WHERE id = {$product['model_id']}");
+                            if($model_query && $model_query->num_rows > 0) {
+                                $model = $model_query->fetch_assoc();
+                                $details[] = '<i class="fas fa-phone"></i> ' . htmlspecialchars($model['model_name']);
+                            }
+                        }
+                        
+                        // Show product type/category
+                        if(isset($product['description']) && !empty(trim($product['description']))) {
+                            $short_desc = mb_substr(strip_tags(html_entity_decode($product['description'])), 0, 50);
+                            if(strlen($short_desc) > 0) {
+                                $details[] = '<i class="fas fa-info-circle"></i> ' . htmlspecialchars($short_desc) . (mb_strlen(strip_tags(html_entity_decode($product['description']))) > 50 ? '...' : '');
+                            }
+                        }
+                        ?>
+                        
+                        <?php if(!empty($details)): ?>
+                        <div class="cart-item-meta">
+                            <?php foreach(array_slice($details, 0, 3) as $detail): ?>
+                                <span class="meta-item"><?= $detail ?></span>
+                            <?php endforeach; ?>
+                        </div>
                         <?php endif; ?>
+                        
                         <div class="cart-item-price"><?= TextCleaner::formatPrice($price) ?></div>
                         
                         <div class="cart-item-actions">

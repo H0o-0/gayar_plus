@@ -33,11 +33,8 @@
 
 /* Global Styles */
 html {
-<<<<<<< HEAD
-=======
     direction: rtl !important;
     text-align: right !important;
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
     scroll-behavior: smooth;
 }
 
@@ -47,11 +44,8 @@ body {
     color: var(--text-primary) !important;
     line-height: 1.6 !important;
     overflow-x: hidden !important;
-<<<<<<< HEAD
-=======
     direction: rtl !important;
     text-align: right !important;
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
     margin: 0 !important;
     padding: 90px 0 0 0 !important;
 }
@@ -112,6 +106,7 @@ body {
     z-index: 1000 !important;
     transition: var(--transition) !important;
     direction: rtl !important;
+    overflow: visible !important;
 }
 
 .navbar.scrolled {
@@ -119,21 +114,13 @@ body {
     box-shadow: var(--shadow-lg) !important;
 }
 
-.nav-container {
-    max-width: 1400px !important;
-    margin: 0 auto !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    padding: 1rem 2rem !important;
-    height: 80px !important;
-    direction: rtl !important;
-}
+/* تم حذف هذا الكود لتجنب التداخل */
 
 .logo-container {
   display: flex;
   align-items: center;
   text-decoration: none;
+  order: 3 !important;
 }
 
 .site-logo {
@@ -185,6 +172,7 @@ body {
     display: flex !important;
     align-items: center !important;
     gap: 1rem !important;
+    order: 1 !important;
 }
 
 .search-btn, .cart-btn {
@@ -226,21 +214,6 @@ body {
     justify-content: center !important;
 }
 
-<<<<<<< HEAD
-
-
-
-
-
-
-
-
-
-
-
-
-
-=======
 /* Mega Menu */
 .mega-menu {
     position: absolute !important;
@@ -254,7 +227,7 @@ body {
     padding: 2rem !important;
     display: none !important; /* Changed from opacity/visibility to display */
     direction: rtl !important;
-    z-index: 9999 !important; /* Increased z-index to ensure menu appears above other elements */
+    z-index: 9999 !important;
     margin-top: 0 !important;
     padding-top: 2rem !important;
 }
@@ -384,7 +357,6 @@ body {
 .brand-item.active .brand-icon {
     color: white !important;
 }
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
 
 /* Main Content */
 .main-content,
@@ -978,8 +950,6 @@ body {
         display: none !important;
     }
     
-<<<<<<< HEAD
-=======
     .mega-menu {
         width: 100vw !important;
         right: -2rem !important;
@@ -989,7 +959,6 @@ body {
     .menu-grid {
         grid-template-columns: 1fr !important;
     }
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
     
     /* Responsive footer adjustments */
     .footer {

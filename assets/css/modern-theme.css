@@ -67,15 +67,7 @@ body {
     box-shadow: var(--shadow-lg);
 }
 
-.nav-container {
-    max-width: 1400px;
-    margin: 0 auto;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 1rem 2rem;
-    height: 80px;
-}
+/* تم حذف هذا الكود لتجنب التداخل مع topBarNav.php */
 
 .logo {
     font-size: 1.75rem;

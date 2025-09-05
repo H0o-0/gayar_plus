@@ -39,12 +39,8 @@ var _base_url_ = '<?php echo $_settings->base_url ?>';
 					<?php 
 					$i = 1;
 						$qry = $conn->query("SELECT * from `brands` order by `name` asc ");
-<<<<<<< HEAD
 						if($qry && $qry->num_rows > 0):
 							while($row = $qry->fetch_assoc()):
-=======
-						while($row = $qry->fetch_assoc()):
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
 					?>
 						<tr>
 							<td class="text-center"><?php echo $i++; ?></td>
@@ -62,25 +58,21 @@ var _base_url_ = '<?php echo $_settings->base_url ?>';
 				                  		Action
 				                    <span class="sr-only">Toggle Dropdown</span>
 				                  </button>
-				                  <div class="dropdown-menu" role="menu">
-				                    <a class="dropdown-item" href="?page=brands/manage_brand&id=<?php echo $row['id'] ?>"><span class="fa fa-edit text-primary"></span> Edit</a>
-				                    <div class="dropdown-divider"></div>
-				                    <a class="dropdown-item delete_data" href="javascript:void(0)" data-id="<?php echo $row['id'] ?>"><span class="fa fa-trash text-danger"></span> Delete</a>
-				                  </div>
+			                  <div class="dropdown-menu" role="menu">
+			                    <a class="dropdown-item" href="?page=brands/manage_brand&id=<?php echo $row['id'] ?>"><span class="fa fa-edit text-primary"></span> Edit</a>
+			                    <div class="dropdown-divider"></div>
+			                    <a class="dropdown-item delete_data" href="javascript:void(0)" data-id="<?php echo $row['id'] ?>"><span class="fa fa-trash text-danger"></span> Delete</a>
+			                  </div>
 							</td>
 						</tr>
-<<<<<<< HEAD
 					<?php 
-							endwhile; 
+						endwhile; 
 					else: 
 					?>
 						<tr>
 							<td colspan="5" class="text-center">No brands found</td>
 						</tr>
 					<?php endif; ?>
-=======
-					<?php endwhile; ?>
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
 				</tbody>
 			</table>
 		</div>

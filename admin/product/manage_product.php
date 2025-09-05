@@ -1,9 +1,20 @@
 <?php
 if(isset($_GET['id']) && $_GET['id'] > 0){
-    $qry = $conn->query("SELECT * from `products` where id = '{$_GET['id']}' ");
+    // جلب بيانات المنتج مع معلومات المخزون
+    $qry = $conn->query("SELECT p.*, i.price, i.quantity FROM `products` p LEFT JOIN `inventory` i ON p.id = i.product_id WHERE p.id = '{$_GET['id']}' ");
     if($qry->num_rows > 0){
         foreach($qry->fetch_assoc() as $k => $v){
             $$k=$v;
+        }
+        
+        // تحويل category_id إلى brand_id للعرض في النموذج
+        if(isset($category_id)) {
+            $brand_id = $category_id;
+        }
+        
+        // تحويل sub_category_id إلى series_id للعرض في النموذج
+        if(isset($sub_category_id)) {
+            $series_id = $sub_category_id;
         }
     }
 }
@@ -35,8 +46,9 @@ if(isset($_GET['id']) && $_GET['id'] > 0){
                     <?php
                         $series_qry = $conn->query("SELECT * FROM `series` WHERE brand_id = '$brand_id' ORDER BY name ASC");
                         while($series_row = $series_qry->fetch_assoc()):
+                            $series_name = !empty($series_row['name_ar']) ? $series_row['name_ar'] : $series_row['name'];
                     ?>
-                    <option value="<?php echo $series_row['id'] ?>" <?php echo $series_id == $series_row['id'] ? 'selected' : '' ?>><?php echo $series_row['name'] ?></option>
+                    <option value="<?php echo $series_row['id'] ?>" <?php echo $series_id == $series_row['id'] ? 'selected' : '' ?>><?php echo $series_name ?></option>
                     <?php endwhile; ?>
                 <?php endif; ?>
                 </select>
@@ -47,10 +59,10 @@ if(isset($_GET['id']) && $_GET['id'] > 0){
                 <option value="" selected="" disabled="">Select Series First</option>
                 <?php if(isset($series_id) && isset($model_id)): ?>
                     <?php
-                        $model_qry = $conn->query("SELECT * FROM `models` WHERE series_id = '$series_id' ORDER BY name ASC");
+                        $model_qry = $conn->query("SELECT * FROM `phone_models` WHERE sub_category_id = '$series_id' ORDER BY model_name ASC");
                         while($model_row = $model_qry->fetch_assoc()):
                     ?>
-                    <option value="<?php echo $model_row['id'] ?>" <?php echo $model_id == $model_row['id'] ? 'selected' : '' ?>><?php echo $model_row['name'] ?></option>
+                    <option value="<?php echo $model_row['id'] ?>" <?php echo $model_id == $model_row['id'] ? 'selected' : '' ?>><?php echo $model_row['model_name'] ?></option>
                     <?php endwhile; ?>
                 <?php endif; ?>
                 </select>
@@ -81,8 +93,13 @@ if(isset($_GET['id']) && $_GET['id'] > 0){
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="price" class="control-label">السعر (ر.س) <small class="text-muted">(اختياري)</small></label>
-                                <input type="number" step="0.01" class="form-control" name="price" id="price" placeholder="اتركه فارغاً إذا لم يكن محدد" value="<?php echo isset($price) ? $price : '' ?>">
+                                <label for="price" class="control-label">السعر (د.ع) <small class="text-muted">(اختياري)</small></label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" name="price" id="price" placeholder="اتركه فارغاً إذا لم يكن محدد" value="<?php echo isset($price) ? number_format($price, 0, '.', ',') : '' ?>">
+                                    <div class="input-group-append">
+                                        <span class="input-group-text">دينار</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -413,6 +430,21 @@ $(document).ready(function(){
         } else {
             alert('يجب أن يكون هناك لون واحد على الأقل');
         }
+    });
+
+    // تنسيق السعر بالفواصل
+    $('#price').on('input', function(){
+        var value = $(this).val().replace(/,/g, '');
+        if(value && !isNaN(value)){
+            $(this).val(parseInt(value).toLocaleString());
+        }
+    });
+
+    // إزالة الفواصل قبل الإرسال
+    $('#product-form').on('submit', function(){
+        var priceField = $('#price');
+        var priceValue = priceField.val().replace(/,/g, '');
+        priceField.val(priceValue);
     });
 
     // جعل دالة displayImg متاحة عالمياً

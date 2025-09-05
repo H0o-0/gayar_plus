@@ -37,7 +37,7 @@
                 <tbody>
                     <?php 
                     $i = 1;
-                    $qry = $conn->query("SELECT m.*, b.name as brand_name, s.name as series_name 
+                    $qry = $conn->query("SELECT m.*, b.name as brand_name, COALESCE(NULLIF(s.name_ar, ''), s.name) as series_name 
                                         FROM `models` m 
                                         INNER JOIN `series` s ON s.id = m.series_id 
                                         INNER JOIN `brands` b ON b.id = s.brand_id 
@@ -84,29 +84,60 @@
 
 <script>
 $(document).ready(function(){
-    $('#list').dataTable({
-        columnDefs: [
-            { orderable: false, targets: [6] }
-        ],
-        order: [[1, 'asc']],
-        language: {
-            "sProcessing": "جارٍ التحميل...",
-            "sLengthMenu": "أظهر _MENU_ مدخلات",
-            "sZeroRecords": "لم يعثر على أية سجلات",
-            "sInfo": "إظهار _START_ إلى _END_ من أصل _TOTAL_ مدخل",
-            "sInfoEmpty": "يعرض 0 إلى 0 من أصل 0 سجل",
-            "sInfoFiltered": "(منتقاة من مجموع _MAX_ مُدخل)",
-            "sInfoPostFix": "",
-            "sSearch": "ابحث:",
-            "sUrl": "",
-            "oPaginate": {
-                "sFirst": "الأول",
-                "sPrevious": "السابق",
-                "sNext": "التالي",
-                "sLast": "الأخير"
+    // تأخير تحميل DataTable للتأكد من تحميل DOM كاملاً
+    setTimeout(function() {
+        try {
+            // التحقق من وجود الجدول وأنه يحتوي على صفوف
+            var table = $('#list');
+            if (table.length === 0) {
+                console.log('Table #list not found');
+                return;
             }
+            
+            // التحقق من وجود thead و tbody
+            if (table.find('thead').length === 0 || table.find('tbody').length === 0) {
+                console.log('Table structure incomplete');
+                return;
+            }
+            
+            // تدمير DataTable إذا كان موجوداً
+            if ($.fn.DataTable.isDataTable('#list')) {
+                $('#list').DataTable().destroy();
+            }
+            
+            // تهيئة DataTable
+            $('#list').DataTable({
+                columnDefs: [
+                    { orderable: false, targets: [6] }
+                ],
+                order: [[1, 'asc']],
+                responsive: true,
+                autoWidth: false,
+                language: {
+                    "sProcessing": "جارٍ التحميل...",
+                    "sLengthMenu": "أظهر _MENU_ مدخلات",
+                    "sZeroRecords": "لم يعثر على أية سجلات",
+                    "sInfo": "إظهار _START_ إلى _END_ من أصل _TOTAL_ مدخل",
+                    "sInfoEmpty": "يعرض 0 إلى 0 من أصل 0 سجل",
+                    "sInfoFiltered": "(منتقاة من مجموع _MAX_ مُدخل)",
+                    "sInfoPostFix": "",
+                    "sSearch": "ابحث:",
+                    "sUrl": "",
+                    "oPaginate": {
+                        "sFirst": "الأول",
+                        "sPrevious": "السابق",
+                        "sNext": "التالي",
+                        "sLast": "الأخير"
+                    }
+                }
+            });
+            
+            console.log('DataTable initialized successfully');
+            
+        } catch (error) {
+            console.error('Error initializing DataTable:', error);
         }
-    });
+    }, 200);
     
     $('.delete_data').click(function(){
         _conf("هل أنت متأكد من حذف هذا الموديل؟","delete_model",[$(this).attr('data-id')])

@@ -48,10 +48,10 @@ try {
     // echo "<script>console.log('AJAX: Fetching categories for brand_id: " . $brand_id . "');</script>";
     
     $categories = $conn->query("
-        SELECT DISTINCT s.id, COALESCE(NULLIF(s.name_ar, ''), s.name) as name
-        FROM series s 
-        WHERE s.brand_id = $brand_id AND s.status = 1 
-        ORDER BY s.name ASC
+        SELECT DISTINCT c.id, COALESCE(NULLIF(c.category, ''), c.category) as name
+        FROM categories c 
+        WHERE c.brand_id = $brand_id AND c.status = 1 
+        ORDER BY c.category ASC
     ");
     
     // Log the number of rows found

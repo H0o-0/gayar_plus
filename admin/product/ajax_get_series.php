@@ -2,11 +2,8 @@
 require_once '../../config.php';
 
 if(isset($_POST['brand_id'])){
-<<<<<<< HEAD
     $brand_id = intval($_POST['brand_id']);
-    
     $qry = $conn->query("SELECT * FROM series WHERE brand_id = '$brand_id' AND status = 1 ORDER BY name ASC");
-    
     if($qry === false) {
         $response = [
             'status' => 'failed',
@@ -15,16 +12,15 @@ if(isset($_POST['brand_id'])){
         echo json_encode($response);
         exit;
     }
-    
-=======
     $brand_id = $_POST['brand_id'];
     
     $qry = $conn->query("SELECT * FROM series WHERE brand_id = '$brand_id' AND status = 1 ORDER BY name ASC");
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
     $series = [];
     
     while($row = $qry->fetch_assoc()){
-        $series[$row['id']] = $row['name'];
+        // استخدام الاسم العربي إذا كان متوفراً، وإلا الاسم الإنجليزي
+        $name = !empty($row['name_ar']) ? $row['name_ar'] : $row['name'];
+        $series[$row['id']] = $name;
     }
     
     $response = [
@@ -34,7 +30,6 @@ if(isset($_POST['brand_id'])){
     
     echo json_encode($response);
     exit;
-<<<<<<< HEAD
 } else {
     $response = [
         'status' => 'failed',
@@ -42,7 +37,5 @@ if(isset($_POST['brand_id'])){
     ];
     echo json_encode($response);
     exit;
-=======
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
 }
 ?>

@@ -46,18 +46,33 @@ if(!$result || $result->num_rows == 0) {
 $product = $result->fetch_assoc();
 $pageTitle = $product['product_name'];
 
-// Use image from database if available, otherwise check uploads
-$image_path = $product['image'] ? $product['image'] : 'uploads/product_'.$product['id'];
+// Get product images
 $images = [];
-if(is_dir($image_path) && !$product['image']) {
-    $files = scandir($image_path);
+$image_dir = "uploads/product_" . $product['id'];
+
+// First check if product has image field set
+if(!empty($product['image'])) {
+    if(file_exists($product['image'])) {
+        $images[] = $product['image'];
+    }
+}
+
+// Then check uploads directory
+if(is_dir($image_dir)) {
+    $files = scandir($image_dir);
     foreach($files as $file) {
-        if(!in_array($file, ['.', '..'])) {
-            $images[] = $image_path.'/'.$file;
+        if(!in_array($file, ['.', '..']) && preg_match('/\.(jpg|jpeg|png|gif|webp)$/i', $file)) {
+            $full_path = $image_dir . '/' . $file;
+            if(!in_array($full_path, $images)) {
+                $images[] = $full_path;
+            }
         }
     }
-} elseif ($product['image']) {
-    $images[] = $product['image'];
+}
+
+// If no images found, use default
+if(empty($images)) {
+    $images[] = 'assets/images/no-image.svg';
 }
 
 // احصل على معلومات السعر
@@ -81,25 +96,10 @@ include 'inc/header.php';
 ob_end_flush(); // Flush the output buffer
 ?>
 
+
 <!-- Pattern Background -->
 <div class="pattern-background"></div>
 
-<!-- Breadcrumb -->
-<section class="breadcrumb">
-    <div class="breadcrumb-container">
-        <nav class="breadcrumb-nav">
-            <a href="./">الرئيسية</a>
-            <span class="breadcrumb-separator"><i class="fas fa-chevron-left"></i></span>
-            <a href="./?p=products">المنتجات</a>
-            <?php if($product['brand_name']): ?>
-            <span class="breadcrumb-separator"><i class="fas fa-chevron-left"></i></span>
-            <a href="./?p=products&category=<?= md5($product['category_id']) ?>"><?= htmlspecialchars($product['brand_name']) ?></a>
-            <?php endif; ?>
-            <span class="breadcrumb-separator"><i class="fas fa-chevron-left"></i></span>
-            <span class="breadcrumb-current"><?= htmlspecialchars($product['product_name']) ?></span>
-        </nav>
-    </div>
-</section>
 
 <!-- Product Main Section -->
 <section class="product-main">
@@ -121,10 +121,10 @@ ob_end_flush(); // Flush the output buffer
                 </div>
                 
                 <?php if(count($images) > 1): ?>
-                <div class="image-thumbnails">
+                <div class="image-thumbnails" style="display: flex; gap: 8px; margin-top: 12px; overflow-x: auto;">
                     <?php foreach($images as $index => $image): ?>
-                    <div class="thumbnail <?= $index === 0 ? 'active' : '' ?>" onclick="changeMainImage('<?= validate_image($image) ?>', this)">
-                        <img src="<?= validate_image($image) ?>" alt="صورة المنتج">
+                    <div class="thumbnail <?= $index === 0 ? 'active' : '' ?>" onclick="changeMainImage('<?= validate_image($image) ?>', this)" style="width: 60px; height: 60px; border-radius: 8px; overflow: hidden; cursor: pointer; border: 2px solid <?= $index === 0 ? '#3b82f6' : 'transparent' ?>; transition: border-color 0.3s;">
+                        <img src="<?= validate_image($image) ?>" alt="صورة المنتج" style="width: 100%; height: 100%; object-fit: cover;">
                     </div>
                     <?php endforeach; ?>
                 </div>
@@ -134,25 +134,13 @@ ob_end_flush(); // Flush the output buffer
             <!-- Product Info -->
             <div class="product-info">
                 <div class="product-badges">
-                    <?php if($product['featured'] == 1): ?>
+                    <?php if(isset($product['featured']) && $product['featured'] == 1): ?>
                     <span class="badge badge-bestseller">الأكثر مبيعاً</span>
                     <?php endif; ?>
-                    <span class="badge badge-new">جديد</span>
                 </div>
 
                 <h1 class="product-title"><?= htmlspecialchars($product['product_name']) ?></h1>
 
-                <div class="product-rating">
-                    <div class="stars">
-                        <i class="fas fa-star star"></i>
-                        <i class="fas fa-star star"></i>
-                        <i class="fas fa-star star"></i>
-                        <i class="fas fa-star star"></i>
-                        <i class="fas fa-star star empty"></i>
-                    </div>
-                    <span class="rating-text">4.5 من 5</span>
-                    <a href="#reviews" class="rating-count">(142 تقييم)</a>
-                </div>
 
                 <div class="product-price">
                     <?php if($price_info): ?>
@@ -187,13 +175,6 @@ ob_end_flush(); // Flush the output buffer
                         <i class="fas fa-cart-plus"></i>
                         أضف إلى السلة
                     </button>
-                    <button class="btn btn-secondary" onclick="buyNow(<?= $product['id'] ?>)">
-                        <i class="fas fa-bolt"></i>
-                        اشتري الآن
-                    </button>
-                    <button class="btn btn-wishlist" onclick="addToWishlist(<?= $product['id'] ?>)">
-                        <i class="fas fa-heart"></i>
-                    </button>
                 </div>
                 <?php else: ?>
                 <div class="product-actions">
@@ -205,168 +186,41 @@ ob_end_flush(); // Flush the output buffer
                 <?php endif; ?>
 
                 <!-- Product Features -->
-                <div class="product-features">
-                    <h3 class="features-title">المميزات الرئيسية</h3>
-                    <div class="features-list">
-                        <div class="feature-item">
-                            <div class="feature-icon"><i class="fas fa-check"></i></div>
-                            <span>جودة عالية ومضمونة</span>
+                <div class="product-features" style="padding: 24px; margin-top: 24px;">
+                    <h3 class="features-title" style="color: #1e293b; font-size: 1.125rem; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-star" style="color: #f59e0b;"></i>
+                        المميزات الرئيسية
+                    </h3>
+                    <div class="features-list" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+                        <div class="feature-item" style="display: flex; align-items: center; gap: 12px; padding: 12px; background: white; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                            <div class="feature-icon" style="width: 32px; height: 32px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                <i class="fas fa-check" style="color: white; font-size: 14px;"></i>
+                            </div>
+                            <span style="color: #374151; font-weight: 500;">جودة عالية ومضمونة</span>
                         </div>
-                        <div class="feature-item">
-                            <div class="feature-icon"><i class="fas fa-check"></i></div>
-                            <span>شحن مجاني لجميع أنحاء العراق</span>
+                        <div class="feature-item" style="display: flex; align-items: center; gap: 12px; padding: 12px; background: white; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                            <div class="feature-icon" style="width: 32px; height: 32px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                <i class="fas fa-shipping-fast" style="color: white; font-size: 14px;"></i>
+                            </div>
+                            <span style="color: #374151; font-weight: 500;">شحن مجاني لجميع أنحاء العراق</span>
                         </div>
-                        <div class="feature-item">
-                            <div class="feature-icon"><i class="fas fa-check"></i></div>
-                            <span>ضمان شامل لمدة سنة</span>
+                        <div class="feature-item" style="display: flex; align-items: center; gap: 12px; padding: 12px; background: white; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                            <div class="feature-icon" style="width: 32px; height: 32px; background: linear-gradient(135deg, #8b5cf6, #7c3aed); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                <i class="fas fa-shield-alt" style="color: white; font-size: 14px;"></i>
+                            </div>
+                            <span style="color: #374151; font-weight: 500;">ضمان شامل لمدة سنة</span>
                         </div>
-                        <div class="feature-item">
-                            <div class="feature-icon"><i class="fas fa-check"></i></div>
-                            <span>خدمة عملاء 24/7</span>
+                        <div class="feature-item" style="display: flex; align-items: center; gap: 12px; padding: 12px; background: white; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                            <div class="feature-icon" style="width: 32px; height: 32px; background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                <i class="fas fa-headset" style="color: white; font-size: 14px;"></i>
+                            </div>
+                            <span style="color: #374151; font-weight: 500;">خدمة عملاء 24/7</span>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Product Tabs -->
-        <div class="product-tabs">
-            <div class="tabs-nav">
-                <button class="tab-btn active" onclick="showTab('description')">الوصف التفصيلي</button>
-                <button class="tab-btn" onclick="showTab('specifications')">المواصفات</button>
-                <button class="tab-btn" onclick="showTab('reviews')">التقييمات</button>
-            </div>
-
-            <div class="tab-content active" id="description">
-                <h3>الوصف التفصيلي</h3>
-                <div><?= TextCleaner::sanitizeForDescription($product['description']) ?></div>
-            </div>
-
-            <div class="tab-content" id="specifications">
-                <h3>المواصفات التقنية</h3>
-                <table class="specifications-table">
-                    <tr>
-                        <th>الشركة المصنعة</th>
-                        <td><?= $product['brand_name'] ? htmlspecialchars($product['brand_name']) : 'غير محدد' ?></td>
-                    </tr>
-                    <?php if($product['series_name']): ?>
-                    <tr>
-                        <th>السلسلة</th>
-                        <td><?= htmlspecialchars($product['series_name']) ?></td>
-                    </tr>
-                    <?php endif; ?>
-                    <?php if($product['model_name']): ?>
-                    <tr>
-                        <th>الموديل</th>
-                        <td><?= htmlspecialchars($product['model_name']) ?></td>
-                    </tr>
-                    <?php endif; ?>
-                    <tr>
-                        <th>حالة التوفر</th>
-                        <td><?= $price_info ? 'متوفر' : 'غير متوفر' ?></td>
-                    </tr>
-                </table>
-            </div>
-
-            <div class="tab-content" id="reviews">
-                <h3>تقييمات العملاء</h3>
-                <div class="reviews-summary">
-                    <div class="rating-overview">
-                        <div class="rating-score">4.5</div>
-                        <div class="stars">
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star"></i>
-                            <i class="fas fa-star star empty"></i>
-                        </div>
-                        <p>من أصل 142 تقييم</p>
-                    </div>
-                    <div class="rating-bars">
-                        <div class="rating-bar">
-                            <span>5 نجوم</span>
-                            <div class="rating-bar-fill">
-                                <div class="rating-bar-progress" style="width: 65%"></div>
-                            </div>
-                            <span>65%</span>
-                        </div>
-                        <div class="rating-bar">
-                            <span>4 نجوم</span>
-                            <div class="rating-bar-fill">
-                                <div class="rating-bar-progress" style="width: 25%"></div>
-                            </div>
-                            <span>25%</span>
-                        </div>
-                        <div class="rating-bar">
-                            <span>3 نجوم</span>
-                            <div class="rating-bar-fill">
-                                <div class="rating-bar-progress" style="width: 7%"></div>
-                            </div>
-                            <span>7%</span>
-                        </div>
-                        <div class="rating-bar">
-                            <span>2 نجوم</span>
-                            <div class="rating-bar-fill">
-                                <div class="rating-bar-progress" style="width: 2%"></div>
-                            </div>
-                            <span>2%</span>
-                        </div>
-                        <div class="rating-bar">
-                            <span>1 نجمة</span>
-                            <div class="rating-bar-fill">
-                                <div class="rating-bar-progress" style="width: 1%"></div>
-                            </div>
-                            <span>1%</span>
-                        </div>
-                    </div>
-                </div>
-                <p>سيتم إضافة التقييمات قريباً...</p>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Related Products -->
-<section class="related-products">
-    <div class="container">
-        <h2 class="section-title">منتجات مشابهة</h2>
-        <div class="products-grid">
-            <?php
-            $related_products = $conn->query("
-                SELECT p.*, c.category as brand_name 
-                FROM products p 
-                LEFT JOIN categories c ON p.category_id = c.id 
-                WHERE p.id != {$product['id']} 
-                AND p.category_id = {$product['category_id']} 
-                AND p.status = 1 
-                ORDER BY RAND() 
-                LIMIT 4
-            ");
-            
-            if($related_products && $related_products->num_rows > 0):
-                while($related = $related_products->fetch_assoc()):
-            ?>
-            <div class="product-card" onclick="viewProduct('<?= md5($related['id']) ?>')">
-                <div class="product-card-image">
-                    <i class="fas fa-mobile-alt"></i>
-                </div>
-                <div class="product-card-info">
-                    <h4 class="product-card-title"><?= htmlspecialchars($related['product_name']) ?></h4>
-                    <div class="product-card-price">
-                        <?php
-                        $related_price = $conn->query("SELECT price FROM inventory WHERE product_id = {$related['id']} LIMIT 1");
-                        if($related_price && $related_price->num_rows > 0) {
-                            $price = $related_price->fetch_assoc()['price'];
-                            echo TextCleaner::formatPrice($price);
-                        } else {
-                            echo 'السعر عند الطلب';
-                        }
-                        ?>
-                    </div>
-                </div>
-            </div>
-            <?php endwhile; endif; ?>
-        </div>
     </div>
 </section>
 
@@ -423,18 +277,26 @@ function showTab(tabName) {
 function addToCart(productId) {
     const quantity = document.getElementById('quantity').value;
     
-    if(window.addToCart) {
-        // استخدام الدالة العامة مع زر وهمي
-        const fakeButton = {
-            disabled: false,
-            innerHTML: 'إضافة للسلة',
-            style: {}
-        };
-        window.addToCart(fakeButton, productId);
-    } else {
-        // Fallback
-        alert('تم إضافة المنتج إلى السلة!');
-    }
+    fetch('ajax/add_to_cart.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: 'product_id=' + productId + '&quantity=' + quantity
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            updateCartCount();
+            showNotification('✅ تم إضافة المنتج للسلة!');
+        } else {
+            showNotification('❌ ' + (data.message || 'فشل في إضافة المنتج'), 'error');
+        }
+    })
+    .catch(error => {
+        console.error('خطأ:', error);
+        showNotification('❌ حدث خطأ في الاتصال', 'error');
+    });
 }
 
 function buyNow(productId) {
@@ -455,8 +317,202 @@ function addToWishlist(productId) {
 }
 
 function viewProduct(productId) {
-    window.location.href = `./?p=view_product&id=${productId}`;
+    window.location.href = `view_product.php?id=${productId}`;
 }
 </script>
+
+<!-- Related Products Section -->
+<?php
+// Get related products (same brand or category)
+$related_products = [];
+if($product_id) {
+    $related_query = "SELECT p.*, c.category as brand_name 
+                     FROM products p 
+                     LEFT JOIN categories c ON p.category_id = c.id 
+                     WHERE p.status = 1 AND p.id != ? 
+                     AND (p.category_id = ? OR p.sub_category_id = ?) 
+                     ORDER BY RAND() 
+                     LIMIT 4";
+    
+    $related_stmt = $conn->prepare($related_query);
+    $related_stmt->bind_param("iii", $product['id'], $product['category_id'], $product['sub_category_id']);
+    $related_stmt->execute();
+    $related_result = $related_stmt->get_result();
+    
+    while($row = $related_result->fetch_assoc()) {
+        $related_products[] = $row;
+    }
+}
+?>
+
+<?php if(!empty($related_products)): ?>
+<div class="related-products" style="margin-top: 4rem; padding: 2rem 0;">
+    <div class="container">
+        <h2 class="section-title" style="text-align: center; font-size: 1.5rem; font-weight: bold; margin-bottom: 2rem;">منتجات ذات صلة</h2>
+        <div class="products-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; max-width: 1200px; margin: 0 auto;">
+            <?php foreach($related_products as $related): ?>
+                <?php
+                // Get related product images
+                $related_images = [];
+                $related_image_dir = "uploads/product_" . $related['id'];
+                
+                if (is_dir($related_image_dir)) {
+                    $files = scandir($related_image_dir);
+                    foreach ($files as $file) {
+                        if ($file != '.' && $file != '..' && in_array(strtolower(pathinfo($file, PATHINFO_EXTENSION)), ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
+                            $related_images[] = $related_image_dir . '/' . $file;
+                        }
+                    }
+                }
+                
+                if (empty($related_images)) {
+                    $related_images[] = 'dist/img/no-image-available.svg';
+                }
+                
+                // Get price
+                $related_price_stmt = $conn->prepare("SELECT price FROM inventory WHERE product_id = ? LIMIT 1");
+                $related_price_stmt->bind_param("i", $related['id']);
+                $related_price_stmt->execute();
+                $related_price_result = $related_price_stmt->get_result();
+                
+                $formatted_price = "السعر عند الطلب";
+                if($related_price_result && $related_price_result->num_rows > 0) {
+                    $related_price_data = $related_price_result->fetch_assoc();
+                    if($related_price_data['price'] > 0) {
+                        $formatted_price = number_format($related_price_data['price'], 0, '.', ',') . " د.ع";
+                    }
+                }
+                ?>
+                <div class="modern-product-card" onclick="window.location.href='view_product.php?id=<?= md5($related['id']) ?>'" style="background: white; border-radius: 16px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); overflow: hidden; cursor: pointer; transition: all 0.3s ease;">
+                    <div class="card-image-container" style="height: 200px; background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;">
+                        <img src="<?= validate_image($related_images[0]) ?>" alt="<?= htmlspecialchars($related['product_name']) ?>" loading="lazy" style="width: 100%; height: 100%; object-fit: cover;">
+                        <?php if($related['date_created'] >= date('Y-m-d', strtotime('-30 days'))): ?>
+                            <div class="new-badge" style="position: absolute; top: 12px; right: 12px; background: #10b981; color: white; padding: 4px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">جديد</div>
+                        <?php endif; ?>
+                    </div>
+                    <div class="card-content" style="padding: 20px;">
+                        <div class="product-category" style="color: #3b82f6; font-size: 0.875rem; font-weight: 600; margin-bottom: 8px;">
+                            <?= isset($related['brand_name']) ? htmlspecialchars($related['brand_name']) : 'ملحقات' ?>
+                        </div>
+                        <h3 class="product-name" style="font-size: 1.125rem; font-weight: 700; color: #1e293b; margin-bottom: 8px; line-height: 1.4;"><?= htmlspecialchars($related['product_name']) ?></h3>
+                        <p class="product-description" style="color: #64748b; font-size: 0.875rem; line-height: 1.5; margin-bottom: 16px;"><?= mb_substr(strip_tags(html_entity_decode($related['description'])), 0, 100) ?>...</p>
+                        <div class="card-actions" style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+                            <div class="product-price" style="font-size: 1.125rem; font-weight: 700; color: #059669;"><?= $formatted_price ?></div>
+                            <button class="add-to-cart-btn" onclick="event.stopPropagation(); addToCartRelated(this, <?= $related['id'] ?>)" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; border: none; padding: 8px 16px; border-radius: 8px; font-size: 0.875rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; gap: 6px;">
+                                <i class="fas fa-cart-plus"></i>
+                                أضف للسلة
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    </div>
+</div>
+
+<script>
+// Add to cart function for related products
+function addToCartRelated(button, productId) {
+    console.log('🛒 Adding related product:', productId);
+    
+    if (button.disabled) return;
+    
+    button.disabled = true;
+    var originalHTML = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الإضافة...';
+    
+    fetch('ajax/add_to_cart.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: 'product_id=' + productId + '&quantity=1'
+    })
+    .then(function(response) {
+        if (!response.ok) {
+            throw new Error('خطأ في الشبكة: ' + response.status);
+        }
+        return response.json();
+    })
+    .then(function(data) {
+        console.log('استجابة الخادم:', data);
+        
+        if (data.success) {
+            updateCartCount();
+            showNotification('✅ تم إضافة المنتج للسلة!');
+            
+            button.innerHTML = '<i class="fas fa-check"></i> تمت الإضافة!';
+            button.style.background = '#10b981';
+            
+            setTimeout(function() {
+                button.innerHTML = originalHTML;
+                button.style.background = '';
+                button.disabled = false;
+            }, 2000);
+        } else {
+            throw new Error(data.message || 'فشل في إضافة المنتج');
+        }
+    })
+    .catch(function(error) {
+        console.error('خطأ:', error);
+        showNotification('❌ ' + error.message, 'error');
+        button.innerHTML = originalHTML;
+        button.disabled = false;
+    });
+}
+
+function updateCartCount() {
+    fetch('ajax/get_cart_count.php')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const cartBadges = document.querySelectorAll('.cart-count, .cart-badge, #cart-count, #mobile-cart-count');
+                cartBadges.forEach(badge => {
+                    if (badge) {
+                        badge.textContent = data.count;
+                        badge.style.display = data.count > 0 ? 'flex' : 'none';
+                    }
+                });
+            }
+        })
+        .catch(error => console.error('Error updating cart count:', error));
+}
+
+function showNotification(message, type = 'success') {
+    const existingNotifications = document.querySelectorAll('.notification');
+    existingNotifications.forEach(notification => notification.remove());
+    
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.innerHTML = message;
+    
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'error' ? '#ef4444' : '#10b981'};
+        color: white;
+        padding: 15px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 10000;
+        font-weight: 500;
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.transform = 'translateX(0)';
+    }, 100);
+    
+    setTimeout(() => {
+        notification.style.transform = 'translateX(100%)';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+</script>
+<?php endif; ?>
 
 <?php include 'inc/modern-footer.php'; ?>

@@ -33,20 +33,41 @@ class Master extends DBConnection {
         if (isset($_POST['brand_id']) && is_numeric($_POST['brand_id'])) {
             $brand_id = intval($_POST['brand_id']);
             
-            $query = "SELECT id, name FROM series WHERE brand_id = ? AND status = 1 ORDER BY name ASC";
+            // Debug: Log the brand_id
+            error_log("Getting series for brand_id: " . $brand_id);
+            
+            // Use series table with brand_id (this is the correct table structure)
+            $query = "SELECT id, COALESCE(NULLIF(name_ar, ''), name) as series_name FROM series WHERE brand_id = ? AND status = 1 ORDER BY sort_order ASC, series_name ASC";
             if ($stmt = $this->conn->prepare($query)) {
                 $stmt->bind_param("i", $brand_id);
                 $stmt->execute();
                 $result = $stmt->get_result();
                 
                 $options = '';
+                $count = 0;
                 while ($row = $result->fetch_assoc()) {
-                    $options .= '<option value="' . $row['id'] . '">' . htmlspecialchars($row['name']) . '</option>';
+                    $options .= '<option value="' . $row['id'] . '">' . htmlspecialchars($row['series_name']) . '</option>';
+                    $count++;
                 }
                 
-                echo $options;
+                // Debug: Log results
+                error_log("Found $count series for brand_id: $brand_id");
+                
+                if($count == 0) {
+                    echo '<option value="">لا توجد فئات لهذا البراند</option>';
+                } else {
+                    echo $options;
+                }
+                
                 $stmt->close();
+            } else {
+                // Debug: Log prepare error
+                error_log("Prepare failed: " . $this->conn->error);
+                echo '<option value="">خطأ في الاستعلام: ' . $this->conn->error . '</option>';
             }
+        } else {
+            error_log("Invalid brand_id received: " . print_r($_POST, true));
+            echo '<option value="">معرف البراند غير صحيح</option>';
         }
     }
     
@@ -304,7 +325,7 @@ class Master extends DBConnection {
                 $this->settings->set_flashdata('success',"Category successfully updated.");
         }else{
             $resp['status'] = 'failed';
-            $resp['err'] = $this->conn->error."[]";
+            $resp['err'] = $this->conn->error."[{$sql}]";
         }
         return json_encode($resp);
     }
@@ -442,8 +463,11 @@ class Master extends DBConnection {
                 $data .= " `description`='".addslashes(htmlentities($description))."' ";
         }
         
+        // Map series_id to sub_category_id for compatibility
+        $sub_category_id = isset($series_id) ? $series_id : '';
+        
         // Check if model already exists with same name and series_id
-        $check_query = $this->conn->query("SELECT * FROM `models` where `name` = '{$name}' and `series_id` = '{$series_id}' ".((!empty($id) ? " and id != {$id} " : ""))." ");
+        $check_query = $this->conn->query("SELECT * FROM `models` where `name` = '{$name}' and `series_id` = '{$sub_category_id}' ".((!empty($id) ? " and id != {$id} " : ""))." ");
         if($this->capture_err())
             return $this->capture_err();
             
@@ -454,11 +478,21 @@ class Master extends DBConnection {
             return json_encode($resp);
             exit;
         }
+        
+        // Prepare data for models table
+        $model_data = "";
+        $model_data .= " `series_id`='{$sub_category_id}' ";
+        $model_data .= ", `name`='{$name}' ";
+        if(isset($_POST['description'])){
+            $model_data .= ", `description`='".addslashes(htmlentities($description))."' ";
+        }
+        $model_data .= ", `status`='{$status}' ";
+        
         if(empty($id)){
-            $sql = "INSERT INTO `models` set {$data} ";
+            $sql = "INSERT INTO `models` set {$model_data} ";
             $save = $this->conn->query($sql);
         }else{
-            $sql = "UPDATE `models` set {$data} where id = '{$id}' ";
+            $sql = "UPDATE `models` set {$model_data} where id = '{$id}' ";
             $save = $this->conn->query($sql);
         }
         if($save){
@@ -589,23 +623,44 @@ class Master extends DBConnection {
         // تحويل brand_id إلى category_id و series_id إلى sub_category_id
         if(isset($_POST['brand_id']) && !isset($_POST['category_id'])) {
             $_POST['category_id'] = $_POST['brand_id'];
-            error_log("Converting brand_id ({$_POST['brand_id']}) to category_id");
         }
         
         if(isset($_POST['series_id']) && !isset($_POST['sub_category_id'])) {
             $_POST['sub_category_id'] = $_POST['series_id'];
-            error_log("Converting series_id ({$_POST['series_id']}) to sub_category_id");
         }
         
         // الحقول المسموح بها في جدول products
         $allowed_fields = ['category_id', 'sub_category_id', 'model_id', 'product_name', 'description', 'status', 'has_colors', 'colors', 'price', 'quantity', 'unit'];
         
+        // بناء البيانات للحفظ
+        foreach($_POST as $k => $v){
+            if(in_array($k, $allowed_fields) && !empty($v)){
+                if(!empty($data)) $data .= ",";
+                if($k == 'description'){
+                    $data .= " `{$k}`='".addslashes(htmlentities($v))."' ";
+                } else {
+                    $data .= " `{$k}`='{$v}' ";
+                }
+            }
+        }
+        
         // معالجة بيانات الألوان
-        if(isset($_POST['has_colors']) && $_POST['has_colors'] == '1' && !empty($_POST['colors'])){
-            $colors = $_POST['colors'];
-            if(is_array($colors)){
-                $colors_json = json_encode($colors, JSON_UNESCAPED_UNICODE);
-                $data .= ", `colors`='" . addslashes($colors_json) . "'";
+        if(isset($_POST['has_colors']) && $_POST['has_colors'] == '1'){
+            if(isset($_POST['color_names']) && isset($_POST['color_codes'])){
+                $colors = [];
+                for($i = 0; $i < count($_POST['color_names']); $i++){
+                    if(!empty($_POST['color_names'][$i])){
+                        $colors[] = [
+                            'name' => $_POST['color_names'][$i],
+                            'code' => $_POST['color_codes'][$i]
+                        ];
+                    }
+                }
+                if(!empty($colors)){
+                    $colors_json = json_encode($colors, JSON_UNESCAPED_UNICODE);
+                    if(!empty($data)) $data .= ",";
+                    $data .= " `colors`='" . addslashes($colors_json) . "' ";
+                }
             }
         }
         
@@ -618,7 +673,9 @@ class Master extends DBConnection {
                 
                 // إضافة بيانات المخزون إذا كانت موجودة
                 if(!empty($_POST['price']) || !empty($_POST['quantity'])){
-                    $price = !empty($_POST['price']) ? floatval($_POST['price']) : 0;
+                    // إزالة الفواصل من السعر قبل التحويل
+                    $price_clean = !empty($_POST['price']) ? str_replace(',', '', $_POST['price']) : 0;
+                    $price = floatval($price_clean);
                     $quantity = !empty($_POST['quantity']) ? intval($_POST['quantity']) : 0;
                     
                     $inventory_sql = "INSERT INTO `inventory` (product_id, price, quantity) VALUES ('{$product_id}', '{$price}', '{$quantity}')";
@@ -632,7 +689,9 @@ class Master extends DBConnection {
             if($save){
                 // تحديث بيانات المخزون
                 if(!empty($_POST['price']) || !empty($_POST['quantity'])){
-                    $price = !empty($_POST['price']) ? floatval($_POST['price']) : 0;
+                    // إزالة الفواصل من السعر قبل التحويل
+                    $price_clean = !empty($_POST['price']) ? str_replace(',', '', $_POST['price']) : 0;
+                    $price = floatval($price_clean);
                     $quantity = !empty($_POST['quantity']) ? intval($_POST['quantity']) : 0;
                     
                     // التحقق من وجود سجل في جدول inventory
@@ -842,7 +901,7 @@ class Master extends DBConnection {
             if(!session_id()){
                 session_start();
             }
-            $count = $this->conn->query("SELECT SUM(quantity) as items from `cart` where session_id = '".session_id()."' AND client_id IS NULL")->fetch_assoc()['items'];
+            $count = $this->conn->query("SELECT SUM(quantity) as items from `cart` where client_id IS NULL AND session_id='". session_id() ."'")->fetch_assoc()['items'];
             $resp['count'] = $count > 0 ? $count : 0;
         }
         return json_encode($resp);

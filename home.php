@@ -73,35 +73,12 @@ include 'inc/header.php';
     font-weight: 800;
     color: #1e293b;
     margin-bottom: 0.75rem;
-    background: linear-gradient(135deg, #3b82f6, #1e40af);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: #1e293b;
     line-height: 1.2;
     position: relative;
 }
 
-.section-title::after {
-    content: '';
-    position: absolute;
-    bottom: -10px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 60px;
-    height: 4px;
-    background: linear-gradient(90deg, #3b82f6, #1e40af);
-    border-radius: 2px;
-    animation: slideIn 0.8s ease-out 0.3s both;
-}
 
-@keyframes slideIn {
-    from {
-        width: 0;
-    }
-    to {
-        width: 60px;
-    }
-}
 
 .section-subtitle {
     font-size: 1.1rem;
@@ -149,10 +126,7 @@ include 'inc/header.php';
     font-weight: 800;
     color: #1e293b;
     margin-bottom: clamp(2rem, 5vw, 3rem);
-    background: linear-gradient(135deg, #3b82f6, #1e40af);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: #1e293b;
     position: relative;
 }
 
@@ -167,14 +141,17 @@ include 'inc/header.php';
     background: #ffffff;
     padding: clamp(1.5rem, 3vw, 2rem) clamp(1rem, 2vw, 1.5rem);
     border-radius: 16px;
-    text-align: center;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     border: 2px solid transparent;
     cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
     backdrop-filter: blur(10px);
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
 }
 
 .brand-block::before {
@@ -255,10 +232,13 @@ include 'inc/header.php';
 }
 
 .brand-logo {
-    max-width: 45px;
-    max-height: 45px;
+    max-width: 50px;
+    max-height: 50px;
+    width: auto;
+    height: auto;
     object-fit: contain;
     transition: all 0.3s ease;
+    filter: brightness(1) contrast(1.1);
 }
 
 .brand-name {
@@ -270,25 +250,9 @@ include 'inc/header.php';
     position: relative;
 }
 
-.brand-name::after {
-    content: '';
-    position: absolute;
-    bottom: -2px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 0;
-    height: 2px;
-    background: linear-gradient(90deg, #3b82f6, #1e40af);
-    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
 .brand-block:hover .brand-name {
     color: #3b82f6;
     transform: translateY(-2px);
-}
-
-.brand-block:hover .brand-name::after {
-    width: 100%;
 }
 
 .no-brands-message {
@@ -335,8 +299,10 @@ include 'inc/header.php';
 
 .products-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 2rem;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
 .modern-product-card {
@@ -348,7 +314,7 @@ include 'inc/header.php';
     position: relative;
     height: 350px;
     width: 100%;
-    max-width: 320px;
+    max-width: 280px;
     margin: 0 auto;
 }
 
@@ -1169,37 +1135,88 @@ include 'inc/header.php';
                     $display_name = !empty($brand['name_ar']) ? $brand['name_ar'] : $brand['name'];
             ?>
             <div class="brand-block" 
-                 onclick="goToBrand('<?= $brand['id'] ?>')"
+                 onclick="goToBrand(<?= $brand['id'] ?>)"
                  style="--brand-color: <?= $style['color'] ?>; 
                         --brand-gradient: <?= $style['gradient'] ?>; 
-                        --brand-shadow: <?= $style['shadow'] ?>;"
+                        --brand-shadow: <?= $style['shadow'] ?>; cursor: pointer;"
                  data-brand-id="<?= $brand['id'] ?>"
-                 data-brand-name="<?= htmlspecialchars($display_name) ?>">
+                 data-brand-name="<?= htmlspecialchars($display_name) ?>"
+                 role="button"
+                 tabindex="0">
                 
                 <div class="brand-logo-wrapper">
                     <?php
                     // فحص وجود لوجو البراند من مجلد admin/images
                     $logo_displayed = false;
                     $brand_key = strtolower(trim($brand['name']));
+                    
+                    // إضافة خيارات بحث متعددة للبراند
+                    $search_keys = [
+                        $brand_key,
+                        strtolower(trim($brand['name_ar'] ?? '')),
+                        str_replace(' ', '', $brand_key),
+                        str_replace([' ', '-', '_'], '', $brand_key)
+                    ];
+                    $search_keys = array_filter(array_unique($search_keys));
 
-                    // قائمة اللوغوهات المتوفرة
+                    // قائمة اللوغوهات المتوفرة مع خيارات متعددة لكل براند
                     $available_logos = [
                         'apple' => 'apple.png',
-                        'samsung' => 'samsung.png',
-                        'huawei' => 'huawei.png',
+                        'ابل' => 'apple.png',
+                        'samsung' => 'samsung-seeklogo.png',
+                        'سامسونج' => 'samsung-seeklogo.png',
+                        'huawei' => 'huawei-seeklogo.png',
+                        'هواوي' => 'huawei-seeklogo.png',
                         'xiaomi' => 'xiaomi.png',
+                        'شاومي' => 'xiaomi.png',
                         'oppo' => 'oppo.png',
-                        'vivo' => 'vivo.png',
-                        'infinix' => 'infinix logo.png',
-                        'tecno' => 'tecno-mobile-logo-vector.png'
+                        'اوبو' => 'oppo.png',
+                        'vivo' => 'vivo-seeklogo.png',
+                        'فيفو' => 'vivo-seeklogo.png',
+                        'infinix' => 'infinix-seeklogo.png',
+                        'انفينكس' => 'infinix-seeklogo.png',
+                        'tecno' => 'tecno-smartphone-seeklogo.png',
+                        'تكنو' => 'tecno-smartphone-seeklogo.png',
+                        'oneplus' => 'oneplus-seeklogo.png',
+                        'ون بلس' => 'oneplus-seeklogo.png',
+                        'realme' => 'realme-seeklogo.png',
+                        'ريلمي' => 'realme-seeklogo.png',
+                        'honor' => 'hihonor-seeklogo.png',
+                        'هونر' => 'hihonor-seeklogo.png',
+                        'hihonor' => 'hihonor-seeklogo.png',
+                        'itel' => 'itel-seeklogo.png',
+                        'ايتل' => 'itel-seeklogo.png',
+                        'google' => 'google-2015-seeklogo.png',
+                        'جوجل' => 'google-2015-seeklogo.png'
                     ];
 
-                    // البحث عن اللوغو المناسب
-                    if(isset($available_logos[$brand_key])) {
-                        $logo_path = 'admin/images/' . $available_logos[$brand_key];
-                        if(file_exists($logo_path)) {
-                            echo '<img src="' . htmlspecialchars($logo_path) . '" alt="' . htmlspecialchars($display_name) . '" class="brand-logo">';
-                            $logo_displayed = true;
+                    // البحث عن اللوغو المناسب باستخدام جميع المفاتيح
+                    foreach($search_keys as $key) {
+                        if(isset($available_logos[$key])) {
+                            $logo_path = 'admin/images/' . $available_logos[$key];
+                            if(file_exists($logo_path)) {
+                                echo '<img src="' . htmlspecialchars($logo_path) . '" alt="' . htmlspecialchars($display_name) . '" class="brand-logo">';
+                                $logo_displayed = true;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    // البحث الذكي - إذا لم يوجد تطابق مباشر، ابحث في أسماء الملفات
+                    if(!$logo_displayed) {
+                        $logo_files = glob('admin/images/*.png');
+                        foreach($logo_files as $file) {
+                            $filename = basename($file, '.png');
+                            $filename_clean = strtolower(str_replace(['-seeklogo', '-logo', '_logo'], '', $filename));
+                            
+                            // فحص التطابق الجزئي مع جميع مفاتيح البحث
+                            foreach($search_keys as $search_key) {
+                                if(strpos($filename_clean, $search_key) !== false || strpos($search_key, $filename_clean) !== false) {
+                                    echo '<img src="' . htmlspecialchars($file) . '" alt="' . htmlspecialchars($display_name) . '" class="brand-logo">';
+                                    $logo_displayed = true;
+                                    break 2; // خروج من كلا الحلقتين
+                                }
+                            }
                         }
                     }
 
@@ -1248,152 +1265,90 @@ include 'inc/header.php';
     
         <div class="products-grid" id="main-products-grid">
             <?php
-            // استعلام المنتجات
-        $products_query = "
-            SELECT 
-                p.id,
-                p.product_name,
-                p.description,
-                p.date_created,
-                p.has_colors,
-                p.colors,
-                c.category as category_name,
-                sc.sub_category as sub_category_name
-            FROM products p 
-            LEFT JOIN categories c ON p.category_id = c.id 
-            LEFT JOIN sub_categories sc ON p.sub_category_id = sc.id 
-            WHERE p.status = 1
-            ORDER BY p.date_created DESC 
-            LIMIT 12
-        ";
-        
-        $featured_products = $conn->query($products_query);
-        
-        if($featured_products && $featured_products->num_rows > 0):
-            while($product = $featured_products->fetch_assoc()):
-                // جلب معلومات المخزون والسعر
-                $inventory_query = "SELECT price, quantity FROM inventory WHERE product_id = " . intval($product['id']) . " LIMIT 1";
-                $inventory_result = $conn->query($inventory_query);
-                
-                if($inventory_result && $inventory_result->num_rows > 0) {
-                    $inventory = $inventory_result->fetch_assoc();
-                    $product['price'] = $inventory['price'] > 0 ? $inventory['price'] : 50000;
-                    $product['stock_quantity'] = $inventory['quantity'] > 0 ? $inventory['quantity'] : 1;
-                } else {
-                    $product['price'] = 50000;
-                    $product['stock_quantity'] = 1;
-                }
-                
-                // معالجة الصور
-                $upload_path = 'uploads/product_'.$product['id'];
-                $main_image = null;
-                
-                if(is_dir($upload_path)){
-                    $files = scandir($upload_path);
-                    foreach($files as $file) {
-                        if(!in_array($file, ['.', '..']) && preg_match('/\.(jpg|jpeg|png|gif|webp)$/i', $file)) {
-                            $main_image = $upload_path.'/'.$file;
-                            break;
+            // استعلام المنتجات مع جلب معلومات البراند والأسعار
+            $products_query = "
+                SELECT 
+                    p.id,
+                    p.product_name,
+                    p.description,
+                    p.date_created,
+                    p.has_colors,
+                    p.colors,
+                    p.category_id,
+                    c.category as category_name,
+                    sc.sub_category as sub_category_name,
+                    b.name as brand_name,
+                    i.price,
+                    i.quantity
+                FROM products p 
+                LEFT JOIN categories c ON p.category_id = c.id 
+                LEFT JOIN sub_categories sc ON p.sub_category_id = sc.id 
+                LEFT JOIN brands b ON p.category_id = b.id
+                LEFT JOIN inventory i ON p.id = i.product_id
+                WHERE p.status = 1
+                ORDER BY p.date_created DESC 
+                LIMIT 12
+            ";
+            
+            $featured_products = $conn->query($products_query);
+            
+            if($featured_products && $featured_products->num_rows > 0):
+                while($product = $featured_products->fetch_assoc()):
+                    // Get product images
+                    $image_path = 'uploads/product_'.$product['id'];
+                    $images = [];
+                    if(is_dir($image_path)) {
+                        $files = scandir($image_path);
+                        foreach($files as $file) {
+                            if(!in_array($file, ['.', '..'])) {
+                                $images[] = $image_path.'/'.$file;
+                            }
                         }
                     }
-                }
-                
-                $display_image = $main_image ?: './assets/images/no-image.svg';
-                $formatted_price = $product['price'] ? number_format($product['price']) . ' IQD' : 'السعر غير محدد';
-                $short_description = TextCleaner::cleanAndTruncate($product['description'], 80);
-        ?>
-        <div class="modern-product-card" data-product-id="<?= $product['id'] ?>">
-            <div class="card-image-container">
-                <img src="<?= $display_image ?>" 
-                     alt="<?= htmlspecialchars($product['product_name']) ?>" 
-                     class="product-image"
-                     loading="lazy"
-                     onerror="if(this.src.indexOf('no-image.svg') === -1) this.src='./assets/images/no-image.svg';">
-                <div class="product-overlay">
-                    <button class="quick-view-btn" onclick="viewProduct(<?= $product['id'] ?>)">
-                        <i class="fas fa-eye"></i>
-                    </button>
-                </div>
-                <?php if($product['stock_quantity'] > 0): ?>
-                <span class="stock-badge in-stock">متوفر</span>
-                <?php else: ?>
-                <span class="stock-badge out-of-stock">نفذ المخزون</span>
-                <?php endif; ?>
-            </div>
-            
-            <div class="card-content">
-                <div class="product-category">
-                    <?= $product['category_name'] ? htmlspecialchars($product['category_name']) : 'منتجات عامة' ?>
-                </div>
-                
-                <h3 class="product-name">
-                    <?= htmlspecialchars($product['product_name']) ?>
-                </h3>
-                
-                <p class="product-desc">
-                    <?= htmlspecialchars($short_description) ?>
-                </p>
-                
-                <div class="product-meta">
-                    <span class="product-price"><?= $formatted_price ?></span>
-                    <span class="stock-info">
-                        <i class="fas fa-box"></i> 
-                        <?= $product['stock_quantity'] ?> قطعة
-                    </span>
-                </div>
-                
-                <?php if(isset($product['has_colors']) && $product['has_colors'] == 1 && !empty($product['colors'])): ?>
-                <?php 
-                    $colors = json_decode($product['colors'], true);
-                    if(is_array($colors) && count($colors) > 0):
-                ?>
-                <div class="card-colors">
-                    <div class="color-dots">
-                        <?php foreach(array_slice($colors, 0, 5) as $color): ?>
-                        <div class="color-dot" 
-                             style="background-color: <?= htmlspecialchars($color['code']) ?>"
-                             title="<?= htmlspecialchars($color['name']) ?>"></div>
-                        <?php endforeach; ?>
-                        <?php if(count($colors) > 5): ?>
-                        <span class="more-colors">+<?= count($colors) - 5 ?></span>
+                    
+                    // Default image if no images found
+                    if(empty($images)) {
+                        $images[] = 'assets/images/no-image.svg';
+                    }
+                    
+                    // Format price correctly
+                    $formatted_price = "السعر عند الطلب";
+                    if(isset($product['price']) && $product['price'] > 0) {
+                        $formatted_price = number_format($product['price'], 0, '.', ',') . " د.ع";
+                    }
+            ?>
+                <div class="homepage-product-card" onclick="window.location.href='view_product.php?id=<?= md5($product['id']) ?>'">
+                    <div class="card-image-container">
+                        <img src="<?= validate_image($images[0]) ?>" alt="<?= htmlspecialchars($product['product_name']) ?>" loading="lazy">
+                        <?php if(isset($product['featured']) && $product['featured'] == 1): ?>
+                            <div class="new-badge">الأكثر مبيعاً</div>
                         <?php endif; ?>
                     </div>
+                    <div class="card-content">
+                        <div class="product-category">
+                            <?= isset($product['brand_name']) ? htmlspecialchars($product['brand_name']) : 'ملحقات' ?>
+                        </div>
+                        <h3 class="product-name"><?= htmlspecialchars($product['product_name']) ?></h3>
+                        <p class="product-description"><?= mb_substr(strip_tags(html_entity_decode($product['description'])), 0, 100) ?>...</p>
+                        <div class="card-actions">
+                            <div class="product-price"><?= $formatted_price ?></div>
+                            <button class="add-to-cart-btn" onclick="event.stopPropagation(); addToCart(this, <?= $product['id'] ?>)">
+                                <i class="fas fa-cart-plus"></i>
+                                أضف للسلة
+                            </button>
+                        </div>
+                    </div>
                 </div>
-                <?php endif; ?>
-                <?php endif; ?>
-                <div class="card-actions">
-                    <?php if($product['stock_quantity'] > 0): ?>
-                    <button class="add-to-cart-btn" 
-                            onclick="addToCart(this, <?= $product['id'] ?>)"
-                            data-product-id="<?= $product['id'] ?>"
-                            data-product-name="<?= htmlspecialchars($product['product_name']) ?>">
-                        <i class="fas fa-cart-plus"></i>
-                        <span>أضف للسلة</span>
-                    </button>
-                    <?php else: ?>
-                    <button class="add-to-cart-btn disabled" disabled>
-                        <i class="fas fa-ban"></i>
-                        <span>غير متوفر</span>
-                    </button>
-                    <?php endif; ?>
-                    
-                    <button class="view-details-btn" onclick="viewProduct(<?= $product['id'] ?>)">
-                        <i class="fas fa-info-circle"></i>
-                        تفاصيل
-                    </button>
-                </div>
+            <?php 
+                endwhile; 
+            else:
+            ?>
+            <div class="no-products-message">
+                <i class="fas fa-box-open"></i>
+                <h3>لا توجد منتجات متاحة حالياً</h3>
+                <p>نعمل على إضافة منتجات جديدة قريباً</p>
             </div>
-        </div>
-        <?php 
-            endwhile; 
-        else:
-        ?>
-        <div class="no-products-message">
-            <i class="fas fa-box-open"></i>
-            <h3>لا توجد منتجات متاحة حالياً</h3>
-            <p>نعمل على إضافة منتجات جديدة قريباً</p>
-        </div>
-        <?php endif; ?>
+            <?php endif; ?>
         </div>
     </div>
 </section>
@@ -1492,42 +1447,9 @@ function toggleBrands() {
     }
 }
 
-// Fix brand click behavior
-function goToBrand(brandId) {
-    if (brandId) {
-        // استخدام المعرف المباشر بدلاً من التشفير
-        window.location.href = './?p=products&b=' + brandId;
-    }
-}
+// Brand click behavior handled by the main goToBrand function below
 
-// Ensure proper brand interaction
-document.addEventListener('DOMContentLoaded', function() {
-    // Remove any conflicting event listeners and add clean ones
-    const brandBlocks = document.querySelectorAll('.brand-block');
-    brandBlocks.forEach(block => {
-        // Remove any existing listeners
-        block.replaceWith(block.cloneNode(true));
-    });
-    
-    // Add fresh event listeners
-    document.querySelectorAll('.brand-block').forEach(block => {
-        block.addEventListener('click', function() {
-            const brandId = this.getAttribute('data-brand-id');
-            if (brandId) {
-                goToBrand(brandId);
-            }
-        });
-        
-        // Add hover effect
-        block.addEventListener('mouseenter', function() {
-            this.style.transform = 'translateY(-4px)';
-        });
-        
-        block.addEventListener('mouseleave', function() {
-            this.style.transform = 'translateY(0)';
-        });
-    });
-});
+// Brand interaction is handled by onclick attributes in HTML
 // Add to cart function
 function addToCart(button, productId) {
     console.log('🛒 Adding product:', productId);
@@ -1583,9 +1505,9 @@ function addToCart(button, productId) {
 function viewProduct(productId) {
     if (productId) {
         if (typeof productId === 'number' || /^\d+$/.test(productId)) {
-            window.location.href = 'product_view.php?id=' + productId;
+            window.location.href = 'view_product.php?id=' + productId;
         } else {
-            window.location.href = './?p=product_view&id=' + productId;
+            window.location.href = 'view_product.php?id=' + productId;
         }
     }
 }
@@ -1627,7 +1549,14 @@ function goToBrand(brandId) {
     
     // البحث عن البراند في البلوكات للحصول على الاسم
     var brandBlock = document.querySelector('[data-brand-id="' + brandId + '"]');
-    var brandName = brandBlock ? brandBlock.getAttribute('data-brand-name') : 'البراند';
+    var brandName = 'البراند';
+    
+    if (brandBlock) {
+        var nameAttr = brandBlock.getAttribute('data-brand-name');
+        if (nameAttr && nameAttr !== 'null' && nameAttr.trim() !== '') {
+            brandName = nameAttr;
+        }
+    }
     
     showNotification('🔍 جاري تحميل منتجات ' + brandName + '...', 'info');
     
@@ -1656,6 +1585,31 @@ document.addEventListener('DOMContentLoaded', function() {
     
     var brandBlocks = document.querySelectorAll('.brand-block');
     console.log('🏷️ وُجد ' + brandBlocks.length + ' بلوك براند');
+    
+    // إضافة أحداث النقر للبراندات
+    brandBlocks.forEach(function(block) {
+        block.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            var brandId = this.getAttribute('data-brand-id');
+            console.log('🎯 تم النقر على البراند:', brandId);
+            
+            if (brandId) {
+                goToBrand(brandId);
+            } else {
+                console.error('❌ لم يتم العثور على معرف البراند');
+            }
+        });
+        
+        // إضافة دعم لوحة المفاتيح
+        block.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                this.click();
+            }
+        });
+    });
     
     console.log('🎉 تم تحميل النظام بنجاح!');
 });

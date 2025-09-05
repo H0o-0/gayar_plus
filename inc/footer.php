@@ -111,20 +111,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // وظيفة عرض المنتج
 function viewProduct(id) {
-<<<<<<< HEAD
     if (id) {
-        // Check if it's already an MD5 hash or numeric ID
         if (typeof id === 'number' || /^\d+$/.test(id)) {
-            // If numeric, use direct link that can handle conversion
-            window.location.href = 'product_view.php?id=' + id;
+            window.location.href = 'view_product.php?id=' + id;
         } else {
-            // If already MD5 hash, use router
-            window.location.href = './?p=product_view&id=' + id;
+            window.location.href = 'view_product.php?id=' + id;
         }
     }
-=======
     window.location.href = './?p=product_view_redirect&id=' + id;
->>>>>>> cebc63a3bc4f7e2f5ae4119daff21338fea35eb8
 }
 
 // وظيفة إضافة للسلة - تم نقل هذه الوظيفة إلى cart_fix.js لتجنب التعارض

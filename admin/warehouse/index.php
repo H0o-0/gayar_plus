@@ -201,14 +201,22 @@
 				</thead>
 				<tbody>
 					<?php
-					$products = $conn->query("
-						SELECT tw.*, c.category, sc.sub_category
-						FROM temp_warehouse tw
-						LEFT JOIN categories c ON tw.category_id = c.id
-						LEFT JOIN sub_categories sc ON tw.sub_category_id = sc.id
-						ORDER BY tw.created_at DESC
-					");
-					while($row = $products->fetch_assoc()):
+					// Fix SQL query - check if tables exist and handle errors
+					$sql = "SELECT tw.*, 
+					        COALESCE(b.name, tw.suggested_brand) as brand_name,
+					        COALESCE(s.name, '') as series_name
+					        FROM temp_warehouse tw
+					        LEFT JOIN brands b ON tw.category_id = b.id
+					        LEFT JOIN series s ON tw.sub_category_id = s.id
+					        ORDER BY tw.created_at DESC";
+					
+					$products = $conn->query($sql);
+					
+					// Check if query failed
+					if (!$products) {
+						echo "<tr><td colspan='6' class='text-center text-danger'>خطأ في قاعدة البيانات: " . $conn->error . "</td></tr>";
+					} else {
+						while($row = $products->fetch_assoc()):
 					?>
 					<tr data-id="<?php echo $row['id'] ?>" 
 					    data-status="<?php echo htmlspecialchars($row['status']) ?>" 
@@ -236,8 +244,8 @@
 							<?php endif; ?>
 						</td>
 						<td>
-							<?php if($row['sub_category']): ?>
-								<span class="badge badge-secondary"><?php echo htmlspecialchars($row['sub_category']) ?></span>
+							<?php if($row['series_name']): ?>
+								<span class="badge badge-secondary"><?php echo htmlspecialchars($row['series_name']) ?></span>
 							<?php else: ?>
 								<span class="text-muted">غير محدد</span>
 							<?php endif; ?>
@@ -291,7 +299,10 @@
 							</div>
 						</td>
 					</tr>
-					<?php endwhile; ?>
+					<?php 
+						endwhile; 
+					} // End of else block for successful query
+					?>
 				</tbody>
 			</table>
 		</div>

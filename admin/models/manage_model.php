@@ -5,7 +5,13 @@ if(isset($_GET['id']) && $_GET['id'] > 0){
                          WHERE m.id = '{$_GET['id']}' ");
     if($qry && $qry->num_rows > 0){
         foreach($qry->fetch_assoc() as $k => $v){
-            $$k = $v;
+            if($k == 'name') {
+                $name = $v;
+            } elseif($k == 'series_id') {
+                $series_id = $v;
+            } else {
+                $$k = $v;
+            }
         }
     }
 }
@@ -96,26 +102,43 @@ $(document).ready(function(){
         var brand_id = $(this).val();
         var series_select = $('#series_id');
         
+        console.log('Brand changed to:', brand_id);
+        
         // إعادة تعيين السيريس
         series_select.html('<option value="">جاري التحميل...</option>');
+        series_select.trigger('change.select2');
         
         if(brand_id != ''){
             // طلب AJAX لجلب السيريس
             $.ajax({
-                url: _base_url_ + "classes/Master.php?f=get_series_by_brand",
+                url: '../classes/Master.php?f=get_series_by_brand',
                 method: 'POST',
                 data: {brand_id: brand_id},
                 dataType: 'text',
+                beforeSend: function() {
+                    console.log('Sending AJAX request for brand_id:', brand_id);
+                },
                 success: function(resp){
-                    series_select.html('<option value="">اختر السيريس</option>' + resp);
+                    console.log('AJAX Response received:', resp);
+                    if(resp.trim() !== '') {
+                        series_select.html('<option value="">اختر السيريس</option>' + resp);
+                    } else {
+                        series_select.html('<option value="">لا توجد فئات لهذا البراند</option>');
+                    }
                     series_select.trigger('change.select2');
                 },
-                error: function(){
+                error: function(xhr, status, error){
+                    console.log('AJAX Error Details:');
+                    console.log('Status:', status);
+                    console.log('Error:', error);
+                    console.log('Response Text:', xhr.responseText);
                     series_select.html('<option value="">خطأ في التحميل</option>');
+                    series_select.trigger('change.select2');
                 }
             });
         } else {
             series_select.html('<option value="">اختر البراند أولاً</option>');
+            series_select.trigger('change.select2');
         }
     });
     

@@ -25,12 +25,12 @@ error_log("[ADD_TO_CART] POST data: " . print_r($_POST, true));
 
 try {
     // التحقق من البيانات المستلمة
-    if (!isset($_POST['product_id']) || !isset($_POST['quantity'])) {
+    if (!isset($_POST['product_id']) || (!isset($_POST['quantity']) && !isset($_POST['qty']))) {
         throw new Exception('بيانات غير مكتملة');
     }
     
     $product_id = intval($_POST['product_id']);
-    $quantity = intval($_POST['quantity']);
+    $quantity = isset($_POST['quantity']) ? intval($_POST['quantity']) : intval($_POST['qty']);
     
     // التحقق من صحة البيانات
     if ($product_id <= 0 || $quantity <= 0) {
